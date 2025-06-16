@@ -1,14 +1,14 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
-// const api = axios.create({
-//     baseURL: 'https://strawberryapi.mblueberry.fun/',
-//     timeout: 10000
-// })
 const api = axios.create({
-    baseURL: 'http://localhost:9090/',
+    baseURL: 'https://strawberryapi.mblueberry.fun/',
     timeout: 10000
 })
+// const api = axios.create({
+//     baseURL: 'http://localhost:9090/',
+//     timeout: 10000
+// })
 
 api.interceptors.request.use(
     (config) => {
