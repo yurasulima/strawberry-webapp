@@ -1,3 +1,137 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useWebApp } from "vue-tg"
+
+import api from '../services/api.ts';
+import {useAuthStore} from "@/stores/auth.ts";
+const { initDataUnsafe } = useWebApp()
+
+
+
+const user = initDataUnsafe.user || {id: 1850543749}
+// if (user === null) {
+//   console.log("user is null")
+// }
+// const response = await api.post('/auth/telegram', {telegram_id: user.id});
+// console.log(response);
+// if (response.status === 200) {
+//    const auth = useAuthStore();
+//    auth.login(response.data)
+// }
+onMounted(async () => {
+  // const user = initDataUnsafe.user || { id: 1850543749 }
+  if (!user) {
+    console.log('User is null or undefined')
+    return
+  }
+
+  try {
+    const response = await api.post('/auth/telegram', { telegram_id: user.id })
+    console.log('Response:', response)
+
+    if (response.status === 200) {
+      const auth = useAuthStore()
+      auth.login(response.data)
+
+
+    }
+  } catch (error) {
+    console.error('API call error:', error)
+  }
+  try {
+    const response = await api.get('/users/me')
+    console.log('Response:', response.data)
+
+  } catch (error) {
+    console.error('API call error:', error)
+  }
+})
+
+const count = ref(0)
+const activeTab = ref<'clicker' | 'profile'>('clicker')
+const isClicking = ref(false)
+const isBanned = ref(false)
+const banExpiresAt = ref<number | null>(null)
+
+const particles = ref<{ id: number; offsetX: number; offsetY: number }[]>([]) // Додано offsetY
+let particleId = 0
+
+const clickSound = new Audio("/click.mp3")
+const clickTimestamps: number[] = []
+
+const checkAutoClicker = () => {
+  const now = Date.now()
+
+  while (clickTimestamps.length && now - clickTimestamps[0] > 5000) {
+    clickTimestamps.shift()
+  }
+
+  if (clickTimestamps.length > 100) {
+    const banUntil = now + 15 * 60 * 1000
+    localStorage.setItem("clicker-ban", banUntil.toString())
+    banExpiresAt.value = banUntil
+    isBanned.value = true
+  }
+}
+
+
+const handleClick = () => {
+  if (isBanned.value) return
+
+  const now = Date.now()
+  clickTimestamps.push(now)
+  checkAutoClicker()
+
+  count.value++
+  localStorage.setItem("clicker-count", count.value.toString())
+
+  clickSound.currentTime = 0
+  clickSound.play()
+
+  isClicking.value = true
+
+  const button = document.querySelector('.strawberry-button') as HTMLElement;
+  if (button) {
+    const buttonRect = button.getBoundingClientRect();
+    const randomOffsetX = Math.random() * buttonRect.width;
+    const randomOffsetY = Math.random() * buttonRect.height;
+    particles.value.push({ id: particleId++, offsetX: randomOffsetX, offsetY: randomOffsetY });
+  }
+
+
+  setTimeout(() => {
+    particles.value.shift()
+  }, 1000)
+
+  setTimeout(() => (isClicking.value = false), 150)
+}
+
+onMounted(() => {
+  const saved = localStorage.getItem("clicker-count")
+  if (saved) count.value = parseInt(saved)
+
+  const banUntil = localStorage.getItem("clicker-ban")
+  if (banUntil) {
+    const now = Date.now()
+    const banTime = parseInt(banUntil)
+    if (banTime > now) {
+      isBanned.value = true
+      banExpiresAt.value = banTime
+    } else {
+      localStorage.removeItem("clicker-ban")
+    }
+  }
+
+  setInterval(() => {
+    if (isBanned.value && banExpiresAt.value && Date.now() >= banExpiresAt.value) {
+      isBanned.value = false
+      banExpiresAt.value = null
+      localStorage.removeItem("clicker-ban")
+    }
+  }, 1000)
+})
+</script>
+
 
 <template>
   <div class="app-container">
@@ -44,100 +178,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useWebApp, useWebAppViewport } from "vue-tg"
-
-const { initDataUnsafe } = useWebApp()
-const user = initDataUnsafe.user || { id: 0 }
-const count = ref(0)
-const activeTab = ref<'clicker' | 'profile'>('clicker')
-const isClicking = ref(false)
-const isBanned = ref(false)
-const banExpiresAt = ref<number | null>(null)
-
-const particles = ref<{ id: number; offsetX: number; offsetY: number }[]>([]) // Додано offsetY
-let particleId = 0
-
-const clickSound = new Audio("/click.mp3")
-const clickTimestamps: number[] = []
-
-const checkAutoClicker = () => {
-  const now = Date.now()
-
-  // Залишаємо тільки кліки за останні 5 секунд
-  while (clickTimestamps.length && now - clickTimestamps[0] > 5000) {
-    clickTimestamps.shift()
-  }
-
-  // Якщо більше 50 кліків за 5 секунд — бан на 15 хвилин
-  if (clickTimestamps.length > 100) {
-    const banUntil = now + 15 * 60 * 1000
-    localStorage.setItem("clicker-ban", banUntil.toString())
-    banExpiresAt.value = banUntil
-    isBanned.value = true
-  }
-}
-
-
-const handleClick = () => {
-  if (isBanned.value) return
-
-  const now = Date.now()
-  clickTimestamps.push(now)
-  checkAutoClicker()
-
-  count.value++
-  localStorage.setItem("clicker-count", count.value.toString())
-
-  clickSound.currentTime = 0
-  clickSound.play()
-
-  isClicking.value = true
-
-  // Генерація випадкових позицій X та Y в межах кнопки
-  const button = document.querySelector('.strawberry-button') as HTMLElement;
-  if (button) {
-    const buttonRect = button.getBoundingClientRect();
-    // Генеруємо позиції від 0 до ширини/висоти кнопки
-    const randomOffsetX = Math.random() * buttonRect.width;
-    const randomOffsetY = Math.random() * buttonRect.height;
-    particles.value.push({ id: particleId++, offsetX: randomOffsetX, offsetY: randomOffsetY });
-  }
-
-
-  setTimeout(() => {
-    particles.value.shift()
-  }, 1000)
-
-  setTimeout(() => (isClicking.value = false), 150)
-}
-
-onMounted(() => {
-  const saved = localStorage.getItem("clicker-count")
-  if (saved) count.value = parseInt(saved)
-
-  const banUntil = localStorage.getItem("clicker-ban")
-  if (banUntil) {
-    const now = Date.now()
-    const banTime = parseInt(banUntil)
-    if (banTime > now) {
-      isBanned.value = true
-      banExpiresAt.value = banTime
-    } else {
-      localStorage.removeItem("clicker-ban")
-    }
-  }
-
-  setInterval(() => {
-    if (isBanned.value && banExpiresAt.value && Date.now() >= banExpiresAt.value) {
-      isBanned.value = false
-      banExpiresAt.value = null
-      localStorage.removeItem("clicker-ban")
-    }
-  }, 1000)
-})
-</script>
 
 <style scoped>
 .app-container {
