@@ -55,8 +55,10 @@ const flushClicks = async () => {
   if (pendingClicks === 0 || isBanned.value) return;
 
   try {
-    await api.post('/slots/take', { name: 'strawberry', count: pendingClicks });
+    const response = await api.post('/slots/take', { name: 'strawberry', count: pendingClicks });
+    count.value = response.data;
     pendingClicks = 0;
+
   } catch (error) {
     console.error("Помилка при відправці кліків:", error);
   }
@@ -67,7 +69,7 @@ const checkAutoClicker = () => {
   while (clickTimestamps.length && now - clickTimestamps[0] > 5000) {
     clickTimestamps.shift();
   }
-  if (clickTimestamps.length > 40) {
+  if (clickTimestamps.length > 80) {
     banUser(now);
   }
 };
@@ -112,7 +114,6 @@ const handleClick = () => {
     particles.value.push({ id: particleId++, offsetX, offsetY });
   }
 
-  count.value++;
   pendingClicks++;
   isClicking.value = true;
 
