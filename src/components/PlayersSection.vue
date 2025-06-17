@@ -58,8 +58,14 @@ onMounted(() => {
 
     <p v-if="loading">Завантаження...</p>
     <p v-if="error" class="error">{{ error }}</p>
+    <div style="text-align: center; margin-bottom: 12px;">
+      <button @click="fetchPlayers" :disabled="loading" class="refresh-button">
+        🔄 Оновити
+      </button>
+    </div>
 
     <ul v-if="!loading && !error && players.length" class="players-list">
+
       <li v-for="player in players" :key="player.userId" class="player-item">
         <img
             v-if="player.photoUrl"
@@ -86,6 +92,28 @@ onMounted(() => {
 </template>
 
 <style scoped>
+
+.refresh-button {
+  background-color: #1c1d2e;
+  width: 100%;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+.refresh-button:hover {
+  background-color: #333;
+}
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
 .players-section {
   max-width: 420px;
   width: 100%;

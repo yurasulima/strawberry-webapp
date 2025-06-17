@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import {ref, onMounted, computed} from 'vue'
 import { useWebApp } from "vue-tg"
 import { useAuthStore } from "@/stores/auth.ts"
 
@@ -9,8 +9,24 @@ import ProfileSection from '@/components/ProfileSection.vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import api from "@/services/api.ts";
 
+import { useRouter } from 'vue-router'
+const activeComponent = computed(() => {
+  switch (activeTab.value) {
+    case 'clicker': return ClickerSection
+    case 'profile': return ProfileSection
+    case 'users': return PlayersSection
+    default: return ClickerSection
+  }
+})
+const router = useRouter()
 const { initDataUnsafe } = useWebApp()
 const user = initDataUnsafe.user || { id: 1, first_name: "Name", last_name: "Surname", username: "Username", language_code: null, photo_url: "https://api.mblueberry.fun/image/null.png" }
+
+
+if (user === null) {
+  router.replace('/404')
+}
+
 const activeTab = ref<'clicker' | 'profile' | 'users'>('clicker')
 
 
@@ -47,20 +63,20 @@ onMounted(async () => {
   <div class="app-container">
 
     <div class="main-content">
-      <ClickerSection
-          v-if="activeTab === 'clicker'"
-      />
 
-      <ProfileSection v-if="activeTab === 'profile'" :user="user" />
-      <PlayersSection v-if="activeTab === 'users'" :user="user" />
+      <keep-alive>
+        <component :is="activeComponent"/>
+      </keep-alive>
+
     </div>
+
 
     <BottomNavigation :activeTab="activeTab" @changeTab="activeTab = $event" />
   </div>
 </template>
 
 <style scoped>
-/* Загальні стилі перенесені в компоненти */
+
 .app-container {
   display: flex;
   flex-direction: column;

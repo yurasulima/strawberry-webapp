@@ -2,6 +2,10 @@
 
 import { ExpandedViewport } from 'vue-tg'
 
+import { useWebAppViewport} from 'vue-tg'
+
+const vp = useWebAppViewport()
+vp.disableVerticalSwipes()
 </script>
 
 
