@@ -1,98 +1,129 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import api from "@/services/api.ts";
 import { useAuthStore } from "@/stores/auth.ts";
 
-const emit = defineEmits<{
-  (e: 'click'): void
-}>()
-let particleId = 0
-const count = ref(0)
-const isClicking = ref(false)
-const isBanned = ref(false)
-const banExpiresAt = ref<number | null>(null)
+let particleId = 0;
+const count = ref(0);
+const isClicking = ref(false);
+const isBanned = ref(false);
+const banExpiresAt = ref<number | null>(null);
+const particles = ref<{ id: number; offsetX: number; offsetY: number }[]>([]);
+const clickTimestamps: number[] = [];
+const recentClickOffsets: { x: number; y: number }[] = [];
+let pendingClicks = 0;
 
-const particles = ref<{ id: number; offsetX: number; offsetY: number }[]>([])
-
-const clickTimestamps: number[] = []
-
-const auth = useAuthStore()
+const auth = useAuthStore();
 
 onMounted(async () => {
   try {
-    // При завантаженні можна отримати поточний лічильник полуничок з API
-    const response = await api.get('/slots/count', { params: { name: 'strawberry' } })
-    count.value = response.data.count ?? 0
-  } catch {
-    // Якщо не вийшло, залишаємо count = 0
-  }
+    const response = await api.get('/slots/count', { params: { name: 'strawberry' } });
+    count.value = response.data.count ?? 0;
+  } catch {}
 
-  const banUntil = localStorage.getItem("clicker-ban")
+  const banUntil = localStorage.getItem("clicker-ban");
   if (banUntil) {
-    const now = Date.now()
-    const banTime = parseInt(banUntil)
+    const now = Date.now();
+    const banTime = parseInt(banUntil);
     if (banTime > now) {
-      isBanned.value = true
-      banExpiresAt.value = banTime
+      isBanned.value = true;
+      banExpiresAt.value = banTime;
     } else {
-      localStorage.removeItem("clicker-ban")
+      localStorage.removeItem("clicker-ban");
     }
   }
+
+  setInterval(flushClicks, 2000);
 
   setInterval(() => {
     if (isBanned.value && banExpiresAt.value && Date.now() >= banExpiresAt.value) {
-      isBanned.value = false
-      banExpiresAt.value = null
-      localStorage.removeItem("clicker-ban")
+      isBanned.value = false;
+      banExpiresAt.value = null;
+      localStorage.removeItem("clicker-ban");
     }
-  }, 1000)
-})
+  }, 1000);
+
+  window.addEventListener("beforeunload", () => {
+    if (pendingClicks > 0) {
+      const data = JSON.stringify({ name: "strawberry", count: pendingClicks });
+      navigator.sendBeacon("/api/slots/take", data);
+    }
+  });
+});
+
+const flushClicks = async () => {
+  if (pendingClicks === 0 || isBanned.value) return;
+
+  try {
+    await api.post('/slots/take', { name: 'strawberry', count: pendingClicks });
+    pendingClicks = 0;
+  } catch (error) {
+    console.error("Помилка при відправці кліків:", error);
+  }
+};
 
 const checkAutoClicker = () => {
-  const now = Date.now()
+  const now = Date.now();
   while (clickTimestamps.length && now - clickTimestamps[0] > 5000) {
-    clickTimestamps.shift()
+    clickTimestamps.shift();
   }
-  if (clickTimestamps.length > 100) {
-    const banUntil = now + 15 * 60 * 1000
-    localStorage.setItem("clicker-ban", banUntil.toString())
-    banExpiresAt.value = banUntil
-    isBanned.value = true
+  if (clickTimestamps.length > 40) {
+    banUser(now);
   }
-}
+};
 
-const handleClick = async () => {
-  if (isBanned.value) return
+const isSameClickLocation = (): boolean => {
+  if (recentClickOffsets.length < 10) return false;
+  const { x: x0, y: y0 } = recentClickOffsets[0];
+  return recentClickOffsets.every(({ x, y }) =>
+      Math.abs(x - x0) < 3 && Math.abs(y - y0) < 3
+  );
+};
 
-  const now = Date.now()
-  clickTimestamps.push(now)
-  checkAutoClicker()
+const banUser = (now: number) => {
+  const banUntil = now + 15 * 60 * 1000;
+  localStorage.setItem("clicker-ban", banUntil.toString());
+  banExpiresAt.value = banUntil;
+  isBanned.value = true;
+};
 
-  // Виклик API для додавання полунички
-  count.value++
-  try {
-    await api.post('/slots/take', { name: 'strawberry' })
-  } catch (error) {
-    console.error('Помилка при додаванні полунички:', error)
-  }
+const handleClick = () => {
+  if (isBanned.value) return;
 
-  isClicking.value = true
+  const now = Date.now();
+  clickTimestamps.push(now);
+  checkAutoClicker();
 
   const button = document.querySelector('.strawberry-button') as HTMLElement;
   if (button) {
     const buttonRect = button.getBoundingClientRect();
-    const randomOffsetX = Math.random() * buttonRect.width;
-    const randomOffsetY = Math.random() * buttonRect.height;
-    particles.value.push({ id: particleId++, offsetX: randomOffsetX, offsetY: randomOffsetY });
+    const offsetX = Math.random() * buttonRect.width;
+    const offsetY = Math.random() * buttonRect.height;
+
+    // 👉 Зберігаємо координати кліку
+    recentClickOffsets.push({ x: offsetX, y: offsetY });
+    if (recentClickOffsets.length > 10) recentClickOffsets.shift();
+
+    if (isSameClickLocation()) {
+      banUser(now);
+      return;
+    }
+
+    particles.value.push({ id: particleId++, offsetX, offsetY });
   }
 
-  setTimeout(() => {
-    particles.value.shift()
-  }, 1000)
+  count.value++;
+  pendingClicks++;
+  isClicking.value = true;
 
-  setTimeout(() => (isClicking.value = false), 150)
-}
+  setTimeout(() => {
+    particles.value.shift();
+  }, 1000);
+
+  setTimeout(() => (isClicking.value = false), 150);
+};
 </script>
+
 
 
 <template>
