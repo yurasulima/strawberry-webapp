@@ -211,9 +211,6 @@ const handleClick = () => {
   touch-action: manipulation;
 }
 
-.strawberry-icon.pop-animation {
-  transform: scale(1.15);
-}
 
 .strawberry-count {
   font-size: 28px;
@@ -243,6 +240,17 @@ const handleClick = () => {
   white-space: nowrap;
 }
 
+.ban-message {
+  color: #DC143C;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 18px;
+  padding: 8px;
+  background-color: #B8CFCE;
+  border: 2px solid #A30F2C;
+  border-radius: 5px;
+}
 @keyframes float-up-fade {
   0% {
     opacity: 1;

@@ -2,12 +2,14 @@
 import {ref, onMounted, computed} from 'vue'
 import { useWebApp } from "vue-tg"
 import { useAuthStore } from "@/stores/auth.ts"
+import Toolbar from "@/components/Toolbar.vue"
 
 import PlayersSection from '@/components/PlayersSection.vue'
 import ClickerSection from '@/components/ClickerSection.vue'
 import ProfileSection from '@/components/ProfileSection.vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import api from "@/services/api.ts";
+const money = ref(0)
 
 import { useRouter } from 'vue-router'
 const activeComponent = computed(() => {
@@ -47,6 +49,9 @@ onMounted(async () => {
       language_code: user.language_code,
       // allows_write_to_pm: user.allows_write_to_pm,
     })
+    const moneySlot = response.data.slots?.find((slot: any) => slot.item?.name === 'money')
+    money.value = moneySlot?.count || 0
+
     if (response.status === 200) {
       const auth = useAuthStore()
       auth.login(response.data)
@@ -61,6 +66,12 @@ onMounted(async () => {
 
 <template>
   <div class="app-container">
+    <Toolbar
+        :firstName="user.first_name"
+        :lastName="user.last_name"
+        :avatar="user.photo_url"
+        :money="money"
+    />
 
     <div class="main-content">
 
@@ -71,13 +82,18 @@ onMounted(async () => {
     </div>
 
 
-    <BottomNavigation :activeTab="activeTab" @changeTab="activeTab = $event" />
+    <BottomNavigation class="bott" :activeTab="activeTab" @changeTab="activeTab = $event" />
   </div>
 </template>
 
 <style scoped>
 
 .app-container {
+  background-image: url("/background.png"); /* без 'public/' */
+  background-size: cover; /* покриває весь контейнер */
+  background-position: center;
+  background-repeat: no-repeat;
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -85,16 +101,24 @@ onMounted(async () => {
   max-width: 420px;
   margin: 0 auto;
   min-height: 100vh;
-  background-color: #333446; /* Найтемніший фон */
-  color: #EAEFEF; /* Світлий текст */
+  color: #EAEFEF;
   font-family: "Pixel", "Segoe UI", sans-serif;
   padding: 16px;
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
 }
+.app-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.3); /* темна напівпрозора вуаль */
+  z-index: 0;
+}
 
 .main-content {
+  z-index: 1;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -103,16 +127,8 @@ onMounted(async () => {
   width: 100%;
   padding-bottom: 70px;
 }
+.bott {
 
-.ban-message {
-  color: #DC143C; /* Яскраво-червоний */
-  font-weight: bold;
-  text-align: center;
-  margin-top: 10px;
-  font-size: 18px;
-  padding: 8px;
-  background-color: #B8CFCE;
-  border: 2px solid #A30F2C;
-  border-radius: 5px;
+  z-index: 1;
 }
 </style>

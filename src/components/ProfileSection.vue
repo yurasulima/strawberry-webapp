@@ -76,11 +76,63 @@ onMounted(async () => {
       <div v-if="!player.slots.some(s => s.item.name === 'strawberry')">Немає полуничок</div>
 
     </div>
+
+    <div class="profile-inventory">
+      <h3>Інвентар</h3>
+      <div class="inventory-grid">
+        <div
+            v-for="slot in player.slots"
+            :key="slot.id"
+            class="inventory-item"
+        >
+          <div class="item-name">{{ slot.item.name }}</div>
+          <div class="item-count">×{{ slot.count }}</div>
+        </div>
+      </div>
+    </div>
+
   </div>
   <div v-else class="loading">Завантаження профілю...</div>
 </template>
 
 <style scoped>
+
+.profile-inventory {
+  margin-top: 24px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1c1d2e;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.inventory-item {
+  background-color: #e0f0f3;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: inset 0 0 4px #aaa;
+}
+
+.item-name {
+  font-size: 14px;
+  color: #2a2a2a;
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+.item-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: #195870;
+}
+
+
 .profile-section {
   max-width: 400px;
   margin: 20px auto;

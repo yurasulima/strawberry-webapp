@@ -11,24 +11,29 @@ const emit = defineEmits<{ (e: 'changeTab', tab: 'clicker' | 'profile' | 'users'
         :class="{ active: props.activeTab === 'clicker' }"
         @click="emit('changeTab', 'clicker')"
     >
-      Гра
+      <div class="icon">🎮</div>
+      <div v-if="props.activeTab === 'clicker'" class="label">Гра</div>
     </button>
     <button
         :class="{ active: props.activeTab === 'profile' }"
         @click="emit('changeTab', 'profile')"
     >
-      Профіль
+      <div class="icon">👤</div>
+      <div v-if="props.activeTab === 'profile'" class="label">Профіль</div>
     </button>
     <button
         :class="{ active: props.activeTab === 'users' }"
         @click="emit('changeTab', 'users')"
     >
-      Гравці
+      <div class="icon">🧑‍🤝‍🧑</div>
+      <div v-if="props.activeTab === 'users'" class="label">Гравці</div>
     </button>
   </div>
 </template>
 
+
 <style scoped>
+
 .bottom-navigation {
   display: flex;
   justify-content: space-around;
@@ -49,17 +54,25 @@ const emit = defineEmits<{ (e: 'changeTab', tab: 'clicker' | 'profile' | 'users'
   background: none;
   border: none;
   color: #333446;
-  font-size: 18px;
-  padding: 10px 20px;
+  font-size: 14px;
   cursor: pointer;
   border-radius: 8px;
   transition: background-color 0.2s ease, color 0.2s ease;
   flex-grow: 1;
   margin: 0 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
 }
 
-.bottom-navigation button:hover:not(.active) {
-  background-color: #a0bfc0;
+.bottom-navigation button .icon {
+  font-size: 22px;
+}
+
+.bottom-navigation button .label {
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 .bottom-navigation button.active {
