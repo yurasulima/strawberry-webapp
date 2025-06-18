@@ -1,16 +1,36 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' }>()
-const emit = defineEmits<{ (e: 'changeTab', tab: 'clicker' | 'profile' | 'users'): void }>()
+const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' | 'debug' }>()
+const emit = defineEmits<{
+  (e: 'changeTab', tab: 'clicker' | 'profile' | 'users' | 'debug'): void
+}>()
 
-
-emit('changeTab', 'clicker')
-emit('changeTab', 'clicker')
-emit('changeTab', 'clicker')
 const { t } = useI18n()
+
+const profileClickCount = ref(0)
+let lastClickTime = 0
+
+function handleProfileClick() {
+  const now = Date.now()
+  if (now - lastClickTime > 600) {
+    profileClickCount.value = 1
+  } else {
+    profileClickCount.value++
+  }
+
+  lastClickTime = now
+
+  if (profileClickCount.value >= 7) {
+    emit('changeTab', 'debug') // відкриваємо DebugSegment
+    profileClickCount.value = 0
+  } else {
+    emit('changeTab', 'profile')
+  }
+}
 </script>
+
 <template>
   <div class="bottom-navigation">
     <button
@@ -22,11 +42,12 @@ const { t } = useI18n()
     </button>
     <button
         :class="{ active: props.activeTab === 'profile' }"
-        @click="emit('changeTab', 'profile')"
+        @click="handleProfileClick"
     >
       <span class="icon">👤</span>
       <span v-if="props.activeTab === 'profile'" class="label">{{ t('bottomNav.profile') }}</span>
     </button>
+
     <button
         :class="{ active: props.activeTab === 'users' }"
         @click="emit('changeTab', 'users')"

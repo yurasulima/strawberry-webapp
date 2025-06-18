@@ -6,6 +6,7 @@ import Toolbar from "@/components/Toolbar.vue"
 import PlayersSection from '@/components/PlayersSection.vue'
 import ClickerSection from '@/components/ClickerSection.vue'
 import ProfileSection from '@/components/ProfileSection.vue'
+import DebugSection from '@/components/DebugSection.vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
@@ -13,14 +14,14 @@ import { useRouter } from 'vue-router'
 const money = ref(0)
 const isLoading = ref(true)
 const { initDataUnsafe } = useWebApp()
-const user = initDataUnsafe.user || { id: 1, first_name: "Акк", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.mblueberry.fun/image/null.png" }
+const user = initDataUnsafe.user || { id: 1, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.mblueberry.fun/image/null.png" }
 
 if (user === null) {
   const router = useRouter()
   router.replace('/404')
 }
 
-const activeTab = ref<'clicker' | 'profile' | 'users'>('clicker')
+const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug'>('clicker')
 
 
 
@@ -30,6 +31,7 @@ const activeComponent = computed(() => {
     case 'clicker': return ClickerSection
     case 'profile': return ProfileSection
     case 'users': return PlayersSection
+    case 'debug': return DebugSection
     default: return ClickerSection
   }
 })
