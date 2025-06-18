@@ -1,0 +1,44 @@
+{
+  "clicker": {
+    "banned_until": "You are banned for autoclicking until {time}",
+    "strawberries": "Strawberries",
+    "plusOne": "+1"
+  },
+  "profile": {
+    "no_name": "No name",
+    "premium": "Premium",
+    "banned": "Banned",
+    "strawberries": "Strawberries",
+    "no_strawberries": "No strawberries",
+    "inventory": "Inventory",
+    "loading": "Loading profile..."
+  },
+  "items": {
+    "strawberry": "Strawberry",
+    "money": "Coin"
+  },
+  "players": {
+    "title": "Players",
+    "loading": "Loading...",
+    "refresh": "Refresh",
+    "error": "Failed to load players",
+    "empty": "No players."
+  },
+
+  "settings": {
+    "title": "Settings",
+    "language_label": "🌍 Interface Language:"
+  },
+  "toolbar": {
+    "money": "💰",
+    "settings_alt": "Settings"
+  },
+  "modal": {
+    "close": "Close"
+  },
+  "bottomNav": {
+    "game": "Game",
+    "profile": "Profile",
+    "players": "Players"
+  }
+}

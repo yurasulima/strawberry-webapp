@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import api from "@/services/api.ts";
 
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 interface Item {
   id: number
   name: string
@@ -41,7 +43,7 @@ const fetchPlayers = async () => {
     console.log(players)
 
   } catch (e) {
-    error.value = 'Не вдалося завантажити гравців'
+    error.value = t('players.error')
   } finally {
     loading.value = false
   }
@@ -54,13 +56,13 @@ onMounted(() => {
 
 <template>
   <div class="players-section">
-    <h2>Гравці</h2>
+    <h2>{{ t('players.title') }}</h2>
 
-    <p v-if="loading">Завантаження...</p>
-    <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="loading">{{ t('players.loading') }}</p>
+    <p v-if="error" class="error">{{ t('players.error') }}</p>
     <div style="text-align: center; margin-bottom: 12px;">
       <button @click="fetchPlayers" :disabled="loading" class="refresh-button">
-        🔄 Оновити
+        🔄 {{ t('players.refresh') }}
       </button>
     </div>
 
@@ -87,7 +89,7 @@ onMounted(() => {
     </ul>
 
 
-    <p v-if="!loading && !error && players.length === 0">Гравців немає.</p>
+    <p v-if="!loading && !error && players.length === 0">{{ t('players.empty') }}</p>
   </div>
 </template>
 

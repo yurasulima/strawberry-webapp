@@ -67,6 +67,7 @@ onMounted(async () => {
 <template>
   <div class="app-container">
     <Toolbar
+        :language_code="user.language_code"
         :firstName="user.first_name"
         :lastName="user.last_name"
         :avatar="user.photo_url"
@@ -89,7 +90,7 @@ onMounted(async () => {
 <style scoped>
 
 .app-container {
-  background-image: url("/background.png"); /* без 'public/' */
+  background-image: url("/background.jpg"); /* без 'public/' */
   background-size: cover; /* покриває весь контейнер */
   background-position: center;
   background-repeat: no-repeat;
@@ -113,7 +114,7 @@ onMounted(async () => {
   position: absolute;
   inset: 0;
   backdrop-filter: blur(5px);
-  background-color: rgba(0, 0, 0, 0.3); /* темна напівпрозора вуаль */
+  background-color: rgba(0, 0, 0, 0.3);
   z-index: 0;
 }
 

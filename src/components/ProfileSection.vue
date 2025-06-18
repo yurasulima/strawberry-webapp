@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import api from "@/services/api.ts";
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 interface Item {
   id: number
@@ -50,11 +52,12 @@ onMounted(async () => {
       />
       <div class="profile-name-status">
         <h2 class="profile-name">
-          {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : 'Без імені' }}
+          {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
         </h2>
         <div class="status-tags">
-          <span v-if="player.premium" class="tag premium">Преміум</span>
-          <span v-if="player.banned" class="tag banned">Заблокований</span>
+
+          <span v-if="player.premium" class="tag premium">{{ t('profile.premium') }}</span>
+          <span v-if="player.banned" class="tag banned">{{ t('profile.banned') }}</span>
         </div>
       </div>
     </div>
@@ -62,9 +65,8 @@ onMounted(async () => {
     <p class="profile-bio" v-if="player.bio && player.bio.trim().length">
       {{ player.bio }}
     </p>
-
     <div class="profile-strawberries">
-      <h3>Полунички</h3>
+      <h3>{{ t('profile.strawberries') }}</h3>
       <div
           v-for="slot in player.slots.filter(s => s.item.name === 'strawberry')"
           :key="slot.id"
@@ -73,26 +75,28 @@ onMounted(async () => {
         <img src="/strawberry.png" alt="Strawberry" class="strawberry-icon" />
         <span class="count">{{ slot.count }}</span>
       </div>
-      <div v-if="!player.slots.some(s => s.item.name === 'strawberry')">Немає полуничок</div>
+      <div v-if="!player.slots.some(s => s.item.name === 'strawberry')">
+        {{ t('profile.no_strawberries') }}
+      </div>
 
     </div>
 
     <div class="profile-inventory">
-      <h3>Інвентар</h3>
+      <h3>{{ t('profile.inventory') }}</h3>
       <div class="inventory-grid">
         <div
             v-for="slot in player.slots"
             :key="slot.id"
             class="inventory-item"
         >
-          <div class="item-name">{{ slot.item.name }}</div>
+          <div class="item-name">{{ t('items.' + slot.item.name) }}</div>
           <div class="item-count">×{{ slot.count }}</div>
         </div>
       </div>
     </div>
 
   </div>
-  <div v-else class="loading">Завантаження профілю...</div>
+  <div v-else class="loading">{{ t('profile.loading') }}</div>
 </template>
 
 <style scoped>

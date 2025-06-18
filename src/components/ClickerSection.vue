@@ -2,7 +2,8 @@
 import { ref, onMounted } from 'vue'
 import api from "@/services/api.ts";
 import { useAuthStore } from "@/stores/auth.ts";
-
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 let particleId = 0;
 const count = ref(0);
 const isClicking = ref(false);
@@ -129,8 +130,9 @@ const handleClick = () => {
 
 <template>
   <p v-if="isBanned && banExpiresAt" class="ban-message">
-    🚫 Ви забанені за автоклік до {{ new Date(banExpiresAt).toLocaleTimeString() }}
+    🚫 {{ t('clicker.banned_until', { time: new Date(banExpiresAt).toLocaleTimeString() }) }}
   </p>
+
   <div @click="handleClick" class="clicker-section">
     <div class="click-area">
       <button
@@ -148,18 +150,18 @@ const handleClick = () => {
       </button>
 
       <div class="particles-container">
-        <span
-            v-for="p in particles"
-            :key="p.id"
-            class="particle-text"
-            :style="{ left: `${p.offsetX}px`, top: `${p.offsetY}px` }"
-        >
-          +1
-        </span>
+       <span
+           v-for="p in particles"
+           :key="p.id"
+           class="particle-text"
+           :style="{ left: `${p.offsetX}px`, top: `${p.offsetY}px` }"
+       >
+  {{ t('clicker.plusOne') }}
+</span>
       </div>
     </div>
 
-    <p class="strawberry-count">Полуничок: {{ count }}</p>
+    <p class="strawberry-count">{{ t('clicker.strawberries') }}: {{ count }}</p>
   </div>
 </template>
 

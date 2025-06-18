@@ -1,35 +1,38 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' }>()
 const emit = defineEmits<{ (e: 'changeTab', tab: 'clicker' | 'profile' | 'users'): void }>()
-</script>
 
+const { t } = useI18n()
+</script>
 <template>
   <div class="bottom-navigation">
     <button
         :class="{ active: props.activeTab === 'clicker' }"
         @click="emit('changeTab', 'clicker')"
     >
-      <div class="icon">🎮</div>
-      <div v-if="props.activeTab === 'clicker'" class="label">Гра</div>
+      <span class="icon">🎮</span>
+      <span v-if="props.activeTab === 'clicker'" class="label">{{ t('bottomNav.game') }}</span>
     </button>
     <button
         :class="{ active: props.activeTab === 'profile' }"
         @click="emit('changeTab', 'profile')"
     >
-      <div class="icon">👤</div>
-      <div v-if="props.activeTab === 'profile'" class="label">Профіль</div>
+      <span class="icon">👤</span>
+      <span v-if="props.activeTab === 'profile'" class="label">{{ t('bottomNav.profile') }}</span>
     </button>
     <button
         :class="{ active: props.activeTab === 'users' }"
         @click="emit('changeTab', 'users')"
     >
-      <div class="icon">🧑‍🤝‍🧑</div>
-      <div v-if="props.activeTab === 'users'" class="label">Гравці</div>
+      <span class="icon">🧑‍🤝‍🧑</span>
+      <span v-if="props.activeTab === 'users'" class="label">{{ t('bottomNav.players') }}</span>
     </button>
   </div>
 </template>
+
 
 
 <style scoped>
