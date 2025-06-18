@@ -1,31 +1,22 @@
 <script setup lang="ts">
-import {ref, onMounted, computed} from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useWebApp } from "vue-tg"
 import { useAuthStore } from "@/stores/auth.ts"
 import Toolbar from "@/components/Toolbar.vue"
-
 import PlayersSection from '@/components/PlayersSection.vue'
 import ClickerSection from '@/components/ClickerSection.vue'
 import ProfileSection from '@/components/ProfileSection.vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
-import api from "@/services/api.ts";
-const money = ref(0)
-
+import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
-const activeComponent = computed(() => {
-  switch (activeTab.value) {
-    case 'clicker': return ClickerSection
-    case 'profile': return ProfileSection
-    case 'users': return PlayersSection
-    default: return ClickerSection
-  }
-})
-const router = useRouter()
-const { initDataUnsafe } = useWebApp()
-const user = initDataUnsafe.user || { id: 1, first_name: "Name", last_name: "Surname", username: "Username", language_code: null, photo_url: "https://api.mblueberry.fun/image/null.png" }
 
+const money = ref(0)
+const isLoading = ref(true)
+const { initDataUnsafe } = useWebApp()
+const user = initDataUnsafe.user || { id: 1, first_name: "Акк", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.mblueberry.fun/image/null.png" }
 
 if (user === null) {
+  const router = useRouter()
   router.replace('/404')
 }
 
@@ -34,9 +25,19 @@ const activeTab = ref<'clicker' | 'profile' | 'users'>('clicker')
 
 
 
+const activeComponent = computed(() => {
+  switch (activeTab.value) {
+    case 'clicker': return ClickerSection
+    case 'profile': return ProfileSection
+    case 'users': return PlayersSection
+    default: return ClickerSection
+  }
+})
+
 onMounted(async () => {
   if (!user) {
     console.log('User is null or undefined')
+    isLoading.value = false
     return
   }
   try {
@@ -47,8 +48,10 @@ onMounted(async () => {
       first_name: user.first_name,
       username: user.username,
       language_code: user.language_code,
-      // allows_write_to_pm: user.allows_write_to_pm,
     })
+    if (user.language_code !== null) {
+      localStorage.setItem('lang', user.language_code)
+    }
     const moneySlot = response.data.slots?.find((slot: any) => slot.item?.name === 'money')
     money.value = moneySlot?.count || 0
 
@@ -58,32 +61,37 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('API call error:', error)
+  } finally {
+    isLoading.value = false  // <- після завершення ініціалізації виключаємо завантаження
   }
-
-
 })
 </script>
 
 <template>
   <div class="app-container">
-    <Toolbar
-        :language_code="user.language_code"
-        :firstName="user.first_name"
-        :lastName="user.last_name"
-        :avatar="user.photo_url"
-        :money="money"
-    />
-
-    <div class="main-content">
-
-      <keep-alive>
-        <component :is="activeComponent"/>
-      </keep-alive>
-
+    <!-- Показуємо splash, поки isLoading -->
+    <div v-if="isLoading" class="splash-screen">
+      <div class="loader">Завантаження...</div>
     </div>
 
+    <!-- Основний контент показуємо, якщо не завантажуємо -->
+    <template v-else>
+      <Toolbar
+          :language_code="user.language_code"
+          :firstName="user.first_name"
+          :lastName="user.last_name"
+          :avatar="user.photo_url"
+          :money="money"
+      />
 
-    <BottomNavigation class="bott" :activeTab="activeTab" @changeTab="activeTab = $event" />
+      <div class="main-content">
+        <keep-alive>
+          <component :is="activeComponent"/>
+        </keep-alive>
+      </div>
+
+      <BottomNavigation class="bott" :activeTab="activeTab" @changeTab="activeTab = $event" />
+    </template>
   </div>
 </template>
 
@@ -131,5 +139,20 @@ onMounted(async () => {
 .bott {
 
   z-index: 1;
+}
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  background-color: #222;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  z-index: 2000;
+}
+
+.loader {
+  /* Можна тут зробити анімацію або просто текст */
 }
 </style>

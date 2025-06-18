@@ -5,6 +5,10 @@ import { useI18n } from 'vue-i18n'
 const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' }>()
 const emit = defineEmits<{ (e: 'changeTab', tab: 'clicker' | 'profile' | 'users'): void }>()
 
+
+emit('changeTab', 'clicker')
+emit('changeTab', 'clicker')
+emit('changeTab', 'clicker')
 const { t } = useI18n()
 </script>
 <template>

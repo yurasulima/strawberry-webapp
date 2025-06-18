@@ -21,7 +21,7 @@ function saveLang() {
       <select id="language" v-model="locale" @change="saveLang">
         <option value="en">English</option>
         <option value="ua">Українська</option>
-        <option v-if="props.language_code !== 'ua'" value="ru">Русский</option>
+        <option v-if="props.language_code !== 'uk'" value="ru">Русский</option>
       </select>
     </div>
   </div>
