@@ -16,7 +16,7 @@ const isLoading = ref(true)
 const { initDataUnsafe } = useWebApp()
 const user = initDataUnsafe.user || { id: 1, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.mblueberry.fun/image/null.png" }
 
-if (user === null) {
+if (user === undefined) {
   const router = useRouter()
   router.replace('/404')
 }
@@ -50,6 +50,7 @@ onMounted(async () => {
       first_name: user.first_name,
       username: user.username,
       language_code: user.language_code,
+      inviter_telegram_id: initDataUnsafe.start_param,
     })
     if (user.language_code !== null) {
       localStorage.setItem('lang', user.language_code)
