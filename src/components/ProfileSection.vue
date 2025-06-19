@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import api from "@/services/api.ts";
 import { useI18n } from 'vue-i18n'
+import InvitedUserList from "@/components/InvitedUserList.vue";
 const { t } = useI18n()
 
 interface Item {
@@ -97,6 +98,9 @@ onMounted(async () => {
 
   </div>
   <div v-else class="loading">{{ t('profile.loading') }}</div>
+
+  <InvitedUserList />
+
 </template>
 
 <style scoped>

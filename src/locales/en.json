@@ -40,5 +40,10 @@
     "game": "Game",
     "profile": "Profile",
     "players": "Players"
-  }
+  },
+  "invite_list": {
+  "invited_users": "Invited Users",
+  "no_invites": "No Invites",
+  "loading": "Loading..."
+}
 }
