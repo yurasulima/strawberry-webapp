@@ -2,9 +2,9 @@
 import { defineProps, defineEmits, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' | 'debug' }>()
+const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' | 'debug' | 'business' }>()
 const emit = defineEmits<{
-  (e: 'changeTab', tab: 'clicker' | 'profile' | 'users' | 'debug'): void
+  (e: 'changeTab', tab: 'clicker' | 'profile' | 'users' | 'debug' | 'business'): void
 }>()
 
 const { t } = useI18n()
@@ -23,7 +23,7 @@ function handleProfileClick() {
   lastClickTime = now
 
   if (profileClickCount.value >= 7) {
-    emit('changeTab', 'debug') // відкриваємо DebugSegment
+    emit('changeTab', 'debug')
     profileClickCount.value = 0
   } else {
     emit('changeTab', 'profile')
@@ -46,6 +46,14 @@ function handleProfileClick() {
     >
       <span class="icon">👤</span>
       <span v-if="props.activeTab === 'profile'" class="label">{{ t('bottomNav.profile') }}</span>
+    </button>
+
+    <button
+        :class="{ active: props.activeTab === 'business' }"
+        @click="emit('changeTab', 'business')"
+    >
+      <span class="icon">🧑‍🤝‍🧑</span>
+      <span v-if="props.activeTab === 'business'" class="label">{{ t('bottomNav.business') }}</span>
     </button>
 
     <button

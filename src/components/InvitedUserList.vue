@@ -2,16 +2,11 @@
 import { onMounted, ref } from 'vue'
 import api from '@/services/api.ts'
 import { useI18n } from 'vue-i18n'
+import type {InvitedUser} from "@/types/InvitedUser.ts";
 
 const { t } = useI18n()
 
-interface InvitedUser {
-  id: number
-  telegramId: number
-  firstName: string
-  lastName: string
-  photoUrl: string
-}
+
 
 interface Invite {
   id: number

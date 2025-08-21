@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 const api = axios.create({
-    baseURL: 'https://strawberryapi.mblueberry.fun/',
+    baseURL: 'https://strawberryapi.mblueberry.space/',
     timeout: 10000
 })
 // const api = axios.create({

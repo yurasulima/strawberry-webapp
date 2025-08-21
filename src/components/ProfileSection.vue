@@ -3,34 +3,14 @@ import { onMounted, ref } from 'vue'
 import api from "@/services/api.ts";
 import { useI18n } from 'vue-i18n'
 import InvitedUserList from "@/components/InvitedUserList.vue";
+import type {User} from "@/types/User.ts";
 const { t } = useI18n()
 
-interface Item {
-  id: number
-  name: string
-}
 
-interface Slot {
-  id: number
-  item: Item
-  count: number
-}
 
-interface Player {
-  photoUrl?: string | null
-  createAt: string
-  userId: number
-  telegramId: number
-  firstName: string | null
-  lastName: string | null
-  bio: string | null
-  lang: string | null
-  premium: boolean
-  banned: boolean
-  slots: Slot[]
-}
 
-const player = ref<Player | null>(null)
+
+const player = ref<User | null>(null)
 
 onMounted(async () => {
   try {
@@ -221,14 +201,6 @@ onMounted(async () => {
   font-weight: 700;
   font-size: 18px;
   color: #1c1d2e;
-}
-
-.strawberry-list {
-  display: flex;
-  gap: 12px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-  align-items: center;
 }
 
 .strawberry-item {

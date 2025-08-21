@@ -20,7 +20,7 @@ function saveLang() {
       <label for="language">{{ t('settings.language_label') }}</label>
       <select id="language" v-model="locale" @change="saveLang">
         <option value="en">English</option>
-        <option value="ua">Українська</option>
+        <option value="uk">Українська</option>
         <option v-if="props.language_code !== 'uk'" value="ru">Русский</option>
       </select>
     </div>

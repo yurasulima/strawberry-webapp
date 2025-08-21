@@ -8,20 +8,21 @@ import ClickerSection from '@/components/ClickerSection.vue'
 import ProfileSection from '@/components/ProfileSection.vue'
 import DebugSection from '@/components/DebugSection.vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
+import BussinesSection from "@/components/BussinesSection.vue";
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
 
 const money = ref(0)
 const isLoading = ref(true)
 const { initDataUnsafe } = useWebApp()
-const user = initDataUnsafe.user || { id: 1, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.mblueberry.fun/image/null.png" }
+const user = initDataUnsafe.user || { id: 1, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.mblueberry.space/image/null.png" }
 
 if (user === undefined) {
   const router = useRouter()
   router.replace('/404')
 }
 
-const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug'>('clicker')
+const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business'>('clicker')
 
 
 
@@ -32,13 +33,14 @@ const activeComponent = computed(() => {
     case 'profile': return ProfileSection
     case 'users': return PlayersSection
     case 'debug': return DebugSection
+    case 'business': return BussinesSection
     default: return ClickerSection
   }
 })
 
 onMounted(async () => {
   if (!user) {
-    console.log('User is null or undefined')
+    console.log('User.ts is null or undefined')
     isLoading.value = false
     return
   }
@@ -89,7 +91,12 @@ onMounted(async () => {
 
       <div class="main-content">
         <keep-alive>
-          <component :is="activeComponent"/>
+
+          <component
+              :is="activeComponent"
+              v-bind="activeTab === 'business' ? { user: user } : {}"
+          />
+
         </keep-alive>
       </div>
 

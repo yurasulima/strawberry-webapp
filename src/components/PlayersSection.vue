@@ -3,34 +3,11 @@ import { ref, onMounted } from 'vue'
 import api from "@/services/api.ts";
 
 import { useI18n } from 'vue-i18n'
+import type {User} from "@/types/User.ts";
 const { t } = useI18n()
-interface Item {
-  id: number
-  name: string
-}
-
-interface Slot {
-  id: number
-  item: Item
-  count: number
-}
-
-interface Player {
-  photoUrl?: string | null
-  createAt: string
-  userId: number
-  telegramId: number
-  firstName: string | null
-  lastName: string | null
-  bio: string | null
-  lang: string | null
-  premium: boolean
-  banned: boolean
-  slots: Slot[]
-}
 
 
-const players = ref<Player[]>([])
+const players = ref<User[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const fetchPlayers = async () => {
