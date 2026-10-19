@@ -1,9 +1,7 @@
+import 'reflect-metadata'
 import './assets/main.css'
 
-import "reflect-metadata";
-import './assets/main.css'
-
-import { VueTelegramPlugin } from "vue-tg";
+import { VueTelegramPlugin } from 'vue-tg'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'

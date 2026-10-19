@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import api from "@/services/api.ts";
-import { useAuthStore } from "@/stores/auth.ts";
 import { useI18n } from 'vue-i18n'
+import { Icon } from '@iconify/vue'
+import { playHarvestSound } from '@/services/sound'
 const { t } = useI18n()
 let particleId = 0;
 const count = ref(0);
@@ -13,8 +14,6 @@ const particles = ref<{ id: number; offsetX: number; offsetY: number }[]>([]);
 const clickTimestamps: number[] = [];
 const recentClickOffsets: { x: number; y: number }[] = [];
 let pendingClicks = 0;
-
-const auth = useAuthStore();
 
 onMounted(async () => {
   try {
@@ -93,6 +92,7 @@ const banUser = (now: number) => {
 const handleClick = () => {
   if (isBanned.value) return;
 
+  playHarvestSound();
   const now = Date.now();
   clickTimestamps.push(now);
   checkAutoClicker();
@@ -129,43 +129,53 @@ const handleClick = () => {
 
 
 <template>
-  <p v-if="isBanned && banExpiresAt" class="ban-message">
-    🚫 {{ t('clicker.banned_until', { time: new Date(banExpiresAt).toLocaleTimeString() }) }}
-  </p>
+  <div class="clicker-container">
+    <p v-if="isBanned && banExpiresAt" class="ban-message">
+      <Icon icon="pixelarticons:close-box" class="ban-icon" />
+      <span>{{ t('clicker.banned_until', { time: new Date(banExpiresAt).toLocaleTimeString() }) }}</span>
+    </p>
 
-  <div @click="handleClick" class="clicker-section">
-    <div class="click-area">
-      <button
-          class="strawberry-button"
-          @click="$emit('click')"
-          :disabled="isBanned"
-      >
-        <img
-            src="/strawberry.png"
-            alt="Strawberry"
-            oncontextmenu="return false;"
-            class="strawberry-icon"
-            :class="{ 'pop-animation': isClicking }"
-        />
-      </button>
+    <div @click="handleClick" class="clicker-section">
+      <div class="click-area">
+        <button
+            class="strawberry-button"
+            @click="$emit('click')"
+            :disabled="isBanned"
+        >
+          <img
+              src="/strawberry.png"
+              alt="Strawberry"
+              oncontextmenu="return false;"
+              class="strawberry-icon"
+              :class="{ 'pop-animation': isClicking }"
+          />
+        </button>
 
-      <div class="particles-container">
-       <span
-           v-for="p in particles"
-           :key="p.id"
-           class="particle-text"
-           :style="{ left: `${p.offsetX}px`, top: `${p.offsetY}px` }"
-       >
-  {{ t('clicker.plusOne') }}
-</span>
+        <div class="particles-container">
+         <span
+             v-for="p in particles"
+             :key="p.id"
+             class="particle-text"
+             :style="{ left: `${p.offsetX}px`, top: `${p.offsetY}px` }"
+         >
+    {{ t('clicker.plusOne') }}
+  </span>
+        </div>
       </div>
-    </div>
 
-    <p class="strawberry-count">{{ t('clicker.strawberries') }}: {{ count }}</p>
+      <p class="strawberry-count">{{ t('clicker.strawberries') }}: {{ count }}</p>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.clicker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
 .clicker-section {
   display: flex;
   flex-direction: column;
@@ -215,11 +225,12 @@ const handleClick = () => {
 
 
 .strawberry-count {
-  font-size: 28px;
+  font-size: 16px;
   font-weight: bold;
   color: #ffd700;
   text-shadow: 2px 2px #1c1d2e;
   margin-top: 15px;
+  font-family: var(--font-pixel);
 }
 
 .particles-container {
@@ -247,11 +258,18 @@ const handleClick = () => {
   font-weight: bold;
   text-align: center;
   margin-top: 10px;
-  font-size: 18px;
-  padding: 8px;
+  font-size: 14px;
+  padding: 8px 12px;
   background-color: #B8CFCE;
   border: 2px solid #A30F2C;
   border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.ban-icon {
+  font-size: 20px;
 }
 @keyframes float-up-fade {
   0% {

@@ -30,14 +30,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="invites-section">
+  <div class="invites-section honeywood-panel-paper">
     <h3>{{ t('invite_list.invited_users') }}</h3>
     <div v-if="isLoading" class="loading">{{ t('loading') }}</div>
-    <div v-else-if="invites.length === 0">
+    <div v-else-if="invites.length === 0" class="no-invites">
       {{ t('invite_list.no_invites') }}
     </div>
     <div v-else class="invites-list">
-      <div class="invite-card" v-for="invite in invites" :key="invite.id">
+      <div class="invite-card honeywood-slot" v-for="invite in invites" :key="invite.id">
         <img
             :src="invite.invitedUser.photoUrl || '/default-avatar.png'"
             class="invite-avatar"
@@ -58,13 +58,17 @@ onMounted(async () => {
 
 <style scoped>
 .invites-section {
-  margin-top: 30px;
-  background-color: #f3f7f9;
+  margin-top: 16px;
   padding: 16px;
-  border-radius: 14px;
-  box-shadow: 0 0 10px #00000022;
-  color: #1e293b;
+  color: #3f2e21;
   width: 100%;
+  box-sizing: border-box;
+}
+
+.invites-section h3 {
+  font-size: 13px;
+  margin-bottom: 12px;
+  color: #3f2e21;
 }
 
 .invites-list {
@@ -79,31 +83,37 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 10px;
-  background-color: #e0f0f3;
-  border-radius: 10px;
-  box-shadow: inset 0 0 4px #bbb;
+  box-sizing: border-box;
 }
 
 .invite-avatar {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid #3f2e21;
 }
 
 .invite-info {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .invite-name {
-  font-size: 16px;
+  font-size: 11px;
   font-weight: bold;
-  color: #102a43;
+  color: #3f2e21;
 }
 
 .invite-date {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: 9px;
+  color: #7c624d;
+}
+
+.no-invites {
+  font-size: 11px;
+  color: #7c624d;
+  margin-top: 8px;
 }
 </style>

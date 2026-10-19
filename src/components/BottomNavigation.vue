@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Icon } from '@iconify/vue'
+import { playTabSound } from '@/services/sound'
 
 const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' | 'debug' | 'business' }>()
 const emit = defineEmits<{
@@ -12,7 +14,13 @@ const { t } = useI18n()
 const profileClickCount = ref(0)
 let lastClickTime = 0
 
+function switchTab(tab: 'clicker' | 'profile' | 'users' | 'debug' | 'business') {
+  playTabSound()
+  emit('changeTab', tab)
+}
+
 function handleProfileClick() {
+  playTabSound()
   const now = Date.now()
   if (now - lastClickTime > 600) {
     profileClickCount.value = 1
@@ -32,35 +40,35 @@ function handleProfileClick() {
 </script>
 
 <template>
-  <div class="bottom-navigation">
+  <div class="bottom-navigation honeywood-panel">
     <button
         :class="{ active: props.activeTab === 'clicker' }"
-        @click="emit('changeTab', 'clicker')"
+        @click="switchTab('clicker')"
     >
-      <span class="icon">🎮</span>
+      <Icon icon="pixelarticons:gamepad" class="pixel-icon" />
       <span v-if="props.activeTab === 'clicker'" class="label">{{ t('bottomNav.game') }}</span>
     </button>
     <button
         :class="{ active: props.activeTab === 'profile' }"
         @click="handleProfileClick"
     >
-      <span class="icon">👤</span>
+      <Icon icon="pixelarticons:user" class="pixel-icon" />
       <span v-if="props.activeTab === 'profile'" class="label">{{ t('bottomNav.profile') }}</span>
     </button>
 
     <button
         :class="{ active: props.activeTab === 'business' }"
-        @click="emit('changeTab', 'business')"
+        @click="switchTab('business')"
     >
-      <span class="icon">🧑‍🤝‍🧑</span>
+      <Icon icon="pixelarticons:briefcase" class="pixel-icon" />
       <span v-if="props.activeTab === 'business'" class="label">{{ t('bottomNav.business') }}</span>
     </button>
 
     <button
         :class="{ active: props.activeTab === 'users' }"
-        @click="emit('changeTab', 'users')"
+        @click="switchTab('users')"
     >
-      <span class="icon">🧑‍🤝‍🧑</span>
+      <Icon icon="pixelarticons:users" class="pixel-icon" />
       <span v-if="props.activeTab === 'users'" class="label">{{ t('bottomNav.players') }}</span>
     </button>
   </div>
@@ -73,48 +81,48 @@ function handleProfileClick() {
 .bottom-navigation {
   display: flex;
   justify-content: space-around;
-  background-color: #b8cfce;
-  padding: 10px 0;
-  border-top: 3px solid #7f8caa;
+  padding: 6px 12px;
   width: 100%;
   position: fixed;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   max-width: 420px;
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .bottom-navigation button {
   user-select: none;
   background: none;
   border: none;
-  color: #333446;
-  font-size: 14px;
+  color: #3f2e21;
+  font-size: 11px;
+  font-family: var(--font-pixel);
   cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, transform 0.1s ease;
   flex-grow: 1;
-  margin: 0 5px;
+  margin: 0 3px;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 6px 0;
 }
 
-.bottom-navigation button .icon {
+.bottom-navigation button .pixel-icon {
   font-size: 22px;
+  width: 22px;
+  height: 22px;
 }
 
 .bottom-navigation button .label {
-  font-size: 12px;
+  font-size: 10px;
   margin-top: 4px;
 }
 
 .bottom-navigation button.active {
-  background-color: #7f8caa;
-  color: #eaecef;
+  background-color: rgba(63, 46, 33, 0.2);
+  color: #1a1008;
   font-weight: bold;
-  box-shadow: 0 0 10px rgba(127, 140, 170, 0.7);
 }
 </style>

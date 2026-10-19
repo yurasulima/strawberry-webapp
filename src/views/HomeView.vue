@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useWebApp } from "vue-tg"
 import { useAuthStore } from "@/stores/auth.ts"
 import Toolbar from "@/components/Toolbar.vue"
@@ -24,20 +24,6 @@ if (user === undefined) {
 
 const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business'>('clicker')
 
-
-
-
-const activeComponent = computed(() => {
-  switch (activeTab.value) {
-    case 'clicker': return ClickerSection
-    case 'profile': return ProfileSection
-    case 'users': return PlayersSection
-    case 'debug': return DebugSection
-    case 'business': return BussinesSection
-    default: return ClickerSection
-  }
-})
-
 onMounted(async () => {
   if (!user) {
     console.log('User.ts is null or undefined')
@@ -54,7 +40,7 @@ onMounted(async () => {
       language_code: user.language_code,
       inviter_telegram_id: initDataUnsafe.start_param,
     })
-    if (user.language_code !== null) {
+    if (user.language_code) {
       localStorage.setItem('lang', user.language_code)
     }
     const moneySlot = response.data.slots?.find((slot: any) => slot.item?.name === 'money')
@@ -67,7 +53,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('API call error:', error)
   } finally {
-    isLoading.value = false  // <- після завершення ініціалізації виключаємо завантаження
+    isLoading.value = false
   }
 })
 </script>
@@ -90,14 +76,11 @@ onMounted(async () => {
       />
 
       <div class="main-content">
-        <keep-alive>
-
-          <component
-              :is="activeComponent"
-              v-bind="activeTab === 'business' ? { user: user } : {}"
-          />
-
-        </keep-alive>
+        <ClickerSection v-show="activeTab === 'clicker'" />
+        <ProfileSection v-show="activeTab === 'profile'" />
+        <BussinesSection v-show="activeTab === 'business'" :user="user" />
+        <PlayersSection v-show="activeTab === 'users'" />
+        <DebugSection v-show="activeTab === 'debug'" />
       </div>
 
       <BottomNavigation class="bott" :activeTab="activeTab" @changeTab="activeTab = $event" />
@@ -108,7 +91,7 @@ onMounted(async () => {
 <style scoped>
 
 .app-container {
-  background-image: url("/background.jpg"); /* без 'public/' */
+  background-image: url("/new_background.png"); /* без 'public/' */
   background-size: cover; /* покриває весь контейнер */
   background-position: center;
   background-repeat: no-repeat;
@@ -131,7 +114,7 @@ onMounted(async () => {
   content: "";
   position: absolute;
   inset: 0;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(1px);
   background-color: rgba(0, 0, 0, 0.3);
   z-index: 0;
 }

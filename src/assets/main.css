@@ -1,9 +1,14 @@
 @import './base.css';
 
+:root {
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-pixel-retro: 'VT323', monospace;
+}
+
 #app {
-    max-width: 1280px;
-    margin: 0 auto;
-    font-weight: normal;
+  max-width: 1280px;
+  margin: 0 auto;
+  font-weight: normal;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -13,12 +18,101 @@
   -webkit-user-drag: none;
 }
 
+body {
+  font-family: var(--font-pixel-retro), sans-serif;
+  font-size: 18px;
+  line-height: 1.4;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-pixel);
+  letter-spacing: -0.5px;
+}
+
+/* Retro pixel box styling */
+.pixel-box {
+  border: 3px solid #2d3748;
+  border-radius: 8px;
+  box-shadow:
+    inset -3px -3px 0px 0px rgba(0, 0, 0, 0.2),
+    inset 3px 3px 0px 0px rgba(255, 255, 255, 0.3);
+}
+
+/* Honeywood 9-slice Panels */
+.honeywood-panel {
+  border-style: solid;
+  border-width: 16px;
+  border-image: url('/honeywood/ui/panel_cream.png') 16 fill stretch;
+  color: #3f2e21;
+}
+
+.honeywood-panel-paper {
+  border-style: solid;
+  border-width: 16px;
+  border-image: url('/honeywood/ui/panel_paper.png') 16 fill stretch;
+  color: #3f2e21;
+}
+
+/* Honeywood 9-slice Buttons */
+.honeywood-btn {
+  border-style: solid;
+  border-width: 12px;
+  border-image: url('/honeywood/ui/btn_normal.png') 12 fill stretch;
+  background: transparent;
+  color: #3f2e21;
+  font-family: var(--font-pixel);
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 0.05s ease;
+}
+
+.honeywood-btn:hover {
+  border-image: url('/honeywood/ui/btn_hover.png') 12 fill stretch;
+}
+
+.honeywood-btn:active:not(:disabled) {
+  border-image: url('/honeywood/ui/btn_pressed.png') 12 fill stretch;
+  transform: translateY(2px);
+}
+
+.honeywood-btn:disabled {
+  border-image: url('/honeywood/ui/btn_disabled.png') 12 fill stretch;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Honeywood Inventory Slot */
+.honeywood-slot {
+  border-style: solid;
+  border-width: 12px;
+  border-image: url('/honeywood/ui/slot_empty.png') 12 fill stretch;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.honeywood-slot:hover {
+  border-image: url('/honeywood/ui/slot_hover.png') 12 fill stretch;
+}
+
+.honeywood-slot.selected {
+  border-image: url('/honeywood/ui/slot_selected.png') 12 fill stretch;
+}
+
 a,
 .green {
-    text-decoration: none;
-    color: hsla(160, 100%, 37%, 1);
-    transition: 0.4s;
-    padding: 3px;
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
 }
 
 @media (hover: hover) {

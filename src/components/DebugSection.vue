@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useWebApp } from "vue-tg";
+import { Icon } from "@iconify/vue";
 
 const { initDataUnsafe } = useWebApp()
 const user = initDataUnsafe.user;
@@ -7,9 +8,12 @@ const start_param = initDataUnsafe.start_param;
 </script>
 
 <template>
-  <div class="debug-section">
+  <div class="debug-section honeywood-panel-paper">
     <div class="debug-header">
-      <h2 class="debug-title">🛠 Debug Menu</h2>
+      <h2 class="debug-title">
+        <Icon icon="pixelarticons:bug" class="debug-icon" />
+        <span>Debug Menu</span>
+      </h2>
     </div>
 
     <div class="debug-block">
@@ -27,60 +31,62 @@ const start_param = initDataUnsafe.start_param;
 <style scoped>
 .debug-section {
   width: 100%;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #b8cfce;
-  border-radius: 14px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-  color: #1c1d2e;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 420px;
+  margin: 10px auto;
+  padding: 16px;
+  color: #3f2e21;
+  box-sizing: border-box;
   user-select: none;
 }
 
 .debug-header {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .debug-title {
   margin: 0;
-  font-size: 24px;
+  font-size: 14px;
   font-weight: 700;
-  color: #0e1017;
+  color: #3f2e21;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.debug-subtitle {
-  font-size: 14px;
-  color: #3d3f4e;
+.debug-icon {
+  font-size: 20px;
 }
 
 .debug-block {
-  margin-top: 16px;
-  padding: 14px;
-  background-color: #e0f0f3;
-  border-radius: 10px;
-  box-shadow: inset 0 0 6px #aaa;
+  margin-top: 12px;
+  padding: 10px;
+  background-color: rgba(63, 46, 33, 0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(63, 46, 33, 0.2);
 }
 
 .debug-heading {
-  font-size: 16px;
+  font-size: 11px;
   font-weight: bold;
   margin-bottom: 6px;
-  color: #195870;
+  color: #3f2e21;
 }
 
 .debug-code {
-  font-size: 13px;
-  background-color: #f0f9ff;
-  padding: 10px;
-  border-radius: 6px;
-  color: #333;
+  font-size: 10px;
+  font-family: var(--font-pixel-retro);
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 8px;
+  border-radius: 4px;
+  color: #1a1008;
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .debug-value {
-  font-size: 14px;
-  color: #195870;
+  font-size: 11px;
+  font-family: var(--font-pixel-retro);
+  color: #3f2e21;
 }
 </style>

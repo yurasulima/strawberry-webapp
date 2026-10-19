@@ -27,7 +27,7 @@
 
   "settings": {
     "title": "Settings",
-    "language_label": "🌍 Interface Language:"
+    "language_label": "Interface Language:"
   },
   "toolbar": {
     "money": "💰",
@@ -39,6 +39,7 @@
   "bottomNav": {
     "game": "Game",
     "profile": "Profile",
+    "business": "Business",
     "players": "Players"
   },
   "invite_list": {

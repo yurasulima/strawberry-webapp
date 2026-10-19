@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { defineProps, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SettingsSegment from './SettingsSegment.vue'
+import { playClickSound } from '@/services/sound'
 
 const { t } = useI18n()
 
@@ -15,27 +16,31 @@ const props = defineProps<{
 
 const showSettings = ref(false)
 
-function openSettings() {
+function handleOpenSettings() {
+  playClickSound()
   showSettings.value = true
 }
 </script>
 
 <template>
-  <div class="toolbar">
+  <div class="toolbar honeywood-panel">
     <img class="avatar" :src="props.avatar || '/default-avatar.png'" :alt="t('toolbar.settings_alt')" />
     <div class="info">
       <div class="name">{{ props.firstName ?? '' }} {{ props.lastName ?? '' }}</div>
-      <div class="money">💰 {{ props.money ?? 0 }}</div>
+      <div class="money">
+        <img src="/honeywood/icons/interface/coin.png" class="coin-icon" alt="Coin" />
+        <span>{{ props.money ?? 0 }}</span>
+      </div>
     </div>
-    <button class="settings-btn" @click="openSettings">
-      <img src="/settings_icon.png" :alt="t('toolbar.settings_alt')" />
+    <button class="settings-btn" @click="handleOpenSettings" :aria-label="t('toolbar.settings_alt')">
+      <img src="/honeywood/icons/interface/gear.png" class="settings-icon" alt="Settings" />
     </button>
   </div>
 
   <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
-    <div class="modal">
+    <div class="modal honeywood-panel-paper">
       <SettingsSegment :language_code="props.language_code" />
-      <button class="close-btn" @click="showSettings = false">{{ t('modal.close') }}</button>
+      <button class="close-btn honeywood-btn" @click="showSettings = false">{{ t('modal.close') }}</button>
     </div>
   </div>
 </template>
@@ -45,12 +50,11 @@ function openSettings() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(184, 207, 206, 0.8);
-  padding: 10px;
-  border-radius: 12px;
+  padding: 8px 12px;
   margin-bottom: 12px;
   width: 100%;
   max-width: 420px;
+  box-sizing: border-box;
   z-index: 1;
 }
 
@@ -60,23 +64,39 @@ function openSettings() {
   border-radius: 50%;
   margin-right: 12px;
   object-fit: cover;
+  border: 2px solid #3f2e21;
+  flex-shrink: 0;
 }
 
 .info {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  color: #2e2e2e;
+  color: #3f2e21;
 }
 
 .name {
+  font-family: var(--font-pixel);
   font-weight: bold;
-  font-size: 14px;
+  font-size: 11px;
 }
 
 .money {
-  font-size: 13px;
-  color: #444;
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: #3f2e21;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.coin-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  image-rendering: pixelated;
 }
 
 .settings-btn {
@@ -84,11 +104,25 @@ function openSettings() {
   border: none;
   padding: 4px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
 }
 
-.settings-btn img {
-  width: 20px;
-  height: 20px;
+.settings-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  transition: transform 0.2s ease;
+}
+
+.settings-btn:hover .settings-icon {
+  transform: rotate(45deg);
 }
 
 .modal-overlay {
@@ -97,7 +131,7 @@ function openSettings() {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -105,20 +139,14 @@ function openSettings() {
 }
 
 .modal {
-  background: white;
-  border-radius: 10px;
   padding: 20px;
-  min-width: 300px;
+  min-width: 280px;
   max-width: 90%;
 }
 
 .close-btn {
-  margin-top: 10px;
-  background: #e74c3c;
-  color: white;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  margin-top: 14px;
+  padding: 8px 16px;
+  width: 100%;
 }
 </style>

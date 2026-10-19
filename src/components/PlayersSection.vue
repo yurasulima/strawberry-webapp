@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import api from "@/services/api.ts";
-
 import { useI18n } from 'vue-i18n'
-import type {User} from "@/types/User.ts";
-const { t } = useI18n()
+import { Icon } from '@iconify/vue'
+import { playClickSound } from '@/services/sound'
+import type { User } from "@/types/User.ts";
 
+const { t } = useI18n()
 
 const players = ref<User[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
+
 const fetchPlayers = async () => {
+  playClickSound()
   loading.value = true
   error.value = null
 
   try {
-     const response = await api.get('/users')
-     players.value = await response.data
-    console.log(players)
-
+    const response = await api.get('/users')
+    players.value = response.data
   } catch (e) {
     error.value = t('players.error')
   } finally {
@@ -32,145 +33,162 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="players-section">
-    <h2>{{ t('players.title') }}</h2>
-
-    <p v-if="loading">{{ t('players.loading') }}</p>
-    <p v-if="error" class="error">{{ t('players.error') }}</p>
-    <div style="text-align: center; margin-bottom: 12px;">
-      <button @click="fetchPlayers" :disabled="loading" class="refresh-button">
-        🔄 {{ t('players.refresh') }}
+  <div class="players-section honeywood-panel-paper">
+    <div class="players-header">
+      <h2>{{ t('players.title') }}</h2>
+      <button @click="fetchPlayers" :disabled="loading" class="refresh-btn honeywood-btn">
+        <Icon icon="pixelarticons:reload" class="btn-icon" :class="{ 'spin': loading }" />
+        <span>{{ t('players.refresh') }}</span>
       </button>
     </div>
 
-    <ul v-if="!loading && !error && players.length" class="players-list">
+    <div v-if="loading" class="state-msg">{{ t('players.loading') }}</div>
+    <div v-else-if="error" class="error-msg">{{ error }}</div>
+    <div v-else-if="players.length === 0" class="state-msg">{{ t('players.empty') }}</div>
 
-      <li v-for="player in players" :key="player.userId" class="player-item">
+    <ul v-else class="players-list">
+      <li v-for="(player, index) in players" :key="player.userId || index" class="player-card">
+        <div class="rank">#{{ index + 1 }}</div>
         <img
-            v-if="player.photoUrl"
-            :src="player.photoUrl"
+            :src="player.photoUrl || '/default-avatar.png'"
             alt="Avatar"
             class="player-avatar"
             draggable="false"
         />
-        <div class="player-name">
-          {{ player.firstName ?? '' }} {{ player.lastName ?? '' }}
+        <div class="player-info">
+          <div class="player-name">
+            {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
+          </div>
         </div>
-        <div class="player-strawberry">
-        <span class="strawberry-count">
-          {{ player.slots.find(s => s.item.name === 'strawberry')?.count ?? 0 }}
-        </span>
-
+        <div class="player-score">
+          <img src="/strawberry.png" alt="Strawberry" class="score-icon" />
+          <span class="score-num">
+            {{ player.slots?.find(s => s.item?.name === 'strawberry')?.count ?? 0 }}
+          </span>
         </div>
       </li>
     </ul>
-
-
-    <p v-if="!loading && !error && players.length === 0">{{ t('players.empty') }}</p>
   </div>
 </template>
 
 <style scoped>
-
-.refresh-button {
-  background-color: #1c1d2e;
-  width: 100%;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  transition: background-color 0.2s ease;
-}
-.refresh-button:hover {
-  background-color: #333;
-}
-.refresh-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-
 .players-section {
-  max-width: 420px;
   width: 100%;
+  max-width: 420px;
   margin: 0 auto;
-  padding: 10px 16px;
-  background-color: #b8cfce;
-  border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.4);
-  color: #333446;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
-.players-section h2 {
-  text-align: center;
+.players-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 16px;
-  font-weight: bold;
-  color: #1c1d2e;
+}
+
+.players-header h2 {
+  font-size: 14px;
+  margin: 0;
+  color: #3f2e21;
+}
+
+.refresh-btn {
+  font-size: 10px;
+  padding: 6px 10px;
+}
+
+.btn-icon {
+  font-size: 14px;
+}
+
+.btn-icon.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .players-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.player-item {
+
+.player-card {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* <-- рознести ім'я і полунички по краях */
-  gap: 12px;
-  padding: 10px 15px;
-  background-color: #eafef0;
+  gap: 10px;
+  padding: 10px 12px;
+  background-color: #fff8eb;
+  border: 2px solid #5d4037;
   border-radius: 8px;
-  margin-bottom: 10px;
-  box-shadow: inset 0 0 6px #7f8caa;
-  user-select: none;
+  box-shadow: 0 3px 0 #3e2723;
+  box-sizing: border-box;
+}
+
+.rank {
+  font-size: 10px;
+  font-weight: bold;
+  color: #8d6e63;
+  min-width: 24px;
 }
 
 .player-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  user-select: none;
-  pointer-events: none;
+  border: 2px solid #5d4037;
+  flex-shrink: 0;
+}
+
+.player-info {
+  flex-grow: 1;
+  overflow: hidden;
 }
 
 .player-name {
-  flex-grow: 1; /* щоб ім'я займало доступне місце між аватаром і полуничками */
-  font-size: 16px;
-  color: #1c1d2e;
+  font-size: 11px;
+  font-weight: bold;
+  color: #3f2e21;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-left: 8px; /* відступ від аватарки */
 }
 
-.player-strawberry {
+.player-score {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
-.strawberry-count {
-  font-weight: 700;
-  font-size: 18px;
-  min-width: 20px;
-  text-align: right;
+.score-icon {
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
 }
 
-.player-name {
-  font-size: 16px;
-  color: #1c1d2e;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.error {
-  color: #dc143c;
+.score-num {
+  font-size: 11px;
   font-weight: bold;
+  color: #2e7d32;
+}
+
+.state-msg, .error-msg {
+  font-size: 11px;
   text-align: center;
+  margin: 20px 0;
+  color: #5d4037;
+}
+
+.error-msg {
+  color: #c62828;
 }
 </style>

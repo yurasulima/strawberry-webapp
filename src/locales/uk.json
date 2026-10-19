@@ -27,7 +27,7 @@
 
   "settings": {
     "title": "Налаштування",
-    "language_label": "🌍 Мова інтерфейсу:"
+    "language_label": "Мова інтерфейсу:"
   },
   "toolbar": {
     "money": "💰",
@@ -39,6 +39,7 @@
   "bottomNav": {
     "game": "Гра",
     "profile": "Профіль",
+    "business": "Бізнес",
     "players": "Гравці"
   },
 

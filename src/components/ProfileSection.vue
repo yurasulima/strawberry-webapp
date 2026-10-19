@@ -2,14 +2,11 @@
 import { onMounted, ref } from 'vue'
 import api from "@/services/api.ts";
 import { useI18n } from 'vue-i18n'
+import { Icon } from '@iconify/vue'
 import InvitedUserList from "@/components/InvitedUserList.vue";
-import type {User} from "@/types/User.ts";
+import type { User } from "@/types/User.ts";
+
 const { t } = useI18n()
-
-
-
-
-
 const player = ref<User | null>(null)
 
 onMounted(async () => {
@@ -20,216 +17,300 @@ onMounted(async () => {
     console.error('API call error:', error)
   }
 })
+
+function getItemIcon(itemName: string) {
+  if (itemName === 'strawberry') return '/strawberry.png'
+  if (itemName === 'money') return '/honeywood/icons/interface/coin.png'
+  return '/honeywood/icons/nature/sprout.png'
+}
 </script>
 
 <template>
-  <div class="profile-section" v-if="player">
-    <div class="profile-header">
-      <img
-          :src="player.photoUrl ?? '/default-avatar.png'"
-          alt="Аватар"
-          class="profile-avatar"
-          draggable="false"
-      />
-      <div class="profile-name-status">
-        <h2 class="profile-name">
-          {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
-        </h2>
-        <div class="status-tags">
+  <div class="profile-container">
+    <div class="profile-card honeywood-panel-paper" v-if="player">
+      <!-- Аватар і ім'я -->
+      <div class="profile-header">
+        <img
+            :src="player.photoUrl ?? '/default-avatar.png'"
+            alt="Аватар"
+            class="profile-avatar"
+            draggable="false"
+        />
+        <div class="profile-name-status">
+          <h2 class="profile-name">
+            {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
+          </h2>
+          <div class="status-tags">
+            <span v-if="player.premium" class="tag premium">
+              <Icon icon="pixelarticons:zap" class="tag-icon" />
+              <span>{{ t('profile.premium') }}</span>
+            </span>
+            <span v-if="player.banned" class="tag banned">
+              <Icon icon="pixelarticons:close" class="tag-icon" />
+              <span>{{ t('profile.banned') }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
 
-          <span v-if="player.premium" class="tag premium">{{ t('profile.premium') }}</span>
-          <span v-if="player.banned" class="tag banned">{{ t('profile.banned') }}</span>
+      <!-- Опис профілю -->
+      <div class="profile-bio-box" v-if="player.bio && player.bio.trim().length">
+        <p class="profile-bio">{{ player.bio }}</p>
+      </div>
+
+      <!-- Головний показник: Полунички -->
+      <div class="strawberry-banner">
+        <div class="banner-title">{{ t('profile.strawberries') }}</div>
+        <div class="strawberry-row">
+          <img src="/strawberry.png" alt="Strawberry" class="main-strawberry-icon" />
+          <span class="main-strawberry-count">
+            {{ player.slots?.find(s => s.item?.name === 'strawberry')?.count ?? 0 }}
+          </span>
+        </div>
+      </div>
+
+      <!-- RPG Інвентар -->
+      <div class="profile-inventory">
+        <h3>🎒 {{ t('profile.inventory') }}</h3>
+        <div class="inventory-grid" v-if="player.slots && player.slots.length">
+          <div
+              v-for="slot in player.slots"
+              :key="slot.id"
+              class="inventory-slot honeywood-slot"
+          >
+            <img :src="getItemIcon(slot.item?.name)" class="slot-item-icon" :alt="slot.item?.name" />
+            <span class="slot-count">×{{ slot.count }}</span>
+            <div class="slot-tooltip">{{ t('items.' + slot.item?.name) }}</div>
+          </div>
+        </div>
+        <div v-else class="empty-inventory">
+          Інвентар порожній
         </div>
       </div>
     </div>
 
-    <p class="profile-bio" v-if="player.bio && player.bio.trim().length">
-      {{ player.bio }}
-    </p>
-    <div class="profile-strawberries">
-      <h3>{{ t('profile.strawberries') }}</h3>
-      <div
-          v-for="slot in player.slots.filter(s => s.item.name === 'strawberry')"
-          :key="slot.id"
-          class="strawberry-item"
-      >
-        <img src="/strawberry.png" alt="Strawberry" class="strawberry-icon" />
-        <span class="count">{{ slot.count }}</span>
-      </div>
-      <div v-if="!player.slots.some(s => s.item.name === 'strawberry')">
-        {{ t('profile.no_strawberries') }}
-      </div>
-
+    <!-- Стан завантаження -->
+    <div v-else class="loading-state honeywood-panel-paper">
+      <Icon icon="pixelarticons:reload" class="loading-icon spin" />
+      <span>{{ t('profile.loading') }}</span>
     </div>
 
-    <div class="profile-inventory">
-      <h3>{{ t('profile.inventory') }}</h3>
-      <div class="inventory-grid">
-        <div
-            v-for="slot in player.slots"
-            :key="slot.id"
-            class="inventory-item"
-        >
-          <div class="item-name">{{ t('items.' + slot.item.name) }}</div>
-          <div class="item-count">×{{ slot.count }}</div>
-        </div>
-      </div>
-    </div>
-
+    <!-- Список запрошених друзів -->
+    <InvitedUserList />
   </div>
-  <div v-else class="loading">{{ t('profile.loading') }}</div>
-
-  <InvitedUserList />
-
 </template>
 
 <style scoped>
-
-.profile-inventory {
-  margin-top: 24px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #1c1d2e;
-}
-
-.inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.inventory-item {
-  background-color: #e0f0f3;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: inset 0 0 4px #aaa;
-}
-
-.item-name {
-  font-size: 14px;
-  color: #2a2a2a;
-  margin-bottom: 6px;
-  word-break: break-word;
-}
-
-.item-count {
-  font-size: 16px;
-  font-weight: 600;
-  color: #195870;
-}
-
-
-.profile-section {
-  max-width: 400px;
-  margin: 20px auto;
+.profile-container {
   width: 100%;
-  padding: 20px;
-  background-color: #b8cfce;
-  border-radius: 14px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-  color: #1c1d2e;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  user-select: none;
+  max-width: 420px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.profile-card {
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .profile-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   margin-bottom: 16px;
 }
 
 .profile-avatar {
-  width: 80px;
-  height: 80px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 0 8px #4caf5080;
+  border: 3px solid #5d4037;
+  flex-shrink: 0;
 }
 
 .profile-name-status {
   flex-grow: 1;
+  overflow: hidden;
 }
 
 .profile-name {
   margin: 0;
-  font-size: 24px;
+  font-size: 12px;
   font-weight: 700;
-  color: #0e1017;
+  color: #3f2e21;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status-tags {
   margin-top: 6px;
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .tag {
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 16px;
+  padding: 3px 8px;
+  font-size: 9px;
+  font-family: var(--font-pixel);
+  border-radius: 6px;
   color: #fff;
-  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .premium {
-  background-color: #4caf50;
-  box-shadow: 0 0 8px #4caf5080;
+  background-color: #2e7d32;
+  border: 1px solid #1b5e20;
 }
 
 .banned {
-  background-color: #dc143c;
-  box-shadow: 0 0 8px #dc143c80;
+  background-color: #c62828;
+  border: 1px solid #8e0000;
+}
+
+.profile-bio-box {
+  background-color: rgba(63, 46, 33, 0.08);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(63, 46, 33, 0.2);
+  margin-bottom: 16px;
 }
 
 .profile-bio {
   font-size: 16px;
-  line-height: 1.4;
-  background-color: #e0f2f1;
-  padding: 12px 16px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  color: #245151;
+  margin: 0;
+  color: #3f2e21;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.profile-strawberries {
-  font-weight: 700;
-  font-size: 18px;
-  color: #1c1d2e;
-}
-
-.strawberry-item {
+.strawberry-banner {
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 0 #3e2723;
   display: flex;
   align-items: center;
-  gap: 6px;
-  background-color: #eafef0;
-  padding: 6px 10px;
-  border-radius: 12px;
-  box-shadow: inset 0 0 6px #7f8caa;
+  justify-content: space-between;
 }
 
-.strawberry-icon {
-  width: 30px;
-  height: 30px;
+.banner-title {
+  font-size: 11px;
+  font-family: var(--font-pixel);
+  color: #5d4037;
+}
+
+.strawberry-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.main-strawberry-icon {
+  width: 28px;
+  height: 28px;
   image-rendering: pixelated;
-  user-select: none;
-  pointer-events: none;
 }
 
-.count {
-  font-size: 20px;
-  color: #317a44;
-}
-
-.loading {
-  text-align: center;
-  color: #666;
+.main-strawberry-count {
   font-size: 16px;
-  margin-top: 30px;
+  font-family: var(--font-pixel);
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.profile-inventory {
+  margin-top: 16px;
+}
+
+.profile-inventory h3 {
+  font-size: 12px;
+  color: #3f2e21;
+  margin-bottom: 12px;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 10px;
+}
+
+.inventory-slot {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  box-sizing: border-box;
+  padding: 6px;
+}
+
+.slot-item-icon {
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+.slot-count {
+  position: absolute;
+  bottom: 3px;
+  right: 4px;
+  font-size: 10px;
+  font-family: var(--font-pixel);
+  font-weight: bold;
+  color: #3f2e21;
+  text-shadow: 1px 1px #fff;
+}
+
+.slot-tooltip {
+  font-size: 9px;
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3f2e21;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.inventory-slot:hover .slot-tooltip {
+  opacity: 1;
+}
+
+.empty-inventory {
+  font-size: 11px;
+  color: #7c624d;
+  text-align: center;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  font-size: 12px;
+  color: #3f2e21;
+}
+
+.loading-icon.spin {
+  animation: spin 1s linear infinite;
+  font-size: 18px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
