@@ -2,8 +2,7 @@
 import { ref, onMounted } from 'vue'
 import api from "@/services/api.ts";
 import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
-import { playClickSound } from '@/services/sound'
+import { AppScreen, AppCard, AppText, AppPrimaryButton } from '@/components/ui'
 import type { User } from "@/types/User.ts";
 
 const { t } = useI18n()
@@ -13,7 +12,6 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 
 const fetchPlayers = async () => {
-  playClickSound()
   loading.value = true
   error.value = null
 
@@ -33,51 +31,58 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="players-section honeywood-panel-paper">
-    <div class="players-header">
-      <h2>{{ t('players.title') }}</h2>
-      <button @click="fetchPlayers" :disabled="loading" class="refresh-btn honeywood-btn">
-        <Icon icon="pixelarticons:reload" class="btn-icon" :class="{ 'spin': loading }" />
-        <span>{{ t('players.refresh') }}</span>
-      </button>
-    </div>
+  <AppScreen>
+    <AppCard variant="paper" class="players-card">
+      <div class="players-header">
+        <AppText variant="title" as="h2">{{ t('players.title') }}</AppText>
+        <AppPrimaryButton
+            icon="pixelarticons:reload"
+            :loading="loading"
+            @click="fetchPlayers"
+        >
+          {{ t('players.refresh') }}
+        </AppPrimaryButton>
+      </div>
 
-    <div v-if="loading" class="state-msg">{{ t('players.loading') }}</div>
-    <div v-else-if="error" class="error-msg">{{ error }}</div>
-    <div v-else-if="players.length === 0" class="state-msg">{{ t('players.empty') }}</div>
+      <div v-if="loading" class="state-msg">
+        <AppText variant="body">{{ t('players.loading') }}</AppText>
+      </div>
+      <div v-else-if="error" class="error-msg">
+        <AppText variant="body" color="danger">{{ error }}</AppText>
+      </div>
+      <div v-else-if="players.length === 0" class="state-msg">
+        <AppText variant="body">{{ t('players.empty') }}</AppText>
+      </div>
 
-    <ul v-else class="players-list">
-      <li v-for="(player, index) in players" :key="player.userId || index" class="player-card">
-        <div class="rank">#{{ index + 1 }}</div>
-        <img
-            :src="player.photoUrl || '/default-avatar.png'"
-            alt="Avatar"
-            class="player-avatar"
-            draggable="false"
-        />
-        <div class="player-info">
-          <div class="player-name">
-            {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
+      <ul v-else class="players-list">
+        <li v-for="(player, index) in players" :key="player.userId || index" class="player-card">
+          <div class="rank">#{{ index + 1 }}</div>
+          <img
+              :src="player.photoUrl || '/default-avatar.png'"
+              alt="Avatar"
+              class="player-avatar"
+              draggable="false"
+          />
+          <div class="player-info">
+            <AppText variant="subtitle" as="div" class="player-name">
+              {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
+            </AppText>
           </div>
-        </div>
-        <div class="player-score">
-          <img src="/strawberry.png" alt="Strawberry" class="score-icon" />
-          <span class="score-num">
-            {{ player.slots?.find(s => s.item?.name === 'strawberry')?.count ?? 0 }}
-          </span>
-        </div>
-      </li>
-    </ul>
-  </div>
+          <div class="player-score">
+            <img src="/strawberry.png" alt="Strawberry" class="score-icon" />
+            <AppText variant="subtitle" color="success">
+              {{ player.slots?.find(s => s.item?.name === 'strawberry')?.count ?? 0 }}
+            </AppText>
+          </div>
+        </li>
+      </ul>
+    </AppCard>
+  </AppScreen>
 </template>
 
 <style scoped>
-.players-section {
+.players-card {
   width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  padding: 16px;
-  box-sizing: border-box;
 }
 
 .players-header {
@@ -85,30 +90,6 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
-}
-
-.players-header h2 {
-  font-size: 14px;
-  margin: 0;
-  color: #3f2e21;
-}
-
-.refresh-btn {
-  font-size: 10px;
-  padding: 6px 10px;
-}
-
-.btn-icon {
-  font-size: 14px;
-}
-
-.btn-icon.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .players-list {
@@ -133,7 +114,8 @@ onMounted(() => {
 }
 
 .rank {
-  font-size: 10px;
+  font-family: var(--font-pixel);
+  font-size: 11px;
   font-weight: bold;
   color: #8d6e63;
   min-width: 24px;
@@ -154,9 +136,6 @@ onMounted(() => {
 }
 
 .player-name {
-  font-size: 11px;
-  font-weight: bold;
-  color: #3f2e21;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -175,20 +154,8 @@ onMounted(() => {
   image-rendering: pixelated;
 }
 
-.score-num {
-  font-size: 11px;
-  font-weight: bold;
-  color: #2e7d32;
-}
-
 .state-msg, .error-msg {
-  font-size: 11px;
   text-align: center;
   margin: 20px 0;
-  color: #5d4037;
-}
-
-.error-msg {
-  color: #c62828;
 }
 </style>

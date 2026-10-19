@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import api from "@/services/api.ts";
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import { AppScreen, AppCard, AppText } from '@/components/ui'
 import InvitedUserList from "@/components/InvitedUserList.vue";
 import type { User } from "@/types/User.ts";
 
@@ -26,8 +27,8 @@ function getItemIcon(itemName: string) {
 </script>
 
 <template>
-  <div class="profile-container">
-    <div class="profile-card honeywood-panel-paper" v-if="player">
+  <AppScreen>
+    <AppCard variant="paper" v-if="player" class="profile-card">
       <!-- Аватар і ім'я -->
       <div class="profile-header">
         <img
@@ -37,9 +38,9 @@ function getItemIcon(itemName: string) {
             draggable="false"
         />
         <div class="profile-name-status">
-          <h2 class="profile-name">
+          <AppText variant="title" as="h2" class="profile-name">
             {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
-          </h2>
+          </AppText>
           <div class="status-tags">
             <span v-if="player.premium" class="tag premium">
               <Icon icon="pixelarticons:zap" class="tag-icon" />
@@ -55,23 +56,23 @@ function getItemIcon(itemName: string) {
 
       <!-- Опис профілю -->
       <div class="profile-bio-box" v-if="player.bio && player.bio.trim().length">
-        <p class="profile-bio">{{ player.bio }}</p>
+        <AppText variant="body" class="profile-bio">{{ player.bio }}</AppText>
       </div>
 
       <!-- Головний показник: Полунички -->
       <div class="strawberry-banner">
-        <div class="banner-title">{{ t('profile.strawberries') }}</div>
+        <AppText variant="subtitle" class="banner-title">{{ t('profile.strawberries') }}</AppText>
         <div class="strawberry-row">
           <img src="/strawberry.png" alt="Strawberry" class="main-strawberry-icon" />
-          <span class="main-strawberry-count">
+          <AppText variant="title" color="success" class="main-strawberry-count">
             {{ player.slots?.find(s => s.item?.name === 'strawberry')?.count ?? 0 }}
-          </span>
+          </AppText>
         </div>
       </div>
 
       <!-- RPG Інвентар -->
       <div class="profile-inventory">
-        <h3>🎒 {{ t('profile.inventory') }}</h3>
+        <AppText variant="subtitle" as="h3">🎒 {{ t('profile.inventory') }}</AppText>
         <div class="inventory-grid" v-if="player.slots && player.slots.length">
           <div
               v-for="slot in player.slots"
@@ -84,34 +85,25 @@ function getItemIcon(itemName: string) {
           </div>
         </div>
         <div v-else class="empty-inventory">
-          Інвентар порожній
+          <AppText variant="caption" color="muted">Інвентар порожній</AppText>
         </div>
       </div>
-    </div>
+    </AppCard>
 
     <!-- Стан завантаження -->
-    <div v-else class="loading-state honeywood-panel-paper">
+    <AppCard variant="paper" v-else class="loading-state">
       <Icon icon="pixelarticons:reload" class="loading-icon spin" />
-      <span>{{ t('profile.loading') }}</span>
-    </div>
+      <AppText variant="body">{{ t('profile.loading') }}</AppText>
+    </AppCard>
 
     <!-- Список запрошених друзів -->
     <InvitedUserList />
-  </div>
+  </AppScreen>
 </template>
 
 <style scoped>
-.profile-container {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
 .profile-card {
-  padding: 16px;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .profile-header {
@@ -136,10 +128,6 @@ function getItemIcon(itemName: string) {
 }
 
 .profile-name {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: #3f2e21;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -154,8 +142,8 @@ function getItemIcon(itemName: string) {
 
 .tag {
   padding: 3px 8px;
-  font-size: 9px;
   font-family: var(--font-pixel);
+  font-size: 9px;
   border-radius: 6px;
   color: #fff;
   display: inline-flex;
@@ -181,14 +169,6 @@ function getItemIcon(itemName: string) {
   margin-bottom: 16px;
 }
 
-.profile-bio {
-  font-size: 16px;
-  margin: 0;
-  color: #3f2e21;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
 .strawberry-banner {
   background: #fff8eb;
   border: 2px solid #5d4037;
@@ -199,12 +179,6 @@ function getItemIcon(itemName: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.banner-title {
-  font-size: 11px;
-  font-family: var(--font-pixel);
-  color: #5d4037;
 }
 
 .strawberry-row {
@@ -219,20 +193,7 @@ function getItemIcon(itemName: string) {
   image-rendering: pixelated;
 }
 
-.main-strawberry-count {
-  font-size: 16px;
-  font-family: var(--font-pixel);
-  font-weight: bold;
-  color: #2e7d32;
-}
-
-.profile-inventory {
-  margin-top: 16px;
-}
-
 .profile-inventory h3 {
-  font-size: 12px;
-  color: #3f2e21;
   margin-bottom: 12px;
 }
 
@@ -261,17 +222,18 @@ function getItemIcon(itemName: string) {
   position: absolute;
   bottom: 3px;
   right: 4px;
-  font-size: 10px;
   font-family: var(--font-pixel);
+  font-size: 10px;
   font-weight: bold;
   color: #3f2e21;
   text-shadow: 1px 1px #fff;
 }
 
 .slot-tooltip {
-  font-size: 9px;
+  font-family: var(--font-pixel-retro);
+  font-size: 13px;
   position: absolute;
-  top: -20px;
+  top: -24px;
   left: 50%;
   transform: translateX(-50%);
   background: #3f2e21;
@@ -289,8 +251,6 @@ function getItemIcon(itemName: string) {
 }
 
 .empty-inventory {
-  font-size: 11px;
-  color: #7c624d;
   text-align: center;
 }
 
@@ -300,13 +260,12 @@ function getItemIcon(itemName: string) {
   justify-content: center;
   gap: 8px;
   padding: 24px;
-  font-size: 12px;
-  color: #3f2e21;
 }
 
 .loading-icon.spin {
   animation: spin 1s linear infinite;
-  font-size: 18px;
+  font-size: 20px;
+  color: #3f2e21;
 }
 
 @keyframes spin {

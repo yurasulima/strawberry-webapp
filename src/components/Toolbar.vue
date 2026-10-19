@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { AppCard, AppText, AppDangerButton } from '@/components/ui'
 import SettingsSegment from './SettingsSegment.vue'
 import { playClickSound } from '@/services/sound'
 
@@ -23,25 +24,27 @@ function handleOpenSettings() {
 </script>
 
 <template>
-  <div class="toolbar honeywood-panel">
+  <AppCard variant="cream" :padding="false" class="toolbar">
     <img class="avatar" :src="props.avatar || '/default-avatar.png'" :alt="t('toolbar.settings_alt')" />
     <div class="info">
-      <div class="name">{{ props.firstName ?? '' }} {{ props.lastName ?? '' }}</div>
+      <AppText variant="subtitle" class="name">{{ props.firstName ?? '' }} {{ props.lastName ?? '' }}</AppText>
       <div class="money">
         <img src="/honeywood/icons/interface/coin.png" class="coin-icon" alt="Coin" />
-        <span>{{ props.money ?? 0 }}</span>
+        <AppText variant="subtitle" color="gold">{{ props.money ?? 0 }}</AppText>
       </div>
     </div>
     <button class="settings-btn" @click="handleOpenSettings" :aria-label="t('toolbar.settings_alt')">
       <img src="/honeywood/icons/interface/gear.png" class="settings-icon" alt="Settings" />
     </button>
-  </div>
+  </AppCard>
 
   <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
-    <div class="modal honeywood-panel-paper">
+    <AppCard variant="paper" class="modal">
       <SettingsSegment :language_code="props.language_code" />
-      <button class="close-btn honeywood-btn" @click="showSettings = false">{{ t('modal.close') }}</button>
-    </div>
+      <AppDangerButton class="close-btn" @click="showSettings = false">
+        {{ t('modal.close') }}
+      </AppDangerButton>
+    </AppCard>
   </div>
 </template>
 
@@ -72,19 +75,9 @@ function handleOpenSettings() {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  color: #3f2e21;
-}
-
-.name {
-  font-family: var(--font-pixel);
-  font-weight: bold;
-  font-size: 11px;
 }
 
 .money {
-  font-family: var(--font-pixel);
-  font-size: 11px;
-  color: #3f2e21;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -127,26 +120,22 @@ function handleOpenSettings() {
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 16px;
 }
 
 .modal {
-  padding: 20px;
   min-width: 280px;
   max-width: 90%;
 }
 
 .close-btn {
   margin-top: 14px;
-  padding: 8px 16px;
   width: 100%;
 }
 </style>
