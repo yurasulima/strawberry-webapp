@@ -6,11 +6,11 @@ import SettingsSegment from './SettingsSegment.vue'
 const { t } = useI18n()
 
 const props = defineProps<{
-  firstName: string
-  lastName: string
-  avatar: string
-  money: number
-  language_code: string
+  firstName?: string | null
+  lastName?: string | null
+  avatar?: string | null
+  money?: number
+  language_code?: string | null
 }>()
 
 const showSettings = ref(false)
@@ -22,26 +22,23 @@ function openSettings() {
 
 <template>
   <div class="toolbar">
-    <img class="avatar" :src="props.avatar" :alt="t('toolbar.settings_alt')" />
+    <img class="avatar" :src="props.avatar || '/default-avatar.png'" :alt="t('toolbar.settings_alt')" />
     <div class="info">
-      <div class="name">{{ props.firstName }} {{ props.lastName }}</div>
-      <div class="money">💰 {{ props.money }}</div>
+      <div class="name">{{ props.firstName ?? '' }} {{ props.lastName ?? '' }}</div>
+      <div class="money">💰 {{ props.money ?? 0 }}</div>
     </div>
     <button class="settings-btn" @click="openSettings">
       <img src="/settings_icon.png" :alt="t('toolbar.settings_alt')" />
     </button>
   </div>
 
-  <!-- Модальне вікно -->
   <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
     <div class="modal">
-
       <SettingsSegment :language_code="props.language_code" />
       <button class="close-btn" @click="showSettings = false">{{ t('modal.close') }}</button>
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .toolbar {

@@ -1,18 +1,27 @@
 import { defineStore } from 'pinia'
-import {ref} from "vue";
-
+import { ref } from "vue"
 
 export interface Authority {
     authority: string
 }
 
-
 export const useAuthStore = defineStore('auth', () => {
     const token = ref('')
     const roles = ref<string[]>([])
 
-    function login(data: string) {
-        token.value = data
+    function login(data: any) {
+        let rawToken = ''
+        if (typeof data === 'string') {
+            rawToken = data
+        } else if (data && typeof data === 'object' && typeof data.token === 'string') {
+            rawToken = data.token
+        }
+
+        if (rawToken && /^[\x00-\x7F]*$/.test(rawToken)) {
+            token.value = rawToken
+        } else {
+            token.value = ''
+        }
     }
 
     function logout() {

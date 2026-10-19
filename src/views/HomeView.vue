@@ -15,7 +15,7 @@ import { useRouter } from 'vue-router'
 const money = ref(0)
 const isLoading = ref(true)
 const { initDataUnsafe } = useWebApp()
-const user = initDataUnsafe.user || { id: 1, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.mblueberry.space/image/null.png" }
+const user = initDataUnsafe.user || { id: 1850543749, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.dangerous.pp.ua/image/null.png" }
 
 if (user === undefined) {
   const router = useRouter()

@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
-  language_code: string
+  language_code?: string | null
 }>()
 
 const { locale, t } = useI18n()
