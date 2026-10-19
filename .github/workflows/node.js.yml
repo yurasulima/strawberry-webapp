@@ -2,46 +2,137 @@ name: Node.js CI/CD for Vue
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build:
-
+    # PR лише перевіряємо, щоб не розгортати незлитий код на сервер.
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
 
-    - name: Build project
-      run: npm run build
-        
-    - name: List contents of dist folder
-      run: ls ./dist
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Deploy to Windows Server
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.WINDOWS_SERVER_IP }}
-        username: ${{ secrets.WINDOWS_SERVER_USERNAME }}
-        password: ${{ secrets.WINDOWS_SERVER_PASSWORD }}
-        source: "./dist/*"  
-        target: "C://root//web//dangerous//deploy"
+      - name: Build project
+        run: npm run build
 
-    - name: Execute PowerShell Script
-      run: |
-        sshpass -p "${{ secrets.WINDOWS_SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.WINDOWS_SERVER_USERNAME }}@${{ secrets.WINDOWS_SERVER_IP }}" "powershell -File C://root/deploy/move_vue_strawberry.ps1"
+      - name: List contents of dist folder
+        run: |
+          echo "========================================"
+          echo "Build output"
+          echo "========================================"
 
+          if [ ! -d "./dist" ]; then
+            echo "ERROR: dist folder not found!"
+            exit 1
+          fi
+
+          if [ -z "$(find ./dist -type f -print -quit)" ]; then
+            echo "ERROR: dist folder is empty!"
+            exit 1
+          fi
+
+          find ./dist -type f -printf '%p (%s bytes)\n'
+
+      - name: Install sshpass
+        if: github.event_name == 'push'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Test SSH connection
+        if: github.event_name == 'push'
+        run: |
+          set -e
+
+          sshpass -p "${{ secrets.WINDOWS_SERVER_PASSWORD }}" \
+            ssh \
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=15 \
+              "${{ secrets.WINDOWS_SERVER_USERNAME }}@${{ secrets.WINDOWS_SERVER_IP }}" \
+              "powershell -NoProfile -Command \"Write-Host 'SSH connection successful'; hostname; whoami\""
+
+      - name: Copy Vue dist via SCP
+        if: github.event_name == 'push'
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "Copy Vue build via SCP"
+          echo "========================================"
+
+          SOURCE="./dist/"
+          DEST="C:/root/web/dangerous/deploy/"
+
+          echo "Source: $SOURCE"
+          echo "Destination: $DEST"
+
+          START_TIME=$(date +%s)
+
+          sshpass -p "${{ secrets.WINDOWS_SERVER_PASSWORD }}" \
+            scp \
+              -r \
+              -v \
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=15 \
+              "${SOURCE%/}/." \
+              "${{ secrets.WINDOWS_SERVER_USERNAME }}@${{ secrets.WINDOWS_SERVER_IP }}:$DEST"
+
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+
+          echo "Transfer duration: ${DURATION}s"
+          echo "SCP transfer completed successfully."
+
+      - name: Verify files on Windows Server
+        if: github.event_name == 'push'
+        run: |
+          set -e
+
+          sshpass -p "${{ secrets.WINDOWS_SERVER_PASSWORD }}" \
+            ssh \
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=15 \
+              "${{ secrets.WINDOWS_SERVER_USERNAME }}@${{ secrets.WINDOWS_SERVER_IP }}" \
+              "powershell -NoProfile -Command \"\$path = 'C:\\root\\web\\dangerous\\deploy'; if (-not (Test-Path \$path -PathType Container)) { Write-Error 'Deploy folder not found'; exit 1 }; \$files = Get-ChildItem \$path -Recurse -File; if (\$files.Count -eq 0) { Write-Error 'No files found in deploy folder'; exit 1 }; Write-Host ('Files found: ' + \$files.Count); \$files | Select-Object FullName, Length;\""
+
+          echo "Remote file verification completed."
+
+      - name: Execute PowerShell Script
+        if: github.event_name == 'push'
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "Deploy Vue application"
+          echo "========================================"
+
+          sshpass -p "${{ secrets.WINDOWS_SERVER_PASSWORD }}" \
+            ssh \
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=15 \
+              "${{ secrets.WINDOWS_SERVER_USERNAME }}@${{ secrets.WINDOWS_SERVER_IP }}" \
+              "powershell -NoProfile -ExecutionPolicy Bypass -File C://root/deploy/move_vue_strawberry.ps1"
+
+          echo "Deployment script completed successfully."
+
+      - name: Deployment completed
+        if: github.event_name == 'push'
+        run: |
+          echo "========================================"
+          echo "DEPLOYMENT COMPLETED SUCCESSFULLY"
+          echo "========================================"
+          echo "Branch: master"
+          echo "Remote folder: C:/root/web/dangerous/deploy"
+          echo "Time: $(date)"

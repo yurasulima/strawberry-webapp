@@ -13,8 +13,14 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const auth = useAuthStore()
-        const token = auth.token
-        if (token) {
+        let token = auth.token
+
+        if (typeof token !== 'string' || !/^[\x00-\x7F]*$/.test(token)) {
+            auth.logout()
+            token = ''
+        }
+
+        if (token && token.trim().length > 0) {
             config.headers.Authorization = `Bearer ${token}`
         }
         return config
