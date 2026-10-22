@@ -14,7 +14,6 @@ function formatPlayerName(player: User): string {
   if (player.firstName || player.lastName) {
     return `${player.firstName ?? ''} ${player.lastName ?? ''}`.trim()
   }
-  if (player.username) return `@${player.username}`
   return 'Гравець'
 }
 
