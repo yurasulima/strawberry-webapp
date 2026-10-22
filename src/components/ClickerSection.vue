@@ -4,8 +4,10 @@ import api from "@/services/api.ts";
 import { useI18n } from 'vue-i18n'
 import { playHarvestSound, playCoinSound } from '@/services/sound'
 import { ButtonText, Message } from '@/components/pixel'
+import { useUserStore } from "@/stores/user.ts"
 
 const { t } = useI18n()
+const userStore = useUserStore()
 let particleId = 0
 const count = ref(0)
 const isClicking = ref(false)
@@ -39,6 +41,7 @@ const flushClicks = async () => {
     const response = await api.post('/slots/take', { name: 'strawberry', count: pendingClicks })
     count.value = response.data
     pendingClicks = 0
+    await userStore.fetchUser()
   } catch (error: any) {
     console.error("Помилка при відправці кліків:", error)
     const errText = error.response?.data?.message || error.response?.data || 'Денний ліміт 200 полуничок досягнуто!'
@@ -83,6 +86,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
     count.value = 0
     const coins = res.data.coinsEarned ?? 0
     sellMessage.value = `Успішно продано! Отримано: +${coins} монет`
+    await userStore.fetchUser()
   } catch (err: any) {
     const errorMsg = err.response?.data?.message || 'Немає полуниць для продажу'
     sellMessage.value = errorMsg

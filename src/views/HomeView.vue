@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useWebApp } from "vue-tg"
 import { useAuthStore } from "@/stores/auth.ts"
+import { useUserStore } from "@/stores/user.ts"
 import Toolbar from "@/components/Toolbar.vue"
 import PlayersSection from '@/components/PlayersSection.vue'
 import ClickerSection from '@/components/ClickerSection.vue'
@@ -13,8 +14,8 @@ import MarketSection from "@/components/MarketSection.vue";
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
 
-const money = ref(0)
 const isLoading = ref(true)
+const userStore = useUserStore()
 const { initDataUnsafe } = useWebApp()
 const user = initDataUnsafe.user || { id: 1850543749, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.dangerous.pp.ua/image/null.png" }
 
@@ -25,9 +26,13 @@ if (user === undefined) {
 
 const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business' | 'shop'>('clicker')
 
+watch(activeTab, () => {
+  userStore.fetchUser()
+})
+
 onMounted(async () => {
   if (!user) {
-    console.log('User.ts is null or undefined')
+    console.log('User is null or undefined')
     isLoading.value = false
     return
   }
@@ -44,12 +49,11 @@ onMounted(async () => {
     if (user.language_code) {
       localStorage.setItem('lang', user.language_code)
     }
-    const moneySlot = response.data.slots?.find((slot: any) => slot.item?.name === 'money')
-    money.value = moneySlot?.count || 0
 
     if (response.status === 200) {
       const auth = useAuthStore()
       auth.login(response.data)
+      userStore.setUser(response.data)
     }
   } catch (error) {
     console.error('API call error:', error)
@@ -73,7 +77,7 @@ onMounted(async () => {
           :firstName="user.first_name"
           :lastName="user.last_name"
           :avatar="user.photo_url"
-          :money="money"
+          :money="userStore.money"
       />
 
       <div class="main-content">
@@ -143,7 +147,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 22px;
+  font-size: 18px;
   z-index: 2000;
 }
 

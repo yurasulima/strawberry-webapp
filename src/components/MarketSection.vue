@@ -5,8 +5,10 @@ import type { Business } from "@/types/Business.ts"
 import { Icon } from '@iconify/vue'
 import { CardPrimary, Card, Message, PixelModal, ButtonText } from '@/components/pixel'
 import { playClickSound, playPurchaseSound } from "@/services/sound"
+import { useUserStore } from "@/stores/user.ts"
 
 const props = defineProps<{ user?: any }>()
+const userStore = useUserStore()
 
 const businessesForSale = ref<Business[]>([])
 const isLoading = ref(true)
@@ -32,13 +34,13 @@ function translateError(err: any): string {
   const lower = str.toLowerCase()
 
   if (lower.includes('wait') || lower.includes('have to wait') || lower.includes('collecting exception')) {
-    return '⏱️ Зачекайте трохи перед наступною дією!'
+    return 'Зачекайте трохи перед наступною дією!'
   }
   if (lower.includes('not enough money') || lower.includes('no money')) {
-    return '🪙 Недостатньо монет для купівлі!'
+    return 'Недостатньо монет для купівлі!'
   }
   if (lower.includes('not found')) {
-    return '❌ Бізнес не знайдено'
+    return 'Бізнес не знайдено'
   }
   return str || 'Виникла помилка під час виконання операції'
 }
@@ -80,11 +82,12 @@ async function executeBuy() {
     playPurchaseSound()
     statusMessage.value = {
       type: 'success',
-      text: `🛒 Успішно придбано бізнес «${modal.displayName}»!`
+      text: `Успішно придбано бізнес «${modal.displayName}»!`
     }
     isModalOpen.value = false
     selectedBizModal.value = null
     await loadData()
+    await userStore.fetchUser()
   } catch (err: any) {
     statusMessage.value = { type: 'error', text: translateError(err) }
     isModalOpen.value = false
@@ -109,7 +112,7 @@ function getBizIcon(name?: string) {
   <div class="market-container">
     <CardPrimary width="100%" height="auto" :padding="16">
       <div class="market-header">
-        <h2 class="title">🛒 Магазин бізнесів</h2>
+        <h2 class="title">Магазин бізнесів</h2>
       </div>
 
       <!-- Повідомлення про статус операції -->
@@ -147,11 +150,11 @@ function getBizIcon(name?: string) {
                 <div class="biz-name">{{ formatBizName(biz.name) }}</div>
                 <div class="biz-yield">
                   <span>Базовий прибуток:</span>
-                  <strong class="yield-val">+{{ biz.yieldCount || 10 }} 💰</strong>
+                  <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong>
                 </div>
                 <div class="biz-price">
                   <span>Ціна:</span>
-                  <strong class="price-val">{{ biz.price || 100 }} 💰</strong>
+                  <strong class="price-val">{{ biz.price || 100 }}</strong>
                 </div>
               </div>
               <ButtonText
@@ -175,12 +178,12 @@ function getBizIcon(name?: string) {
       <!-- Піксельне модальне вікно підтвердження -->
       <PixelModal
         v-model="isModalOpen"
-        title="🛒 Купівля бізнесу"
+        title="Купівля бізнесу"
         :width="350"
       >
         <div class="modal-body-content">
           <p class="modal-desc">
-            Ви впевнені, що хочете придбати <strong>«{{ selectedBizModal?.displayName }}»</strong> за <strong>{{ selectedBizModal?.price }} 💰</strong>?
+            Ви впевнені, що хочете придбати <strong>«{{ selectedBizModal?.displayName }}»</strong> за <strong>{{ selectedBizModal?.price }}</strong>?
           </p>
         </div>
         <template #footer>
@@ -211,7 +214,8 @@ function getBizIcon(name?: string) {
   max-width: 420px;
   margin: 0 auto;
   box-sizing: border-box;
-  font-family: 'Monocraft', monospace;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
 }
 
 .market-header {
@@ -220,8 +224,8 @@ function getBizIcon(name?: string) {
 }
 
 .title {
-  font-family: 'Monocraft', monospace;
-  font-size: 18px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 22px;
   margin: 0;
   color: #3f2e21;
 }
@@ -231,8 +235,8 @@ function getBizIcon(name?: string) {
 }
 
 .status-content {
-  font-family: 'Monocraft', monospace;
-  font-size: 13px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
   line-height: 1.4;
 }
 
@@ -250,14 +254,14 @@ function getBizIcon(name?: string) {
   justify-content: center;
   gap: 10px;
   padding: 24px;
-  font-family: 'Monocraft', monospace;
-  font-size: 14px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
   color: #3f2e21;
 }
 
 .loading-icon.spin {
   animation: spin 1s linear infinite;
-  font-size: 22px;
+  font-size: 18px;
 }
 
 @keyframes spin {
@@ -298,15 +302,15 @@ function getBizIcon(name?: string) {
 }
 
 .biz-name {
-  font-family: 'Monocraft', monospace;
-  font-size: 15px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 20px;
   font-weight: bold;
   color: #3f2e21;
 }
 
 .biz-yield, .biz-price {
-  font-family: 'Monocraft', monospace;
-  font-size: 13px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 16px;
   color: #5d4037;
   display: flex;
   gap: 4px;
@@ -327,7 +331,8 @@ function getBizIcon(name?: string) {
   text-align: center;
   padding: 24px 12px;
   color: #3f2e21;
-  font-family: 'Monocraft', monospace;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
 }
 
 .empty-icon {
@@ -337,8 +342,8 @@ function getBizIcon(name?: string) {
 }
 
 .empty-title {
-  font-family: 'Monocraft', monospace;
-  font-size: 15px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 20px;
   margin: 0;
 }
 
@@ -347,8 +352,8 @@ function getBizIcon(name?: string) {
 }
 
 .modal-desc {
-  font-family: 'Monocraft', monospace;
-  font-size: 15px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
   color: #3f2e21;
   line-height: 1.5;
   margin: 0;

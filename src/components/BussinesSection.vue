@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import api from '@/services/api.ts'
 import type { UserBusiness } from '@/types/UserBusiness.ts'
 import { Icon } from '@iconify/vue'
 import { CardPrimary, Card, Message, ButtonText } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
+import { useUserStore } from '@/stores/user.ts'
 
 const props = defineProps<{ user?: any }>()
+const userStore = useUserStore()
 
-const myBusinesses = ref<UserBusiness[]>([])
-const isLoading = ref(true)
+const myBusinesses = computed<UserBusiness[]>(() => userStore.user?.businesses || [])
+const isLoading = computed(() => !userStore.user && userStore.isLoading)
+
 const collectingName = ref<string | null>(null)
 const statusMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -100,21 +103,15 @@ function stopTimer() {
   }
 }
 
-async function loadData() {
-  isLoading.value = true
-  try {
-    const userRes = await api.get('/users/me')
-    myBusinesses.value = userRes.data.businesses || []
-    startTimer()
-  } catch (e) {
-    console.error('Помилка завантаження бізнесів:', e)
-  } finally {
-    isLoading.value = false
-  }
-}
+watch(myBusinesses, () => {
+  startTimer()
+}, { immediate: true, deep: true })
 
-onMounted(() => {
-  loadData()
+onMounted(async () => {
+  if (!userStore.user) {
+    await userStore.fetchUser()
+  }
+  startTimer()
 })
 
 onUnmounted(() => {
@@ -136,7 +133,7 @@ async function directCollect(userBiz: UserBusiness) {
       type: 'success',
       text: `Зібрано: ${formatBizName(rawName)}`
     }
-    await loadData()
+    await userStore.fetchUser()
   } catch (err: any) {
     statusMessage.value = { type: 'error', text: translateError(err) }
   } finally {

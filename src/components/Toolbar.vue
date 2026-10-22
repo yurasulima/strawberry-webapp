@@ -183,7 +183,7 @@ function handleOpenSettings() {
   font-family: var(--font-pixel), serif;
   font-size: 16px;
   font-weight: bold;
-  color: #b45309;
+  color: #494643;
   text-shadow: 1px 1px 0 #1a1008;
 }
 </style>

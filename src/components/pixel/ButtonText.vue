@@ -50,7 +50,7 @@ const emit = defineEmits<{
   line-height: 1;
   transform: translateY(1px);
   font-weight: normal;
-  font-size: 26px;
+  font-size: 20px;
   text-shadow:
       1px 0 0 currentColor,
       0 1px 0 rgba(255, 255, 255, 0.6); /* ваша світла підкладка */

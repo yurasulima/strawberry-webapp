@@ -1,22 +1,17 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import api from "@/services/api.ts";
+import { onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { AppScreen, AppCard, AppText } from '@/components/ui'
 import InvitedUserList from "@/components/InvitedUserList.vue";
-import type { User } from "@/types/User.ts";
+import { useUserStore } from "@/stores/user.ts"
 
 const { t } = useI18n()
-const player = ref<User | null>(null)
+const userStore = useUserStore()
+const player = computed(() => userStore.user)
 
 onMounted(async () => {
-  try {
-    const response = await api.get('/users/me')
-    player.value = response.data
-  } catch (error) {
-    console.error('API call error:', error)
-  }
+  await userStore.fetchUser()
 })
 
 function getItemIcon(itemName: string) {
