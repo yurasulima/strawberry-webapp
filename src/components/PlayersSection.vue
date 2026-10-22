@@ -69,7 +69,7 @@ onMounted(() => {
             </AppText>
           </div>
           <div class="player-score">
-            <img src="/strawberry.png" alt="Strawberry" class="score-icon" />
+            <img src="/ui/strawberry.png" alt="Strawberry" class="score-icon" />
             <AppText variant="subtitle" color="success">
               {{ player.slots?.find(s => s.item?.name === 'strawberry')?.count ?? 0 }}
             </AppText>

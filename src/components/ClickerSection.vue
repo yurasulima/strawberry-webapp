@@ -2,17 +2,19 @@
 import { ref, onMounted } from 'vue'
 import api from "@/services/api.ts";
 import { useI18n } from 'vue-i18n'
-import { playHarvestSound } from '@/services/sound'
+import { playHarvestSound, playCoinSound } from '@/services/sound'
+import { ButtonText, Message } from '@/components/pixel'
 
 const { t } = useI18n()
 let particleId = 0
 const count = ref(0)
 const isClicking = ref(false)
+const isSelling = ref(false)
+const sellMessage = ref<string | null>(null)
 const particles = ref<{ id: number; offsetX: number; offsetY: number }[]>([])
 let pendingClicks = 0
 
 onMounted(async () => {
-  // Очищаємо можливий старий локальний бан
   localStorage.removeItem("clicker-ban")
 
   try {
@@ -37,8 +39,11 @@ const flushClicks = async () => {
     const response = await api.post('/slots/take', { name: 'strawberry', count: pendingClicks })
     count.value = response.data
     pendingClicks = 0
-  } catch (error) {
+  } catch (error: any) {
     console.error("Помилка при відправці кліків:", error)
+    const errText = error.response?.data?.message || error.response?.data || 'Денний ліміт 200 полуничок досягнуто!'
+    sellMessage.value = typeof errText === 'string' ? errText : JSON.stringify(errText)
+    pendingClicks = 0
   }
 }
 
@@ -65,18 +70,38 @@ const handleClick = () => {
 
   setTimeout(() => (isClicking.value = false), 150)
 }
+
+const sellAllStrawberries = async (e: MouseEvent) => {
+  e.stopPropagation()
+  isSelling.value = true
+  sellMessage.value = null
+
+  try {
+    await flushClicks()
+    const res = await api.post('/items/sell-all', { name: 'strawberry' })
+    playCoinSound()
+    count.value = 0
+    const coins = res.data.coinsEarned ?? 0
+    sellMessage.value = `Успішно продано! Отримано: +${coins} монет`
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || 'Немає полуниць для продажу'
+    sellMessage.value = errorMsg
+  } finally {
+    isSelling.value = false
+  }
+}
 </script>
 
 <template>
   <div class="clicker-container">
-    <div @click="handleClick" class="clicker-section">
-      <div class="click-area">
+    <div class="clicker-section">
+      <div class="click-area" @click="handleClick">
         <button
             class="strawberry-button"
             @click="$emit('click')"
         >
           <img
-              src="/strawberry.png"
+              src="/ui/strawberry.png"
               alt="Strawberry"
               oncontextmenu="return false;"
               class="strawberry-icon"
@@ -97,6 +122,20 @@ const handleClick = () => {
       </div>
 
       <p class="strawberry-count">{{ t('clicker.strawberries') }}: {{ count }}</p>
+
+      <Message v-if="sellMessage" closable @close="sellMessage = null" class="sell-msg">
+        <div>{{ sellMessage }}</div>
+      </Message>
+
+      <ButtonText
+          height="64"
+          padding="12px 20px"
+          :loading="isSelling"
+          :disabled="count <= 0 && pendingClicks === 0"
+          @click="sellAllStrawberries"
+      >
+        Продати всі полуниці
+      </ButtonText>
     </div>
   </div>
 </template>
@@ -113,7 +152,7 @@ const handleClick = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .click-area {
@@ -155,8 +194,14 @@ const handleClick = () => {
   font-weight: bold;
   color: #ffd700;
   text-shadow: 2px 2px #1c1d2e;
-  margin-top: 15px;
+  margin: 5px 0;
   font-family: var(--font-pixel);
+}
+
+.sell-msg {
+  max-width: 320px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
 }
 
 .particles-container {

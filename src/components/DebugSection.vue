@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useWebApp } from "vue-tg";
 import { Icon } from "@iconify/vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const { initDataUnsafe } = useWebApp()
 const user = initDataUnsafe.user;
 const start_param = initDataUnsafe.start_param;
@@ -14,6 +16,14 @@ const start_param = initDataUnsafe.start_param;
         <Icon icon="pixelarticons:bug" class="debug-icon" />
         <span>Debug Menu</span>
       </h2>
+    </div>
+
+    <div class="debug-block">
+      <h3 class="debug-heading">Navigation / Showcase</h3>
+      <button class="pixel-link-btn" @click="router.push('/pixel-ui')">
+        <Icon icon="pixelarticons:grid" />
+        <span>Open Pixel UI Showcase</span>
+      </button>
     </div>
 
     <div class="debug-block">
@@ -88,5 +98,24 @@ const start_param = initDataUnsafe.start_param;
   font-size: 11px;
   font-family: var(--font-pixel-retro);
   color: #3f2e21;
+}
+
+.pixel-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: #3f2e21;
+  color: #f7d070;
+  border: 1px solid #1a1008;
+  border-radius: 4px;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.pixel-link-btn:hover {
+  background-color: #5a4332;
 }
 </style>

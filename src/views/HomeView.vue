@@ -9,6 +9,7 @@ import ProfileSection from '@/components/ProfileSection.vue'
 import DebugSection from '@/components/DebugSection.vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import BussinesSection from "@/components/BussinesSection.vue";
+import MarketSection from "@/components/MarketSection.vue";
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
 
@@ -22,7 +23,7 @@ if (user === undefined) {
   router.replace('/404')
 }
 
-const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business'>('clicker')
+const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business' | 'shop'>('clicker')
 
 onMounted(async () => {
   if (!user) {
@@ -79,6 +80,7 @@ onMounted(async () => {
         <ClickerSection v-show="activeTab === 'clicker'" />
         <ProfileSection v-show="activeTab === 'profile'" />
         <BussinesSection v-show="activeTab === 'business'" :user="user" />
+        <MarketSection v-show="activeTab === 'shop'" :user="user" />
         <PlayersSection v-show="activeTab === 'users'" />
         <DebugSection v-show="activeTab === 'debug'" />
       </div>

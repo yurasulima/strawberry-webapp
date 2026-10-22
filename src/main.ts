@@ -1,5 +1,6 @@
 import 'reflect-metadata'
 import './assets/main.css'
+import '@/services/texturePreloader'
 
 import { VueTelegramPlugin } from 'vue-tg'
 import { createApp } from 'vue'

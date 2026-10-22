@@ -12,6 +12,11 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue')
     },
     {
+      path: '/pixel-ui',
+      name: 'pixel-ui',
+      component: () => import('../views/ShowPixelUiView.vue')
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('../views/NotFoundView.vue'),

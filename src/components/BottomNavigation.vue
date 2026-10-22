@@ -1,26 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
-import { playTabSound } from '@/services/sound'
+import {ref} from 'vue'
+import {
+  GameButton,
+  ShopButton,
+  TopButton,
+  SettingsButton,
+  CardPrimary
+} from '@/components/pixel'
+import BusinessButton from "@/components/pixel/BusinessButton.vue";
 
-const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' | 'debug' | 'business' }>()
+const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug' }>()
 const emit = defineEmits<{
-  (e: 'changeTab', tab: 'clicker' | 'profile' | 'users' | 'debug' | 'business'): void
+  (e: 'changeTab', tab: 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug'): void
 }>()
-
-const { t } = useI18n()
 
 const profileClickCount = ref(0)
 let lastClickTime = 0
 
-function switchTab(tab: 'clicker' | 'profile' | 'users' | 'debug' | 'business') {
-  playTabSound()
+function switchTab(tab: 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug') {
   emit('changeTab', tab)
 }
 
 function handleProfileClick() {
-  playTabSound()
   const now = Date.now()
   if (now - lastClickTime > 600) {
     profileClickCount.value = 1
@@ -40,89 +41,58 @@ function handleProfileClick() {
 </script>
 
 <template>
-  <div class="bottom-navigation honeywood-panel">
-    <button
-        :class="{ active: props.activeTab === 'clicker' }"
-        @click="switchTab('clicker')"
-    >
-      <Icon icon="pixelarticons:gamepad" class="pixel-icon" />
-      <span v-if="props.activeTab === 'clicker'" class="label">{{ t('bottomNav.game') }}</span>
-    </button>
-    <button
-        :class="{ active: props.activeTab === 'profile' }"
-        @click="handleProfileClick"
-    >
-      <Icon icon="pixelarticons:user" class="pixel-icon" />
-      <span v-if="props.activeTab === 'profile'" class="label">{{ t('bottomNav.profile') }}</span>
-    </button>
+  <div class="bottom-navigation-container">
+    <CardPrimary width="300px" height="70px" :padding="1">
+      <div class="bottom-navigation-bar">
 
-    <button
-        :class="{ active: props.activeTab === 'business' }"
-        @click="switchTab('business')"
-    >
-      <Icon icon="pixelarticons:briefcase" class="pixel-icon" />
-      <span v-if="props.activeTab === 'business'" class="label">{{ t('bottomNav.business') }}</span>
-    </button>
+        <GameButton
+            size="64"
+            :active="props.activeTab === 'clicker'"
+            @click="switchTab('clicker')"
+        />
 
-    <button
-        :class="{ active: props.activeTab === 'users' }"
-        @click="switchTab('users')"
-    >
-      <Icon icon="pixelarticons:users" class="pixel-icon" />
-      <span v-if="props.activeTab === 'users'" class="label">{{ t('bottomNav.players') }}</span>
-    </button>
+
+        <BusinessButton
+            size="64"
+            :active="props.activeTab === 'business'"
+            @click="switchTab('business')" 
+        />
+
+        <ShopButton
+            size="64"
+            :active="props.activeTab === 'shop'"
+            @click="switchTab('shop')"
+        />
+
+        <TopButton
+            size="64"
+            :active="props.activeTab === 'users'"
+            @click="switchTab('users')"
+        />
+
+      </div>
+    </CardPrimary>
   </div>
 </template>
 
-
-
 <style scoped>
-
-.bottom-navigation {
-  display: flex;
-  justify-content: space-around;
-  padding: 6px 12px;
-  width: 100%;
+.bottom-navigation-container {
   position: fixed;
-  bottom: 0;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 420px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
-}
-
-.bottom-navigation button {
-  user-select: none;
-  background: none;
-  border: none;
-  color: #3f2e21;
-  font-size: 11px;
-  font-family: var(--font-pixel);
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-  flex-grow: 1;
-  margin: 0 3px;
+  z-index: 1000;
+  box-sizing: border-box;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 6px 0;
+  max-width: calc(100vw - 24px);
 }
 
-.bottom-navigation button .pixel-icon {
-  font-size: 22px;
-  width: 22px;
-  height: 22px;
-}
-
-.bottom-navigation button .label {
-  font-size: 10px;
-  margin-top: 4px;
-}
-
-.bottom-navigation button.active {
-  background-color: rgba(63, 46, 33, 0.2);
-  color: #1a1008;
-  font-weight: bold;
+.bottom-navigation-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 </style>

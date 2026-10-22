@@ -63,7 +63,7 @@ function getItemIcon(itemName: string) {
       <div class="strawberry-banner">
         <AppText variant="subtitle" class="banner-title">{{ t('profile.strawberries') }}</AppText>
         <div class="strawberry-row">
-          <img src="/strawberry.png" alt="Strawberry" class="main-strawberry-icon" />
+          <img src="/ui/strawberry.png" alt="Strawberry" class="main-strawberry-icon" />
           <AppText variant="title" color="success" class="main-strawberry-count">
             {{ player.slots?.find(s => s.item?.name === 'strawberry')?.count ?? 0 }}
           </AppText>

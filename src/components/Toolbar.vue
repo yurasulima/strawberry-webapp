@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { AppCard, AppText, AppDangerButton } from '@/components/ui'
+import {ref} from 'vue'
+import {useI18n} from 'vue-i18n'
+import {
+  CardPrimary,
+  AvatarBorder,
+  SettingsButton,
+  PixelModal,
+  CloseButton,
+  OkButton,
+  Image, Card
+} from '@/components/pixel'
 import SettingsSegment from './SettingsSegment.vue'
-import { playClickSound } from '@/services/sound'
+import {playClickSound} from '@/services/sound'
 
-const { t } = useI18n()
+const {t} = useI18n()
 
 const props = defineProps<{
   firstName?: string | null
@@ -24,118 +32,158 @@ function handleOpenSettings() {
 </script>
 
 <template>
-  <AppCard variant="cream" :padding="false" class="toolbar">
-    <img class="avatar" :src="props.avatar || '/default-avatar.png'" :alt="t('toolbar.settings_alt')" />
-    <div class="info">
-      <AppText variant="subtitle" class="name">{{ props.firstName ?? '' }} {{ props.lastName ?? '' }}</AppText>
-      <div class="money">
-        <img src="/honeywood/icons/interface/coin.png" class="coin-icon" alt="Coin" />
-        <AppText variant="subtitle" color="gold">{{ props.money ?? 0 }}</AppText>
-      </div>
+  <div class="toolbar-wrapper">
+    <div class="toolbar-ava-wrapper">
+      <AvatarBorder
+          width="100px"
+          height="100px"
+          padding="14px"
+          :image="props.avatar"
+          class="toolbar-avatar"
+      />
+      <CardPrimary width="100%" height="64px" :padding="0" class="toolbar-container">
+        <!-- Right Side: User Nickname -->
+        <div class="user-info-side">
+          <div class="user-info-header">
+            <span class="user-name">
+              {{ props.firstName ?? '' }} {{ props.lastName ?? '' }}
+            </span>
+            <SettingsButton
+                size="64"
+                @click="handleOpenSettings"
+                class="settings-btn"
+            />
+          </div>
+        </div>
+      </CardPrimary>
     </div>
-    <button class="settings-btn" @click="handleOpenSettings" :aria-label="t('toolbar.settings_alt')">
-      <img src="/honeywood/icons/interface/gear.png" class="settings-icon" alt="Settings" />
-    </button>
-  </AppCard>
 
-  <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
-    <AppCard variant="paper" class="modal">
-      <SettingsSegment :language_code="props.language_code" />
-      <AppDangerButton class="close-btn" @click="showSettings = false">
-        {{ t('modal.close') }}
-      </AppDangerButton>
-    </AppCard>
+    <!-- Money Card underneath main card, indented from left by avatar size, adaptive width -->
+    <Card width="fit-content" height="42px" :padding="0" class="money-card">
+      <div class="user-money-row">
+        <Image src="/ui/money.png" size="38" alt="Money" class="coin-icon" />
+        <span class="money-amount">{{ props.money ?? 0 }}</span>
+      </div>
+    </Card>
   </div>
+
+  <!-- Settings Pixel Modal -->
+  <PixelModal
+      v-model="showSettings"
+      :title="t('modal.settings') || 'Налаштування'"
+      width="360"
+  >
+    <SettingsSegment :language_code="props.language_code"/>
+
+    <template #footer>
+      <OkButton size="48" @click="showSettings = false"/>
+      <CloseButton size="48" @click="showSettings = false"/>
+    </template>
+  </PixelModal>
 </template>
 
 <style scoped>
-.toolbar {
+.toolbar-wrapper {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  margin-bottom: 12px;
+  flex-direction: column;
   width: 100%;
   max-width: 420px;
+  margin-bottom: 12px;
+  z-index: 10;
+}
+
+.toolbar-ava-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 64px;
+  z-index: 10;
+}
+
+.toolbar-avatar {
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.toolbar-container {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 64px;
   box-sizing: border-box;
   z-index: 1;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 12px;
-  object-fit: cover;
-  border: 2px solid #3f2e21;
-  flex-shrink: 0;
+.money-card {
+  margin-top: 40px;
+  width: fit-content;
+  max-width: calc(100% - 88px);
+  height: 36px;
+  box-sizing: border-box;
+  z-index: 1;
+  align-self: flex-start;
 }
 
-.info {
+.user-info-side {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  margin-left: 88px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.money {
+.user-info-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 4px;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
 }
 
-.coin-icon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  flex-shrink: 0;
-  image-rendering: pixelated;
+.user-name {
+  font-family: var(--font-pixel), serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: #1a1008;
+  line-height: 1.3;
+  word-break: break-word;
+  text-align: center;
+  flex-grow: 1;
 }
 
 .settings-btn {
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.user-money-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding-left: 6px;
+  padding-right: 18px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.coin-icon {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
 }
 
-.settings-icon {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  flex-shrink: 0;
-  image-rendering: pixelated;
-  transition: transform 0.2s ease;
-}
-
-.settings-btn:hover .settings-icon {
-  transform: rotate(45deg);
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 16px;
-}
-
-.modal {
-  min-width: 280px;
-  max-width: 90%;
-}
-
-.close-btn {
-  margin-top: 14px;
-  width: 100%;
+.money-amount {
+  font-family: var(--font-pixel), serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #b45309;
+  text-shadow: 1px 1px 0 #1a1008;
 }
 </style>

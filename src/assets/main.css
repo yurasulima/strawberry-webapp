@@ -1,7 +1,25 @@
 @import './base.css';
 
+@font-face {
+  font-family: 'Crumbline';
+  src: url('./fonts/crumbline-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Monocraft';
+  src: url('./fonts/monocraft.ttc') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --font-pixel: 'Press Start 2P', monospace;
+  --font-crumbline: 'Crumbline', sans-serif;
+  --font-monocraft: 'Monocraft', monospace;
+  --font-pixel: 'Crumbline', 'Press Start 2P', monospace;
   --font-pixel-retro: 'VT323', monospace;
 }
 
@@ -69,7 +87,6 @@ h1, h2, h3, h4 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: transform 0.05s ease;
 }
 
 .honeywood-btn:hover {
@@ -78,7 +95,6 @@ h1, h2, h3, h4 {
 
 .honeywood-btn:active:not(:disabled) {
   border-image: url('/honeywood/ui/btn_pressed.png') 12 fill stretch;
-  transform: translateY(2px);
 }
 
 .honeywood-btn:disabled {

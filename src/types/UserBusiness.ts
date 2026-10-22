@@ -30,4 +30,7 @@ export interface UserBusiness {
     business: UBusiness;
     usedAt: string; // ISO дата у форматі рядка
     count: number;
+    nextCollectAt?: string;
+    nextCollectInSeconds?: number;
+    canCollect?: boolean;
 }
