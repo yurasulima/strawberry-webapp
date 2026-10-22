@@ -31,9 +31,9 @@ function handleClick(e: MouseEvent) {
       :disabled="disabled || loading"
       @click="handleClick"
   >
-    <Icon v-if="loading" icon="pixelarticons:reload" class="btn-icon spin" />
+    <span v-if="loading" class="btn-loading-dots">...</span>
     <Icon v-else-if="icon" :icon="icon" class="btn-icon" />
-    <span class="btn-text"><slot /></span>
+    <span v-if="!loading" class="btn-text"><slot /></span>
   </button>
 </template>
 
@@ -76,12 +76,8 @@ function handleClick(e: MouseEvent) {
   flex-shrink: 0;
 }
 
-.btn-icon.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.btn-loading-dots {
+  font-size: 14px;
+  font-weight: bold;
 }
 </style>

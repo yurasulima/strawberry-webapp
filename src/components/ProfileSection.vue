@@ -87,7 +87,6 @@ function getItemIcon(itemName: string) {
 
     <!-- Стан завантаження -->
     <AppCard variant="paper" v-else class="loading-state">
-      <Icon icon="pixelarticons:reload" class="loading-icon spin" />
       <AppText variant="body">{{ t('profile.loading') }}</AppText>
     </AppCard>
 
@@ -253,18 +252,6 @@ function getItemIcon(itemName: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   padding: 24px;
-}
-
-.loading-icon.spin {
-  animation: spin 1s linear infinite;
-  font-size: 20px;
-  color: #3f2e21;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 </style>

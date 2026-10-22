@@ -3,18 +3,19 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import api from '@/services/api.ts'
 import type { UserBusiness } from '@/types/UserBusiness.ts'
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, Message, ButtonText } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user.ts'
+import { useToastStore } from '@/stores/toast.ts'
 
 const props = defineProps<{ user?: any }>()
 const userStore = useUserStore()
+const toastStore = useToastStore()
 
 const myBusinesses = computed<UserBusiness[]>(() => userStore.user?.businesses || [])
 const isLoading = computed(() => !userStore.user && userStore.isLoading)
 
 const collectingName = ref<string | null>(null)
-const statusMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 const timerMap = ref<Record<number, number>>({})
 let timerInterval: any = null
@@ -122,20 +123,16 @@ async function directCollect(userBiz: UserBusiness) {
   if (timerMap.value[userBiz.id] > 0) return
 
   playClickSound()
-  statusMessage.value = null
   const rawName = userBiz.business?.name || ''
   collectingName.value = rawName
 
   try {
     await api.post('/business/collect', { name: rawName })
     playCoinSound()
-    statusMessage.value = {
-      type: 'success',
-      text: `Зібрано: ${formatBizName(rawName)}`
-    }
+    toastStore.showToast(`Зібрано: ${formatBizName(rawName)}`, 'success')
     await userStore.fetchUser()
   } catch (err: any) {
-    statusMessage.value = { type: 'error', text: translateError(err) }
+    toastStore.showToast(translateError(err), 'error')
   } finally {
     collectingName.value = null
   }
@@ -147,17 +144,7 @@ async function directCollect(userBiz: UserBusiness) {
     <CardPrimary width="100%" height="auto" :padding="12">
       <h2 class="title">Мої бізнеси</h2>
 
-      <Message
-          v-if="statusMessage"
-          closable
-          class="status-msg"
-          @close="statusMessage = null"
-      >
-        <div class="status-content" :class="statusMessage.type">{{ statusMessage.text }}</div>
-      </Message>
-
       <div v-if="isLoading" class="loading-state">
-        <Icon icon="pixelarticons:reload" class="spin" />
         <span>Завантаження...</span>
       </div>
 
@@ -219,20 +206,12 @@ async function directCollect(userBiz: UserBusiness) {
   font-weight: normal;
 }
 
-.status-msg { margin-bottom: 10px; }
-.status-content { font-size: 18px; line-height: 1.2; }
-.status-content.success { color: #1b5e20; }
-.status-content.error { color: #b71c1c; }
-
 .loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   padding: 20px;
 }
-.spin { animation: spin 1s linear infinite; font-size: 20px; }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Список */
 .biz-list {

@@ -11,6 +11,7 @@ import DebugSection from '@/components/DebugSection.vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import BussinesSection from "@/components/BussinesSection.vue";
 import MarketSection from "@/components/MarketSection.vue";
+import { PixelToastContainer } from "@/components/pixel";
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
 
@@ -65,6 +66,8 @@ onMounted(async () => {
 
 <template>
   <div class="app-container">
+    <PixelToastContainer />
+
     <!-- Показуємо splash, поки isLoading -->
     <div v-if="isLoading" class="splash-screen">
       <div class="loader">Завантаження...</div>
@@ -78,6 +81,7 @@ onMounted(async () => {
           :lastName="user.last_name"
           :avatar="user.photo_url"
           :money="userStore.money"
+          :strawberry="userStore.strawberries"
       />
 
       <div class="main-content">

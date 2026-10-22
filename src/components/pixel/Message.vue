@@ -45,7 +45,6 @@ const computedPadding = computed(() => cssSize(props.padding))
     <div class="pixel-message__content">
       <div v-if="title || closable" class="pixel-message__header">
         <span v-if="title" class="pixel-message__title">{{ title }}</span>
-        <button v-if="closable" class="pixel-message__close" title="Закрити" @click="emit('close')">×</button>
       </div>
       <div class="pixel-message__body">
         <slot />

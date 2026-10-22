@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {ref} from 'vue'
-import {useI18n} from 'vue-i18n'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   CardPrimary,
   AvatarBorder,
@@ -8,18 +8,20 @@ import {
   PixelModal,
   CloseButton,
   OkButton,
-  Image, Card
+  Image,
+  Card
 } from '@/components/pixel'
 import SettingsSegment from './SettingsSegment.vue'
-import {playClickSound} from '@/services/sound'
+import { playClickSound } from '@/services/sound'
 
-const {t} = useI18n()
+const { t } = useI18n()
 
 const props = defineProps<{
   firstName?: string | null
   lastName?: string | null
   avatar?: string | null
   money?: number
+  strawberry?: number
   language_code?: string | null
 }>()
 
@@ -58,13 +60,22 @@ function handleOpenSettings() {
       </CardPrimary>
     </div>
 
-    <!-- Money Card underneath main card, indented from left by avatar size, adaptive width -->
-    <Card width="fit-content" height="42px" :padding="0" class="money-card">
-      <div class="user-money-row">
-        <Image src="/ui/money.png" size="38" alt="Money" class="coin-icon" />
-        <span class="money-amount">{{ props.money ?? 0 }}</span>
-      </div>
-    </Card>
+    <!-- Resource Cards underneath avatar on the left -->
+    <div class="resource-cards-list">
+      <Card width="fit-content" height="36px" :padding="0" class="resource-card">
+        <div class="resource-row">
+          <Image src="/ui/money.png" size="28" alt="Money" class="res-icon" />
+          <span class="res-amount">{{ props.money ?? 0 }}</span>
+        </div>
+      </Card>
+
+      <Card width="fit-content" height="36px" :padding="0" class="resource-card">
+        <div class="resource-row">
+          <Image src="/ui/strawberry.png" size="24" alt="Strawberry" class="res-icon" />
+          <span class="res-amount">{{ props.strawberry ?? 0 }}</span>
+        </div>
+      </Card>
+    </div>
   </div>
 
   <!-- Settings Pixel Modal -->
@@ -119,16 +130,6 @@ function handleOpenSettings() {
   z-index: 1;
 }
 
-.money-card {
-  margin-top: 40px;
-  width: fit-content;
-  max-width: calc(100% - 88px);
-  height: 36px;
-  box-sizing: border-box;
-  z-index: 1;
-  align-self: flex-start;
-}
-
 .user-info-side {
   flex-grow: 1;
   display: flex;
@@ -150,11 +151,11 @@ function handleOpenSettings() {
 }
 
 .user-name {
-  font-family: var(--font-pixel), serif;
-  font-size: 13px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
   font-weight: bold;
   color: #1a1008;
-  line-height: 1.3;
+  line-height: 1.2;
   word-break: break-word;
   text-align: center;
   flex-grow: 1;
@@ -164,26 +165,51 @@ function handleOpenSettings() {
   flex-shrink: 0;
 }
 
-.user-money-row {
+.resource-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 36px;
+  margin-left: 0;
+  align-self: flex-start;
+}
+
+.resource-card {
+  min-width: 110px;
+  width: fit-content;
+  max-width: 180px;
+  height: 36px;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.resource-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
   height: 100%;
   padding-left: 6px;
-  padding-right: 18px;
+  padding-right: 12px;
   box-sizing: border-box;
   white-space: nowrap;
+  width: 100%;
 }
 
-.coin-icon {
+.res-icon {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.money-amount {
-  font-family: var(--font-pixel), serif;
-  font-size: 16px;
+.res-amount {
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
   font-weight: bold;
   color: #494643;
   text-shadow: 1px 1px 0 #1a1008;
+  text-align: right;
+  flex-grow: 1;
 }
 </style>

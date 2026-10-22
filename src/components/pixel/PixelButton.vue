@@ -91,9 +91,9 @@ watch(() => [props.texture, props.pressedTexture], preloadButtonTextures)
   >
     <NinePatch :src="currentTexture" class="pixel-btn__background" />
     <span class="pixel-btn__content">
-      <Icon v-if="loading" icon="pixelarticons:reload" class="btn-icon spin" />
+      <span v-if="loading" class="btn-loading-dots">...</span>
       <Icon v-else-if="icon" :icon="icon" class="btn-icon" />
-      <span v-if="slots.default" class="btn-text"><slot /></span>
+      <span v-if="slots.default && !loading" class="btn-text"><slot /></span>
     </span>
   </button>
 </template>
@@ -162,12 +162,9 @@ watch(() => [props.texture, props.pressedTexture], preloadButtonTextures)
   flex-shrink: 0;
 }
 
-.btn-icon.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.btn-loading-dots {
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
 }
 </style>
