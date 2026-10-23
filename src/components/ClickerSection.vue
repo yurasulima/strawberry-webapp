@@ -127,8 +127,6 @@ const sellAllStrawberries = async (e: MouseEvent) => {
         </div>
       </div>
 
-      <p class="strawberry-count">{{ t('clicker.strawberries') }}: {{ count }}</p>
-
       <ButtonText
           height="64"
           padding="12px 20px"
