@@ -56,6 +56,9 @@ const flushClicks = async () => {
 const handleClick = () => {
   playHarvestSound()
 
+  userStore.addStrawberries(1)
+  count.value++
+
   const button = document.querySelector('.strawberry-button') as HTMLElement
   if (button) {
     const buttonRect = button.getBoundingClientRect()

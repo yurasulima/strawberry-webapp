@@ -36,12 +36,30 @@ export const useUserStore = defineStore('user', () => {
     user.value = userData
   }
 
+  function addStrawberries(amount = 1) {
+    if (!user.value) return
+    if (!user.value.slots) {
+      user.value.slots = []
+    }
+    const slot = user.value.slots.find(s => s.item?.name === 'strawberry')
+    if (slot) {
+      slot.count += amount
+    } else {
+      user.value.slots.push({
+        id: Date.now(),
+        item: { id: 1, name: 'strawberry' },
+        count: amount
+      })
+    }
+  }
+
   return {
     user,
     money,
     strawberries,
     isLoading,
     fetchUser,
-    setUser
+    setUser,
+    addStrawberries
   }
 })
