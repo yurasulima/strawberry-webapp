@@ -46,7 +46,7 @@ const flushClicks = async () => {
     await userStore.fetchUser()
   } catch (error: any) {
     console.error("Помилка при відправці кліків:", error)
-    const errText = error.response?.data?.message || error.response?.data || 'Денний ліміт 200 полуничок досягнуто!'
+    const errText = error.response?.data?.message || error.response?.data || t('clicker.daily_limit_reached')
     const messageStr = typeof errText === 'string' ? errText : JSON.stringify(errText)
     toastStore.showToast(messageStr, 'error')
     pendingClicks = 0
@@ -87,10 +87,10 @@ const sellAllStrawberries = async (e: MouseEvent) => {
     playCoinSound()
     count.value = 0
     const coins = res.data.coinsEarned ?? 0
-    toastStore.showToast(`Успішно продано! Отримано: +${coins} монет`, 'success')
+    toastStore.showToast(t('clicker.sold_success', { coins }), 'success')
     await userStore.fetchUser()
   } catch (err: any) {
-    const errorMsg = err.response?.data?.message || 'Немає полуниць для продажу'
+    const errorMsg = err.response?.data?.message || t('clicker.no_strawberries_to_sell')
     toastStore.showToast(errorMsg, 'error')
   } finally {
     isSelling.value = false
@@ -136,7 +136,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
           :disabled="count <= 0 && pendingClicks === 0"
           @click="sellAllStrawberries"
       >
-        Продати всі полуниці
+        {{ t('clicker.sell_all') }}
       </ButtonText>
     </div>
   </div>

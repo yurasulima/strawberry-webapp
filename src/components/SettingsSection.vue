@@ -30,9 +30,9 @@ const isUkrainianUser = computed(() => {
 
 const languages = computed(() => {
   const allLangs = [
-    { code: 'uk', label: 'Українська' },
-    { code: 'en', label: 'English' },
-    { code: 'ru', label: 'Русский' }
+    { code: 'uk', label: t('settings.languages.uk') },
+    { code: 'en', label: t('settings.languages.en') },
+    { code: 'ru', label: t('settings.languages.ru') }
   ]
   if (isUkrainianUser.value) {
     return allLangs.filter(l => l.code !== 'ru')
@@ -54,7 +54,7 @@ const currentIndex = computed(() => {
   return idx >= 0 ? idx : 0
 })
 
-const currentLangLabel = computed(() => languages.value[currentIndex.value]?.label || 'Українська')
+const currentLangLabel = computed(() => languages.value[currentIndex.value]?.label || t('settings.languages.uk'))
 
 function prevLang() {
   playClickSound()
@@ -74,7 +74,7 @@ function saveSettings() {
   playPurchaseSound()
   locale.value = selectedLangCode.value
   localStorage.setItem('lang', selectedLangCode.value)
-  toastStore.showToast('Налаштування збережено', 'success')
+  toastStore.showToast(t('settings.saved_success'), 'success')
   emit('close')
 }
 </script>
@@ -99,7 +99,7 @@ function saveSettings() {
           <!-- Кнопка Зберегти -->
           <div class="settings-actions">
             <ButtonText height="52" padding="10px 24px" @click="saveSettings">
-              Зберегти
+              {{ t('settings.save') }}
             </ButtonText>
           </div>
         </div>

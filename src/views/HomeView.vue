@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useWebApp } from "vue-tg"
 import { useAuthStore } from "@/stores/auth.ts"
 import { useUserStore } from "@/stores/user.ts"
@@ -16,6 +17,7 @@ import { PixelToastContainer } from "@/components/pixel";
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
 
+const { t } = useI18n()
 const isLoading = ref(true)
 const userStore = useUserStore()
 const { initDataUnsafe } = useWebApp()
@@ -71,7 +73,7 @@ onMounted(async () => {
 
     <!-- Показуємо splash, поки isLoading -->
     <div v-if="isLoading" class="splash-screen">
-      <div class="loader">Завантаження...</div>
+      <div class="loader">{{ t('loading') }}</div>
     </div>
 
     <!-- Основний контент показуємо, якщо не завантажуємо -->

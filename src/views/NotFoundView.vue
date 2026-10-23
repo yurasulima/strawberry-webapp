@@ -1,18 +1,18 @@
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+</script>
+
 <template>
   <div class="background">
     <div class="notfound-card">
       <h1 class="default-text">404</h1>
-      <p class="message">Сторінку не знайдено</p>
-      <router-link to="/" class="back-button">На головну</router-link>
+      <p class="message">{{ t('not_found.title') }}</p>
+      <router-link to="/" class="back-button">{{ t('not_found.back_home') }}</router-link>
     </div>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'NotFoundView'
-}
-</script>
 
 <style scoped>
 .background {

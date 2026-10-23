@@ -1,4 +1,5 @@
 {
+  "loading": "Загрузка...",
   "clicker": {
     "banned_until": "Вы забанены за автоклик до {time}",
     "strawberries": "Клубничек",
@@ -11,6 +12,7 @@
   "business": {
     "title": "Мои бизнесы",
     "market_title": "Магазин бизнесов",
+    "default_name": "Бизнес",
     "collect": "Собрать",
     "buy": "Купить",
     "collect_in": "Сбор через {time}",
@@ -22,9 +24,14 @@
     "empty_market": "В настоящее время нет доступных бизнесов",
     "collected_success": "Собрано: {name}",
     "bought_success": "Куплено: {name}",
+    "not_enough_money": "Недостаточно монет!",
+    "not_found": "Бизнес не найден",
+    "operation_error": "Произошла ошибка при выполнении операции",
     "names": {
       "garden_bed": "Грядка",
       "garden_bussines": "Сад",
+      "garden_business": "Сад",
+      "garden_bussiness": "Сад",
       "strawberry_farm": "Клубничная ферма",
       "bakery": "Пекарня",
       "factory": "Фабрика"
@@ -38,7 +45,8 @@
     "no_strawberries": "Нет клубничек",
     "inventory": "Инвентарь",
     "empty_inventory": "Инвентарь пуст",
-    "loading": "Загрузка профиля..."
+    "loading": "Загрузка профиля...",
+    "avatar_alt": "Аватар"
   },
   "items": {
     "strawberry": "Клубничка",
@@ -46,6 +54,7 @@
   },
   "players": {
     "title": "Топ игроков",
+    "default_name": "Игрок",
     "loading": "Загрузка...",
     "refresh": "Обновить",
     "error": "Не удалось загрузить игроков",
@@ -53,7 +62,14 @@
   },
   "settings": {
     "title": "Настройки",
-    "language_label": "Язык:"
+    "language_label": "Язык:",
+    "save": "Сохранить",
+    "saved_success": "Настройки сохранены",
+    "languages": {
+      "uk": "Украинский",
+      "en": "Английский",
+      "ru": "Русский"
+    }
   },
   "toolbar": {
     "money": "Монеты",
@@ -72,5 +88,9 @@
     "invited_users": "Приглашённые пользователи",
     "no_invites": "Нет приглашённых",
     "loading": "Загрузка..."
+  },
+  "not_found": {
+    "title": "Страница не найдена",
+    "back_home": "На главную"
   }
 }

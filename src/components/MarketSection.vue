@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import type { Business } from "@/types/Business.ts"
@@ -18,11 +18,32 @@ const businessesForSale = ref<Business[]>([])
 const isLoading = ref(true)
 const buyingName = ref<string | null>(null)
 
+const sortedBusinessesForSale = computed(() => {
+  const list = [...businessesForSale.value]
+  return list.sort((a, b) => {
+    const priceA = a.price ?? 0
+    const priceB = b.price ?? 0
+    if (priceA !== priceB) return priceA - priceB
+
+    const yieldA = a.yieldCount ?? 0
+    const yieldB = b.yieldCount ?? 0
+    if (yieldA !== yieldB) return yieldA - yieldB
+
+    return a.id - b.id
+  })
+})
+
 function formatBizName(rawName?: string): string {
-  if (!rawName) return 'Бізнес'
-  const key = `business.names.${rawName.toLowerCase().trim()}`
+  if (!rawName) return t('business.default_name')
+  const clean = rawName.toLowerCase().trim()
+  const key = `business.names.${clean}`
   if (te(key)) {
     return t(key)
+  }
+  const altClean = clean.replace(/bussines/g, 'business').replace(/bussiness/g, 'business')
+  const altKey = `business.names.${altClean}`
+  if (te(altKey)) {
+    return t(altKey)
   }
   return rawName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
@@ -36,12 +57,12 @@ function translateError(err: any): string {
     return t('clicker.daily_limit_reached')
   }
   if (lower.includes('not enough money') || lower.includes('no money')) {
-    return 'Недостатньо монет!'
+    return t('business.not_enough_money')
   }
   if (lower.includes('not found')) {
-    return 'Бізнес не знайдено'
+    return t('business.not_found')
   }
-  return str || 'Виникла помилка під час виконання операції'
+  return str || t('business.operation_error')
 }
 
 async function loadData() {
@@ -90,10 +111,10 @@ async function directBuy(biz: Business) {
       </div>
 
       <template v-else>
-        <!-- Список доступних бізнесів у єдиній картці -->
-        <Card v-if="businessesForSale.length" width="100%" height="auto" :padding="6">
+        <!-- Список доступних бізнесів у єдиній картці (від найдешевшого до найдорожчого) -->
+        <Card v-if="sortedBusinessesForSale.length" width="100%" height="auto" :padding="6">
           <ul class="biz-list">
-            <li v-for="biz in businessesForSale" :key="biz.id" class="biz-row">
+            <li v-for="biz in sortedBusinessesForSale" :key="biz.id" class="biz-row">
               <div class="biz-info">
                 <span class="biz-name">{{ formatBizName(biz.name) }}</span>
                 <span class="biz-meta">

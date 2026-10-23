@@ -28,7 +28,7 @@ function getItemIcon(itemName: string) {
       <div class="profile-header">
         <img
             :src="player.photoUrl ?? '/default-avatar.png'"
-            alt="Аватар"
+            :alt="t('profile.avatar_alt')"
             class="profile-avatar"
             draggable="false"
         />
@@ -80,7 +80,7 @@ function getItemIcon(itemName: string) {
           </div>
         </div>
         <div v-else class="empty-inventory">
-          <AppText variant="caption" color="muted">Інвентар порожній</AppText>
+          <AppText variant="caption" color="muted">{{ t('profile.empty_inventory') }}</AppText>
         </div>
       </div>
     </AppCard>

@@ -23,10 +23,16 @@ const timerMap = ref<Record<number, number>>({})
 let timerInterval: any = null
 
 function formatBizName(rawName?: string): string {
-  if (!rawName) return 'Бізнес'
-  const key = `business.names.${rawName.toLowerCase().trim()}`
+  if (!rawName) return t('business.default_name')
+  const clean = rawName.toLowerCase().trim()
+  const key = `business.names.${clean}`
   if (te(key)) {
     return t(key)
+  }
+  const altClean = clean.replace(/bussines/g, 'business').replace(/bussiness/g, 'business')
+  const altKey = `business.names.${altClean}`
+  if (te(altKey)) {
+    return t(altKey)
   }
   return rawName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
@@ -39,13 +45,32 @@ function translateError(err: any): string {
   if (lower.includes('wait') || lower.includes('have to wait') || lower.includes('collecting exception')) {
     return t('clicker.daily_limit_reached')
   }
-  if (lower.includes('not enough money') || lower.includes('no money')) return 'Недостатньо монет!'
-  if (lower.includes('not found')) return 'Бізнес не знайдено'
-  return str || 'Виникла помилка під час виконання операції'
+  if (lower.includes('not enough money') || lower.includes('no money')) return t('business.not_enough_money')
+  if (lower.includes('not found')) return t('business.not_found')
+  return str || t('business.operation_error')
 }
 
 const countOf = (biz: UserBusiness) => biz.count || 1
 const yieldOf = (biz: UserBusiness) => (biz.business?.yieldCount || 10) * countOf(biz)
+
+const sortedMyBusinesses = computed(() => {
+  const list = [...myBusinesses.value]
+  return list.sort((a, b) => {
+    const yieldTotalA = yieldOf(a)
+    const yieldTotalB = yieldOf(b)
+    if (yieldTotalA !== yieldTotalB) return yieldTotalB - yieldTotalA
+
+    const priceA = (a.business as any)?.price ?? 0
+    const priceB = (b.business as any)?.price ?? 0
+    if (priceA !== priceB) return priceB - priceA
+
+    const yieldBaseA = a.business?.yieldCount ?? 0
+    const yieldBaseB = b.business?.yieldCount ?? 0
+    if (yieldBaseA !== yieldBaseB) return yieldBaseB - yieldBaseA
+
+    return b.id - a.id
+  })
+})
 
 function formatRemainingTime(seconds?: number): string {
   if (!seconds || seconds <= 0) return ''
@@ -139,10 +164,10 @@ async function directCollect(userBiz: UserBusiness) {
       </div>
 
       <template v-else>
-        <!-- Один Card на весь список: рядки розділені лінією -->
-        <Card v-if="myBusinesses.length" width="100%" height="auto" :padding="6">
+        <!-- Один Card на весь список (від найкрутішого до меншого) -->
+        <Card v-if="sortedMyBusinesses.length" width="100%" height="auto" :padding="6">
           <ul class="biz-list">
-            <li v-for="biz in myBusinesses" :key="biz.id" class="biz-row">
+            <li v-for="biz in sortedMyBusinesses" :key="biz.id" class="biz-row">
               <div class="biz-info">
                 <span class="biz-name">{{ formatBizName(biz.business?.name) }}</span>
                 <span class="biz-meta">

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import { Icon } from '@iconify/vue'
 import { CardPrimary, Card, ButtonText } from '@/components/pixel'
 import type { User } from "@/types/User.ts"
 import { useToastStore } from "@/stores/toast.ts"
 
+const { t } = useI18n()
 const toastStore = useToastStore()
 const players = ref<User[]>([])
 const loading = ref(false)
@@ -14,7 +16,7 @@ function formatPlayerName(player: User): string {
   if (player.firstName || player.lastName) {
     return `${player.firstName ?? ''} ${player.lastName ?? ''}`.trim()
   }
-  return 'Гравець'
+  return t('players.default_name')
 }
 
 function getMoneyCount(player: User): number {
@@ -28,7 +30,7 @@ const fetchPlayers = async () => {
     const response = await api.get('/users')
     players.value = response.data || []
   } catch (e) {
-    toastStore.showToast('Помилка завантаження топу гравців', 'error')
+    toastStore.showToast(t('players.error'), 'error')
   } finally {
     loading.value = false
   }
@@ -43,18 +45,18 @@ onMounted(() => {
   <div class="players-container">
     <CardPrimary width="100%" height="auto" :padding="12">
       <div class="players-header">
-        <h2 class="title">Топ гравців</h2>
+        <h2 class="title">{{ t('players.title') }}</h2>
         <ButtonText
             padding="6px 14px"
             :loading="loading"
             @click="fetchPlayers"
         >
-          Оновити
+          {{ t('players.refresh') }}
         </ButtonText>
       </div>
 
       <div v-if="loading" class="loading-state">
-        <span>Завантаження...</span>
+        <span>{{ t('players.loading') }}</span>
       </div>
 
       <template v-else>
@@ -86,7 +88,7 @@ onMounted(() => {
 
         <div v-else class="empty-state">
           <Icon icon="pixelarticons:info-box" class="empty-icon" />
-          <p class="empty-title">Гравців не знайдено</p>
+          <p class="empty-title">{{ t('players.empty') }}</p>
         </div>
       </template>
     </CardPrimary>

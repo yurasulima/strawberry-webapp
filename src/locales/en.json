@@ -1,4 +1,5 @@
 {
+  "loading": "Loading...",
   "clicker": {
     "banned_until": "You are banned for autoclicking until {time}",
     "strawberries": "Strawberries",
@@ -11,6 +12,7 @@
   "business": {
     "title": "My Businesses",
     "market_title": "Business Market",
+    "default_name": "Business",
     "collect": "Collect",
     "buy": "Buy",
     "collect_in": "Collect in {time}",
@@ -22,9 +24,14 @@
     "empty_market": "No businesses available at the moment",
     "collected_success": "Collected: {name}",
     "bought_success": "Purchased: {name}",
+    "not_enough_money": "Not enough coins!",
+    "not_found": "Business not found",
+    "operation_error": "An error occurred during the operation",
     "names": {
       "garden_bed": "Garden Bed",
       "garden_bussines": "Garden",
+      "garden_business": "Garden",
+      "garden_bussiness": "Garden",
       "strawberry_farm": "Strawberry Farm",
       "bakery": "Bakery",
       "factory": "Factory"
@@ -38,7 +45,8 @@
     "no_strawberries": "No strawberries",
     "inventory": "Inventory",
     "empty_inventory": "Inventory is empty",
-    "loading": "Loading profile..."
+    "loading": "Loading profile...",
+    "avatar_alt": "Avatar"
   },
   "items": {
     "strawberry": "Strawberry",
@@ -46,6 +54,7 @@
   },
   "players": {
     "title": "Top Players",
+    "default_name": "Player",
     "loading": "Loading...",
     "refresh": "Refresh",
     "error": "Failed to load players",
@@ -53,7 +62,14 @@
   },
   "settings": {
     "title": "Settings",
-    "language_label": "Language:"
+    "language_label": "Language:",
+    "save": "Save",
+    "saved_success": "Settings saved",
+    "languages": {
+      "uk": "Ukrainian",
+      "en": "English",
+      "ru": "Russian"
+    }
   },
   "toolbar": {
     "money": "Coins",
@@ -72,5 +88,9 @@
     "invited_users": "Invited Users",
     "no_invites": "No Invites",
     "loading": "Loading..."
+  },
+  "not_found": {
+    "title": "Page Not Found",
+    "back_home": "Go to Home"
   }
 }

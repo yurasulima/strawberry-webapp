@@ -1,4 +1,5 @@
 {
+  "loading": "Завантаження...",
   "clicker": {
     "banned_until": "Ви забанені за автоклік до {time}",
     "strawberries": "Полуничок",
@@ -11,6 +12,7 @@
   "business": {
     "title": "Мої бізнеси",
     "market_title": "Магазин бізнесів",
+    "default_name": "Бізнес",
     "collect": "Зібрати",
     "buy": "Купити",
     "collect_in": "Збір через {time}",
@@ -22,9 +24,14 @@
     "empty_market": "Наразі немає доступних бізнесів",
     "collected_success": "Зібрано: {name}",
     "bought_success": "Придбано: {name}",
+    "not_enough_money": "Недостатньо монет!",
+    "not_found": "Бізнес не знайдено",
+    "operation_error": "Виникла помилка під час виконання операції",
     "names": {
       "garden_bed": "Грядка",
       "garden_bussines": "Сад",
+      "garden_business": "Сад",
+      "garden_bussiness": "Сад",
       "strawberry_farm": "Полунична ферма",
       "bakery": "Пекарня",
       "factory": "Фабрика"
@@ -38,7 +45,8 @@
     "no_strawberries": "Немає полуничок",
     "inventory": "Інвентар",
     "empty_inventory": "Інвентар порожній",
-    "loading": "Завантаження профілю..."
+    "loading": "Завантаження профілю...",
+    "avatar_alt": "Аватар"
   },
   "items": {
     "strawberry": "Полуничка",
@@ -46,6 +54,7 @@
   },
   "players": {
     "title": "Топ гравців",
+    "default_name": "Гравець",
     "loading": "Завантаження...",
     "refresh": "Оновити",
     "error": "Помилка завантаження топу гравців",
@@ -53,7 +62,14 @@
   },
   "settings": {
     "title": "Налаштування",
-    "language_label": "Мова:"
+    "language_label": "Мова:",
+    "save": "Зберегти",
+    "saved_success": "Налаштування збережено",
+    "languages": {
+      "uk": "Українська",
+      "en": "English",
+      "ru": "Русский"
+    }
   },
   "toolbar": {
     "money": "Монети",
@@ -72,5 +88,9 @@
     "invited_users": "Запрошені користувачі",
     "no_invites": "Немає запрошених",
     "loading": "Завантаження..."
+  },
+  "not_found": {
+    "title": "Сторінку не знайдено",
+    "back_home": "На головну"
   }
 }
