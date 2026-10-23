@@ -90,6 +90,7 @@ watch(() => [props.texture, props.pressedTexture], preloadButtonTextures)
     @click="handleClick"
   >
     <NinePatch :src="currentTexture" class="pixel-btn__background" />
+
     <span class="pixel-btn__content">
       <span v-if="loading" class="btn-loading-dots">...</span>
       <Icon v-else-if="icon" :icon="icon" class="btn-icon" />

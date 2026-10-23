@@ -11,6 +11,10 @@ const { locale, t } = useI18n()
 const userStore = useUserStore()
 const toastStore = useToastStore()
 
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
 const { initDataUnsafe } = useWebApp()
 const telegramUser = initDataUnsafe?.user
 
@@ -71,6 +75,7 @@ function saveSettings() {
   locale.value = selectedLangCode.value
   localStorage.setItem('lang', selectedLangCode.value)
   toastStore.showToast('Налаштування збережено', 'success')
+  emit('close')
 }
 </script>
 
@@ -85,9 +90,9 @@ function saveSettings() {
           <div class="setting-row">
             <span class="setting-label">{{ t('settings.language_label') }}</span>
             <div class="lang-selector">
-              <LeftButton width="48" height="48" @click="prevLang" />
+              <LeftButton size="64" @click="prevLang" />
               <span class="lang-label">{{ currentLangLabel }}</span>
-              <RightButton width="48" height="48" @click="nextLang" />
+              <RightButton size="64" @click="nextLang" />
             </div>
           </div>
 
@@ -138,25 +143,28 @@ function saveSettings() {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 52px;
+  min-height: 64px;
+  width: 100%;
 }
 
 .setting-label {
   font-size: 20px;
   color: #3f2e21;
+  flex-shrink: 0;
 }
 
 .lang-selector {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .lang-label {
   font-size: 18px;
   font-weight: bold;
   color: #3f2e21;
-  min-width: 110px;
+  min-width: 100px;
   text-align: center;
   user-select: none;
 }

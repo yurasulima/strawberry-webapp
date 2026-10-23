@@ -92,7 +92,7 @@ onMounted(async () => {
         <BussinesSection v-show="activeTab === 'business'" :user="user" />
         <MarketSection v-show="activeTab === 'shop'" :user="user" />
         <PlayersSection v-show="activeTab === 'users'" />
-        <SettingsSection v-show="activeTab === 'settings'" />
+        <SettingsSection v-show="activeTab === 'settings'" @close="activeTab = 'clicker'" />
         <DebugSection v-show="activeTab === 'debug'" />
       </div>
 

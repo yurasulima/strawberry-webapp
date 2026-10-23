@@ -2,8 +2,7 @@
 import PixelButton from './PixelButton.vue'
 
 const props = withDefaults(defineProps<{
-  width?: number | string
-  height?: number | string
+  size?: number | string
   padding?: number | string
   disabled?: boolean
   loading?: boolean
@@ -11,9 +10,8 @@ const props = withDefaults(defineProps<{
   icon?: string
   playSound?: boolean
 }>(), {
-  width: 48,
-  height: 48,
-  padding: '4px'
+  size: 64,
+  padding: '6px'
 })
 
 const emit = defineEmits<{
@@ -25,7 +23,7 @@ const emit = defineEmits<{
   <PixelButton
     texture="/ui/button_left.png"
     pressed-texture="/ui/button_left_pressed.png"
-    :width="width"
+    :size="size"
     :height="height"
     :padding="padding"
     :disabled="disabled"
