@@ -4,39 +4,19 @@ import {
   GameButton,
   ShopButton,
   TopButton,
-  SettingsButton,
   CardPrimary
 } from '@/components/pixel'
 import BusinessButton from "@/components/pixel/BusinessButton.vue";
 
-const props = defineProps<{ activeTab: 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug' }>()
+export type TabType = 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug' | 'settings'
+
+const props = defineProps<{ activeTab: TabType }>()
 const emit = defineEmits<{
-  (e: 'changeTab', tab: 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug'): void
+  (e: 'changeTab', tab: TabType): void
 }>()
 
-const profileClickCount = ref(0)
-let lastClickTime = 0
-
-function switchTab(tab: 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug') {
+function switchTab(tab: TabType) {
   emit('changeTab', tab)
-}
-
-function handleProfileClick() {
-  const now = Date.now()
-  if (now - lastClickTime > 600) {
-    profileClickCount.value = 1
-  } else {
-    profileClickCount.value++
-  }
-
-  lastClickTime = now
-
-  if (profileClickCount.value >= 7) {
-    emit('changeTab', 'debug')
-    profileClickCount.value = 0
-  } else {
-    emit('changeTab', 'profile')
-  }
 }
 </script>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { UserBusiness } from '@/types/UserBusiness.ts'
 import { Icon } from '@iconify/vue'
@@ -9,6 +10,7 @@ import { useUserStore } from '@/stores/user.ts'
 import { useToastStore } from '@/stores/toast.ts'
 
 const props = defineProps<{ user?: any }>()
+const { t, te } = useI18n()
 const userStore = useUserStore()
 const toastStore = useToastStore()
 
@@ -22,11 +24,10 @@ let timerInterval: any = null
 
 function formatBizName(rawName?: string): string {
   if (!rawName) return 'Бізнес'
-  const clean = rawName.toLowerCase().trim()
-  if (clean === 'garden_bussines' || clean.includes('garden')) return 'Сад'
-  if (clean.includes('strawberry') || clean.includes('полуниц')) return 'Полунична ферма'
-  if (clean.includes('bakery') || clean.includes('пекар')) return 'Пекарня'
-  if (clean.includes('factory') || clean.includes('фабрик')) return 'Фабрика'
+  const key = `business.names.${rawName.toLowerCase().trim()}`
+  if (te(key)) {
+    return t(key)
+  }
   return rawName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
@@ -36,22 +37,11 @@ function translateError(err: any): string {
   const lower = str.toLowerCase()
 
   if (lower.includes('wait') || lower.includes('have to wait') || lower.includes('collecting exception')) {
-    return 'Зачекайте трохи перед наступним збором прибутку!'
+    return t('clicker.daily_limit_reached')
   }
   if (lower.includes('not enough money') || lower.includes('no money')) return 'Недостатньо монет!'
   if (lower.includes('not found')) return 'Бізнес не знайдено'
   return str || 'Виникла помилка під час виконання операції'
-}
-
-function getBizIcon(name?: string) {
-  const n = (name || '').toLowerCase()
-  if (n.includes('garden') || n.includes('ферма') || n.includes('поле') || n.includes('полуниц')) {
-    return '/honeywood/icons/nature/sprout.png'
-  }
-  if (n.includes('пекарня') || n.includes('хліб') || n.includes('їжа')) {
-    return '/honeywood/icons/food/bread.png'
-  }
-  return '/honeywood/icons/home/chest.png'
 }
 
 const countOf = (biz: UserBusiness) => biz.count || 1
@@ -129,7 +119,7 @@ async function directCollect(userBiz: UserBusiness) {
   try {
     await api.post('/business/collect', { name: rawName })
     playCoinSound()
-    toastStore.showToast(`Зібрано: ${formatBizName(rawName)}`, 'success')
+    toastStore.showToast(t('business.collected_success', { name: formatBizName(rawName) }), 'success')
     await userStore.fetchUser()
   } catch (err: any) {
     toastStore.showToast(translateError(err), 'error')
@@ -142,10 +132,10 @@ async function directCollect(userBiz: UserBusiness) {
 <template>
   <div class="business-container">
     <CardPrimary width="100%" height="auto" :padding="12">
-      <h2 class="title">Мої бізнеси</h2>
+      <h2 class="title">{{ t('business.title') }}</h2>
 
       <div v-if="isLoading" class="loading-state">
-        <span>Завантаження...</span>
+        <span>{{ t('invite_list.loading') }}</span>
       </div>
 
       <template v-else>
@@ -153,15 +143,13 @@ async function directCollect(userBiz: UserBusiness) {
         <Card v-if="myBusinesses.length" width="100%" height="auto" :padding="6">
           <ul class="biz-list">
             <li v-for="biz in myBusinesses" :key="biz.id" class="biz-row">
-              <img :src="getBizIcon(biz.business?.name)" class="biz-icon" alt="" />
-
               <div class="biz-info">
                 <span class="biz-name">{{ formatBizName(biz.business?.name) }}</span>
                 <span class="biz-meta">
-                  {{ countOf(biz) }} шт. · <strong class="yield-val">+{{ yieldOf(biz) }}</strong>
+                  {{ countOf(biz) }} {{ t('business.count_pcs') }} · <strong class="yield-val">+{{ yieldOf(biz) }}</strong>
                 </span>
                 <span v-if="timerMap[biz.id] > 0" class="biz-timer">
-                  Збір через {{ formatRemainingTime(timerMap[biz.id]) }}
+                  {{ t('business.collect_in', { time: formatRemainingTime(timerMap[biz.id]) }) }}
                 </span>
               </div>
 
@@ -170,7 +158,7 @@ async function directCollect(userBiz: UserBusiness) {
                   :loading="collectingName === biz.business?.name"
                   @click="directCollect(biz)"
               >
-                {{ timerMap[biz.id] > 0 ? formatRemainingTime(timerMap[biz.id]) : 'Зібрати' }}
+                {{ timerMap[biz.id] > 0 ? formatRemainingTime(timerMap[biz.id]) : t('business.collect') }}
               </ButtonText>
             </li>
           </ul>
@@ -178,8 +166,8 @@ async function directCollect(userBiz: UserBusiness) {
 
         <div v-else class="empty-state">
           <Icon icon="pixelarticons:info-box" class="empty-icon" />
-          <p class="empty-title">У вас ще немає бізнесів</p>
-          <p class="empty-subtitle">Придбайте перший у вкладці <strong>Магазин</strong></p>
+          <p class="empty-title">{{ t('business.empty_businesses') }}</p>
+          <p class="empty-subtitle">{{ t('business.buy_first_in_shop') }}</p>
         </div>
       </template>
     </CardPrimary>
@@ -225,18 +213,11 @@ async function directCollect(userBiz: UserBusiness) {
   align-items: center;
   gap: 8px;
   min-height: 64px;
-  padding: 2px 4px;
+  padding: 4px 6px;
 }
 
 .biz-row + .biz-row {
   border-top: 2px solid rgba(63, 46, 33, 0.18);
-}
-
-.biz-icon {
-  width: 32px;
-  height: 32px;
-  image-rendering: pixelated;
-  flex-shrink: 0;
 }
 
 .biz-info {

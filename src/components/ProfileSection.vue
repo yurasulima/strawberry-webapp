@@ -220,7 +220,6 @@ function getItemIcon(itemName: string) {
   font-size: 10px;
   font-weight: bold;
   color: #3f2e21;
-  text-shadow: 1px 1px #fff;
 }
 
 .slot-tooltip {

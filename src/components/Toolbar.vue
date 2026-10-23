@@ -1,20 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import {
   CardPrimary,
   AvatarBorder,
   SettingsButton,
-  PixelModal,
-  CloseButton,
-  OkButton,
   Image,
   Card
 } from '@/components/pixel'
-import SettingsSegment from './SettingsSegment.vue'
 import { playClickSound } from '@/services/sound'
-
-const { t } = useI18n()
 
 const props = defineProps<{
   firstName?: string | null
@@ -25,11 +17,13 @@ const props = defineProps<{
   language_code?: string | null
 }>()
 
-const showSettings = ref(false)
+const emit = defineEmits<{
+  (e: 'openSettings'): void
+}>()
 
 function handleOpenSettings() {
   playClickSound()
-  showSettings.value = true
+  emit('openSettings')
 }
 </script>
 
@@ -77,20 +71,6 @@ function handleOpenSettings() {
       </Card>
     </div>
   </div>
-
-  <!-- Settings Pixel Modal -->
-  <PixelModal
-      v-model="showSettings"
-      :title="t('modal.settings') || 'Налаштування'"
-      width="360"
-  >
-    <SettingsSegment :language_code="props.language_code"/>
-
-    <template #footer>
-      <OkButton size="48" @click="showSettings = false"/>
-      <CloseButton size="48" @click="showSettings = false"/>
-    </template>
-  </PixelModal>
 </template>
 
 <style scoped>
@@ -208,7 +188,7 @@ function handleOpenSettings() {
   font-size: 18px;
   font-weight: bold;
   color: #494643;
-  text-shadow: 1px 1px 0 #1a1008;
+  text-shadow: none;
   text-align: right;
   flex-grow: 1;
 }

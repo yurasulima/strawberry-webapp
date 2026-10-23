@@ -2,15 +2,42 @@
   "clicker": {
     "banned_until": "You are banned for autoclicking until {time}",
     "strawberries": "Strawberries",
-    "plusOne": "+1"
+    "plusOne": "+1",
+    "sell_all": "Sell All Strawberries",
+    "sold_success": "Successfully sold! Received: +{coins} coins",
+    "no_strawberries_to_sell": "No strawberries to sell",
+    "daily_limit_reached": "Daily limit of 200 strawberries reached!"
+  },
+  "business": {
+    "title": "My Businesses",
+    "market_title": "Business Market",
+    "collect": "Collect",
+    "buy": "Buy",
+    "collect_in": "Collect in {time}",
+    "price": "Price: {price}",
+    "yield": "Yield: +{yield}",
+    "count_pcs": "pcs",
+    "empty_businesses": "You have no businesses yet",
+    "buy_first_in_shop": "Buy your first one in the Shop tab",
+    "empty_market": "No businesses available at the moment",
+    "collected_success": "Collected: {name}",
+    "bought_success": "Purchased: {name}",
+    "names": {
+      "garden_bed": "Garden Bed",
+      "garden_bussines": "Garden",
+      "strawberry_farm": "Strawberry Farm",
+      "bakery": "Bakery",
+      "factory": "Factory"
+    }
   },
   "profile": {
-    "no_name": "No name",
+    "no_name": "No Name",
     "premium": "Premium",
     "banned": "Banned",
     "strawberries": "Strawberries",
     "no_strawberries": "No strawberries",
     "inventory": "Inventory",
+    "empty_inventory": "Inventory is empty",
     "loading": "Loading profile..."
   },
   "items": {
@@ -18,19 +45,18 @@
     "money": "Coin"
   },
   "players": {
-    "title": "Players",
+    "title": "Top Players",
     "loading": "Loading...",
     "refresh": "Refresh",
     "error": "Failed to load players",
-    "empty": "No players."
+    "empty": "No players found"
   },
-
   "settings": {
     "title": "Settings",
-    "language_label": "Interface Language:"
+    "language_label": "Language:"
   },
   "toolbar": {
-    "money": "💰",
+    "money": "Coins",
     "settings_alt": "Settings"
   },
   "modal": {
@@ -43,8 +69,8 @@
     "players": "Players"
   },
   "invite_list": {
-  "invited_users": "Invited Users",
-  "no_invites": "No Invites",
-  "loading": "Loading..."
-}
+    "invited_users": "Invited Users",
+    "no_invites": "No Invites",
+    "loading": "Loading..."
+  }
 }

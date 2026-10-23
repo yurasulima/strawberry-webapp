@@ -17,8 +17,8 @@ function formatPlayerName(player: User): string {
   return 'Гравець'
 }
 
-function getStrawberryCount(player: User): number {
-  return player.slots?.find(s => s.item?.name === 'strawberry')?.count ?? 0
+function getMoneyCount(player: User): number {
+  return player.slots?.find(s => s.item?.name === 'money')?.count ?? 0
 }
 
 const fetchPlayers = async () => {
@@ -77,8 +77,8 @@ onMounted(() => {
               </div>
 
               <div class="player-score">
-                <img src="/ui/strawberry.png" alt="" class="score-icon" />
-                <strong class="score-val">{{ getStrawberryCount(player) }}</strong>
+                <img src="/ui/money.png" alt="" class="score-icon" />
+                <strong class="score-val">{{ getMoneyCount(player) }}</strong>
               </div>
             </li>
           </ul>

@@ -2,7 +2,33 @@
   "clicker": {
     "banned_until": "Ви забанені за автоклік до {time}",
     "strawberries": "Полуничок",
-    "plusOne": "+1"
+    "plusOne": "+1",
+    "sell_all": "Продати всі полуниці",
+    "sold_success": "Успішно продано! Отримано: +{coins} монет",
+    "no_strawberries_to_sell": "Немає полуниць для продажу",
+    "daily_limit_reached": "Денний ліміт 200 полуничок досягнуто!"
+  },
+  "business": {
+    "title": "Мої бізнеси",
+    "market_title": "Магазин бізнесів",
+    "collect": "Зібрати",
+    "buy": "Купити",
+    "collect_in": "Збір через {time}",
+    "price": "Ціна: {price}",
+    "yield": "Прибуток: +{yield}",
+    "count_pcs": "шт.",
+    "empty_businesses": "У вас ще немає бізнесів",
+    "buy_first_in_shop": "Придбайте перший у вкладці Магазин",
+    "empty_market": "Наразі немає доступних бізнесів",
+    "collected_success": "Зібрано: {name}",
+    "bought_success": "Придбано: {name}",
+    "names": {
+      "garden_bed": "Грядка",
+      "garden_bussines": "Сад",
+      "strawberry_farm": "Полунична ферма",
+      "bakery": "Пекарня",
+      "factory": "Фабрика"
+    }
   },
   "profile": {
     "no_name": "Без імені",
@@ -11,6 +37,7 @@
     "strawberries": "Полунички",
     "no_strawberries": "Немає полуничок",
     "inventory": "Інвентар",
+    "empty_inventory": "Інвентар порожній",
     "loading": "Завантаження профілю..."
   },
   "items": {
@@ -18,19 +45,18 @@
     "money": "Монета"
   },
   "players": {
-    "title": "Гравці",
+    "title": "Топ гравців",
     "loading": "Завантаження...",
     "refresh": "Оновити",
-    "error": "Не вдалося завантажити гравців",
-    "empty": "Гравців немає."
+    "error": "Помилка завантаження топу гравців",
+    "empty": "Гравців не знайдено"
   },
-
   "settings": {
     "title": "Налаштування",
-    "language_label": "Мова інтерфейсу:"
+    "language_label": "Мова:"
   },
   "toolbar": {
-    "money": "💰",
+    "money": "Монети",
     "settings_alt": "Налаштування"
   },
   "modal": {
@@ -42,7 +68,6 @@
     "business": "Бізнес",
     "players": "Гравці"
   },
-
   "invite_list": {
     "invited_users": "Запрошені користувачі",
     "no_invites": "Немає запрошених",

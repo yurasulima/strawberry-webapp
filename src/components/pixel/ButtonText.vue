@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<{
   playSound?: boolean
 }>(), {
   width: 'auto',
-  padding: '0 24px' // тільки горизонтальний padding
+  padding: '0 24px'
 })
 
 const emit = defineEmits<{
@@ -40,19 +40,15 @@ const emit = defineEmits<{
 
 <style scoped>
 .text-button {
-  font-family: 'Crumbline', monospace;
+  font-family: 'Crumbline', sans-serif;
   font-size: 16px;
   line-height: 1;
 }
 
-/* :deep потрібен, бо .btn-text знаходиться всередині дочірнього компонента */
 .text-button :deep(.btn-text) {
   line-height: 1;
-  transform: translateY(1px);
   font-weight: normal;
   font-size: 20px;
-  text-shadow:
-      1px 0 0 currentColor,
-      0 1px 0 rgba(255, 255, 255, 0.6); /* ваша світла підкладка */
+  text-shadow: none;
 }
 </style>

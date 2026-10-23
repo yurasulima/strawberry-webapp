@@ -2,7 +2,33 @@
   "clicker": {
     "banned_until": "Вы забанены за автоклик до {time}",
     "strawberries": "Клубничек",
-    "plusOne": "+1"
+    "plusOne": "+1",
+    "sell_all": "Продать всю клубнику",
+    "sold_success": "Успешно продано! Получено: +{coins} монет",
+    "no_strawberries_to_sell": "Нет клубники для продажи",
+    "daily_limit_reached": "Дневной лимит 200 клубничек достигнут!"
+  },
+  "business": {
+    "title": "Мои бизнесы",
+    "market_title": "Магазин бизнесов",
+    "collect": "Собрать",
+    "buy": "Купить",
+    "collect_in": "Сбор через {time}",
+    "price": "Цена: {price}",
+    "yield": "Доход: +{yield}",
+    "count_pcs": "шт.",
+    "empty_businesses": "У вас ещё нет бизнесов",
+    "buy_first_in_shop": "Приобретите первый во вкладке Магазин",
+    "empty_market": "В настоящее время нет доступных бизнесов",
+    "collected_success": "Собрано: {name}",
+    "bought_success": "Куплено: {name}",
+    "names": {
+      "garden_bed": "Грядка",
+      "garden_bussines": "Сад",
+      "strawberry_farm": "Клубничная ферма",
+      "bakery": "Пекарня",
+      "factory": "Фабрика"
+    }
   },
   "profile": {
     "no_name": "Без имени",
@@ -11,6 +37,7 @@
     "strawberries": "Клубнички",
     "no_strawberries": "Нет клубничек",
     "inventory": "Инвентарь",
+    "empty_inventory": "Инвентарь пуст",
     "loading": "Загрузка профиля..."
   },
   "items": {
@@ -18,19 +45,18 @@
     "money": "Монета"
   },
   "players": {
-    "title": "Игроки",
+    "title": "Топ игроков",
     "loading": "Загрузка...",
     "refresh": "Обновить",
     "error": "Не удалось загрузить игроков",
-    "empty": "Игроков нет."
+    "empty": "Игроки не найдены"
   },
-
   "settings": {
     "title": "Настройки",
-    "language_label": "Язык интерфейса:"
+    "language_label": "Язык:"
   },
   "toolbar": {
-    "money": "💰",
+    "money": "Монеты",
     "settings_alt": "Настройки"
   },
   "modal": {

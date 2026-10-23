@@ -138,21 +138,23 @@ watch(() => [props.texture, props.pressedTexture], preloadButtonTextures)
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+  transform: translateY(-2px);
+  transition: transform 0.05s ease;
 }
 
-/* Миттєвий зсув вмісту (тексту та іконки) вниз при натисканні */
+/* Зсув вмісту вниз при натисканні або активному стані */
 .pixel-btn.is-pressed .pixel-btn__content,
 .pixel-btn.is-active .pixel-btn__content,
 .pixel-btn:active:not(.is-disabled) .pixel-btn__content {
-  transform: translateY(2px);
+  transform: translateY(1px);
 }
 
 .btn-text {
   display: inline-block;
-  line-height: 1.2;
+  line-height: 1;
   white-space: nowrap;
   padding: 0 4px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  text-shadow: none;
 }
 
 .btn-icon {

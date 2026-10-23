@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import type { Business } from "@/types/Business.ts"
 import { Icon } from '@iconify/vue'
@@ -9,6 +10,7 @@ import { useUserStore } from "@/stores/user.ts"
 import { useToastStore } from "@/stores/toast.ts"
 
 const props = defineProps<{ user?: any }>()
+const { t, te } = useI18n()
 const userStore = useUserStore()
 const toastStore = useToastStore()
 
@@ -18,11 +20,10 @@ const buyingName = ref<string | null>(null)
 
 function formatBizName(rawName?: string): string {
   if (!rawName) return 'Бізнес'
-  const clean = rawName.toLowerCase().trim()
-  if (clean === 'garden_bussines' || clean.includes('garden')) return 'Сад'
-  if (clean.includes('strawberry') || clean.includes('полуниц')) return 'Полунична ферма'
-  if (clean.includes('bakery') || clean.includes('пекар')) return 'Пекарня'
-  if (clean.includes('factory') || clean.includes('фабрик')) return 'Фабрика'
+  const key = `business.names.${rawName.toLowerCase().trim()}`
+  if (te(key)) {
+    return t(key)
+  }
   return rawName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
@@ -32,7 +33,7 @@ function translateError(err: any): string {
   const lower = str.toLowerCase()
 
   if (lower.includes('wait') || lower.includes('have to wait') || lower.includes('collecting exception')) {
-    return 'Зачекайте трохи перед наступною дією!'
+    return t('clicker.daily_limit_reached')
   }
   if (lower.includes('not enough money') || lower.includes('no money')) {
     return 'Недостатньо монет!'
@@ -67,7 +68,7 @@ async function directBuy(biz: Business) {
   try {
     await api.post('/business/buy', { name: biz.name })
     playPurchaseSound()
-    toastStore.showToast(`Придбано: ${displayName}`, 'success')
+    toastStore.showToast(t('business.bought_success', { name: displayName }), 'success')
     await loadData()
     await userStore.fetchUser()
   } catch (err: any) {
@@ -76,27 +77,16 @@ async function directBuy(biz: Business) {
     buyingName.value = null
   }
 }
-
-function getBizIcon(name?: string) {
-  const n = (name || '').toLowerCase()
-  if (n.includes('garden') || n.includes('ферма') || n.includes('поле') || n.includes('полуниц')) {
-    return '/honeywood/icons/nature/sprout.png'
-  }
-  if (n.includes('пекарня') || n.includes('хліб') || n.includes('їжа')) {
-    return '/honeywood/icons/food/bread.png'
-  }
-  return '/honeywood/icons/home/chest.png'
-}
 </script>
 
 <template>
   <div class="market-container">
     <CardPrimary width="100%" height="auto" :padding="12">
-      <h2 class="title">Магазин бізнесів</h2>
+      <h2 class="title">{{ t('business.market_title') }}</h2>
 
       <!-- Стан завантаження -->
       <div v-if="isLoading" class="loading-state">
-        <span>Завантаження...</span>
+        <span>{{ t('invite_list.loading') }}</span>
       </div>
 
       <template v-else>
@@ -104,12 +94,10 @@ function getBizIcon(name?: string) {
         <Card v-if="businessesForSale.length" width="100%" height="auto" :padding="6">
           <ul class="biz-list">
             <li v-for="biz in businessesForSale" :key="biz.id" class="biz-row">
-              <img :src="getBizIcon(biz.name)" class="biz-icon" alt="" />
-
               <div class="biz-info">
                 <span class="biz-name">{{ formatBizName(biz.name) }}</span>
                 <span class="biz-meta">
-                  Ціна: {{ biz.price || 100 }} · <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong>
+                  {{ t('business.price', { price: biz.price || 100 }) }} · <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong>
                 </span>
               </div>
 
@@ -117,7 +105,7 @@ function getBizIcon(name?: string) {
                 :loading="buyingName === biz.name"
                 @click="directBuy(biz)"
               >
-                Купити
+                {{ t('business.buy') }}
               </ButtonText>
             </li>
           </ul>
@@ -126,7 +114,7 @@ function getBizIcon(name?: string) {
         <!-- Порожній стан -->
         <div v-else class="empty-state">
           <Icon icon="pixelarticons:info-box" class="empty-icon" />
-          <p class="empty-title">Наразі немає доступних бізнесів</p>
+          <p class="empty-title">{{ t('business.empty_market') }}</p>
         </div>
       </template>
     </CardPrimary>
@@ -172,18 +160,11 @@ function getBizIcon(name?: string) {
   align-items: center;
   gap: 8px;
   min-height: 64px;
-  padding: 2px 4px;
+  padding: 4px 6px;
 }
 
 .biz-row + .biz-row {
   border-top: 2px solid rgba(63, 46, 33, 0.18);
-}
-
-.biz-icon {
-  width: 32px;
-  height: 32px;
-  image-rendering: pixelated;
-  flex-shrink: 0;
 }
 
 .biz-info {

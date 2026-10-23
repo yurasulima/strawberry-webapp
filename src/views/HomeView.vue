@@ -11,6 +11,7 @@ import DebugSection from '@/components/DebugSection.vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import BussinesSection from "@/components/BussinesSection.vue";
 import MarketSection from "@/components/MarketSection.vue";
+import SettingsSection from "@/components/SettingsSection.vue";
 import { PixelToastContainer } from "@/components/pixel";
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
@@ -25,7 +26,7 @@ if (user === undefined) {
   router.replace('/404')
 }
 
-const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business' | 'shop'>('clicker')
+const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business' | 'shop' | 'settings'>('clicker')
 
 watch(activeTab, () => {
   userStore.fetchUser()
@@ -82,6 +83,7 @@ onMounted(async () => {
           :avatar="user.photo_url"
           :money="userStore.money"
           :strawberry="userStore.strawberries"
+          @openSettings="activeTab = activeTab === 'settings' ? 'clicker' : 'settings'"
       />
 
       <div class="main-content">
@@ -90,6 +92,7 @@ onMounted(async () => {
         <BussinesSection v-show="activeTab === 'business'" :user="user" />
         <MarketSection v-show="activeTab === 'shop'" :user="user" />
         <PlayersSection v-show="activeTab === 'users'" />
+        <SettingsSection v-show="activeTab === 'settings'" />
         <DebugSection v-show="activeTab === 'debug'" />
       </div>
 
