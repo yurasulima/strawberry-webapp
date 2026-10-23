@@ -24,7 +24,6 @@ const emit = defineEmits<{
     texture="/ui/button_left.png"
     pressed-texture="/ui/button_left_pressed.png"
     :size="size"
-    :height="height"
     :padding="padding"
     :disabled="disabled"
     :loading="loading"
