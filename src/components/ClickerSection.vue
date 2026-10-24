@@ -218,17 +218,14 @@ const sellAllStrawberries = async (e: MouseEvent) => {
       </ButtonText>
 
 
-      <Card width="100%" height="auto" :padding="10" class="limit-card-wrapper">
-        <div class="limit-status-box">
-          <div v-if="isLimitReached" class="limit-alert-banner">
+      <Card v-if="isLimitReached" width="100%" height="auto" :padding="10" class="limit-card-wrapper">
+        <div   class="limit-status-box">
+          <div class="limit-alert-banner">
             <img src="/honeywood/icons/interface/lock.png" alt="Lock" class="limit-alert-icon" />
             <div class="limit-alert-text">
               <span class="alert-title">{{ t('clicker.limit_reached_title') }}</span>
               <span class="alert-timer">{{ t('clicker.limit_resets_in', { time: formattedResetTime }) }}</span>
             </div>
-          </div>
-          <div v-else class="limit-timer-sub">
-            <span>⏳ {{ t('clicker.limit_resets_in', { time: formattedResetTime }) }}</span>
           </div>
         </div>
       </Card>

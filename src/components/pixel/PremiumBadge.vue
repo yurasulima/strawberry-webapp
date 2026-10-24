@@ -5,14 +5,13 @@ withDefaults(defineProps<{
   text?: string
   showIcon?: boolean
 }>(), {
-  text: 'PRO',
+  text: 'Premium',
   showIcon: true
 })
 </script>
 
 <template>
   <span class="pixel-premium-badge">
-    <Icon v-if="showIcon" icon="pixelarticons:zap" class="badge-icon" />
     <span>{{ text }}</span>
   </span>
 </template>
@@ -20,7 +19,8 @@ withDefaults(defineProps<{
 <style scoped>
 .pixel-premium-badge {
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: 12px;
+  width: fit-content;
   font-weight: bold;
   background-color: #5977a3;
   border: 1px solid #1b5e20;
