@@ -10,6 +10,7 @@ export interface User {
   telegramId: number
   firstName: string | null
   lastName: string | null
+  username?: string | null
   bio: string | null
   lang: string | null
   premium: boolean

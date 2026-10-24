@@ -169,9 +169,13 @@ async function directCollect(userBiz: UserBusiness) {
           <ul class="biz-list">
             <li v-for="biz in sortedMyBusinesses" :key="biz.id" class="biz-row">
               <div class="biz-info">
-                <span class="biz-name">{{ formatBizName(biz.business?.name) }}</span>
+                <span class="biz-name">
+                  {{ formatBizName(biz.business?.name) }}
+                  <span v-if="biz.accumulatedYield && biz.maxAccumulatedYield && biz.accumulatedYield >= biz.maxAccumulatedYield" class="tag-max">MAX (7d)</span>
+                </span>
                 <span class="biz-meta">
                   {{ countOf(biz) }} {{ t('business.count_pcs') }} · <strong class="yield-val">+{{ yieldOf(biz) }}</strong>
+                  <span v-if="biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz)" class="acc-val"> (Готово: +{{ biz.accumulatedYield }})</span>
                 </span>
               </div>
 
@@ -180,7 +184,7 @@ async function directCollect(userBiz: UserBusiness) {
                   :loading="collectingName === biz.business?.name"
                   @click="directCollect(biz)"
               >
-                {{ timerMap[biz.id] > 0 ? formatRemainingTime(timerMap[biz.id]) : t('business.collect') }}
+                {{ timerMap[biz.id] > 0 ? formatRemainingTime(timerMap[biz.id]) : (biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz) ? `+${biz.accumulatedYield}` : t('business.collect')) }}
               </ButtonText>
             </li>
           </ul>
@@ -257,9 +261,25 @@ async function directCollect(userBiz: UserBusiness) {
   white-space: nowrap;
 }
 
+.tag-max {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  background-color: #d97706;
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .biz-meta {
   font-size: 16px;
   color: #5d4037;
+}
+
+.acc-val {
+  color: #2e7d32;
+  font-weight: bold;
 }
 
 .biz-timer {

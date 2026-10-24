@@ -119,7 +119,7 @@ const flushClicks = async () => {
 
 const handleClick = () => {
   if (isLimitReached.value) {
-    toastStore.showToast(t('clicker.limit_reached_toast', { time: formattedResetTime.value }), 'warning')
+    toastStore.showToast(t('clicker.limit_reached_toast', { time: formattedResetTime.value }), 'error')
     return
   }
 
@@ -175,7 +175,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   <div class="clicker-container">
     <div class="clicker-section">
 
-      <!-- Картка ліміту кліків у загальному піксельному стилі (Card.9) -->
+
 
       <div class="click-area" @click="handleClick">
         <button
@@ -220,18 +220,6 @@ const sellAllStrawberries = async (e: MouseEvent) => {
 
       <Card width="100%" height="auto" :padding="10" class="limit-card-wrapper">
         <div class="limit-status-box">
-          <div class="limit-header">
-            <span class="limit-title">{{ t('clicker.limit_info', { remaining: remainingClicks }) }}</span>
-          </div>
-
-          <div class="pixel-progress-frame">
-            <div
-                class="pixel-progress-fill"
-                :class="{ 'fill-danger': isLimitReached }"
-                :style="{ width: `${progressPercent}%` }"
-            ></div>
-          </div>
-
           <div v-if="isLimitReached" class="limit-alert-banner">
             <img src="/honeywood/icons/interface/lock.png" alt="Lock" class="limit-alert-icon" />
             <div class="limit-alert-text">

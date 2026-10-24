@@ -147,7 +147,7 @@ function handleOpenSettings() {
 
 .resource-cards-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 4px;
   margin-top: 36px;
   margin-left: 0;

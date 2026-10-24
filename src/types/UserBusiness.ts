@@ -33,4 +33,6 @@ export interface UserBusiness {
     nextCollectAt?: string;
     nextCollectInSeconds?: number;
     canCollect?: boolean;
+    accumulatedYield?: number;
+    maxAccumulatedYield?: number;
 }
