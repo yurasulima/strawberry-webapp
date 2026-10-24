@@ -32,6 +32,8 @@ export const UI_TEXTURES = [
   '/ui/button_help_pressed.png',
   '/ui/button_business.png',
   '/ui/button_business_pressed.png',
+  '/ui/button_admin.png',
+  '/ui/button_admin_pressed.png',
   '/ui/money.png',
   '/ui/strawberry.png',
 ]

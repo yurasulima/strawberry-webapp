@@ -13,6 +13,7 @@ import BottomNavigation from '@/components/BottomNavigation.vue'
 import BussinesSection from "@/components/BussinesSection.vue";
 import MarketSection from "@/components/MarketSection.vue";
 import SettingsSection from "@/components/SettingsSection.vue";
+import AdminSection from "@/components/AdminSection.vue";
 import { PixelToastContainer } from "@/components/pixel";
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
@@ -28,7 +29,7 @@ if (user === undefined) {
   router.replace('/404')
 }
 
-const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business' | 'shop' | 'settings'>('clicker')
+const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business' | 'shop' | 'settings' | 'admin'>('clicker')
 
 watch(activeTab, () => {
   userStore.fetchUser()
@@ -79,6 +80,7 @@ onMounted(async () => {
     <!-- Основний контент показуємо, якщо не завантажуємо -->
     <template v-else>
       <Toolbar
+          v-if="activeTab !== 'admin'"
           :language_code="user.language_code"
           :firstName="user.first_name"
           :lastName="user.last_name"
@@ -95,6 +97,7 @@ onMounted(async () => {
         <MarketSection v-show="activeTab === 'shop'" :user="user" />
         <PlayersSection v-show="activeTab === 'users'" />
         <SettingsSection v-show="activeTab === 'settings'" @close="activeTab = 'clicker'" />
+        <AdminSection v-show="activeTab === 'admin'" />
         <DebugSection v-show="activeTab === 'debug'" />
       </div>
 

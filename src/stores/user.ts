@@ -19,6 +19,14 @@ export const useUserStore = defineStore('user', () => {
     return strawberrySlot?.count || 0
   })
 
+  const remainingDailyClicks = computed(() => {
+    return user.value?.remainingDailyClicks ?? 200
+  })
+
+  const nextClickResetTime = computed(() => {
+    return user.value?.nextClickResetTime ?? null
+  })
+
   async function fetchUser() {
     isLoading.value = true
     try {
@@ -34,6 +42,21 @@ export const useUserStore = defineStore('user', () => {
 
   function setUser(userData: User) {
     user.value = userData
+  }
+
+  function decrementRemainingClicks(amount = 1) {
+    if (user.value && user.value.remainingDailyClicks !== undefined) {
+      user.value.remainingDailyClicks = Math.max(0, user.value.remainingDailyClicks - amount)
+    }
+  }
+
+  function setRemainingClicks(remaining: number, resetTime?: string | null) {
+    if (user.value) {
+      user.value.remainingDailyClicks = remaining
+      if (resetTime !== undefined) {
+        user.value.nextClickResetTime = resetTime
+      }
+    }
   }
 
   function addStrawberries(amount = 1) {
@@ -57,9 +80,13 @@ export const useUserStore = defineStore('user', () => {
     user,
     money,
     strawberries,
+    remainingDailyClicks,
+    nextClickResetTime,
     isLoading,
     fetchUser,
     setUser,
+    decrementRemainingClicks,
+    setRemainingClicks,
     addStrawberries
   }
 })

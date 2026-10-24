@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import api from "@/services/api.ts";
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import api from "@/services/api.ts"
 import { useI18n } from 'vue-i18n'
 import { playHarvestSound, playCoinSound } from '@/services/sound'
-import { ButtonText } from '@/components/pixel'
+import { ButtonText, Card } from '@/components/pixel'
 import { useUserStore } from "@/stores/user.ts"
 import { useToastStore } from "@/stores/toast.ts"
 
@@ -18,6 +18,54 @@ const isSelling = ref(false)
 const particles = ref<{ id: number; offsetX: number; offsetY: number }[]>([])
 let pendingClicks = 0
 
+const formattedResetTime = ref('00:00:00')
+let timerInterval: ReturnType<typeof setInterval> | null = null
+
+const remainingClicks = computed(() => userStore.remainingDailyClicks)
+const isLimitReached = computed(() => remainingClicks.value <= 0)
+const usedClicks = computed(() => Math.min(200, Math.max(0, 200 - remainingClicks.value)))
+const progressPercent = computed(() => Math.min(100, (usedClicks.value / 200) * 100))
+
+const getTargetResetDate = (): Date => {
+  if (userStore.nextClickResetTime) {
+    const parsed = new Date(userStore.nextClickResetTime)
+    if (!isNaN(parsed.getTime())) {
+      return parsed
+    }
+  }
+  const now = new Date()
+  const currentHour = now.getHours()
+  const nextHour = (Math.floor(currentHour / 6) + 1) * 6
+  const target = new Date(now)
+  if (nextHour >= 24) {
+    target.setDate(target.getDate() + 1)
+    target.setHours(0, 0, 0, 0)
+  } else {
+    target.setHours(nextHour, 0, 0, 0)
+  }
+  return target
+}
+
+const updateTimer = () => {
+  const target = getTargetResetDate()
+  const now = new Date()
+  const diffMs = target.getTime() - now.getTime()
+
+  if (diffMs <= 0) {
+    formattedResetTime.value = '00:00:00'
+    userStore.fetchUser()
+    return
+  }
+
+  const diffSec = Math.floor(diffMs / 1000)
+  const hours = Math.floor(diffSec / 3600)
+  const minutes = Math.floor((diffSec % 3600) / 60)
+  const seconds = diffSec % 60
+
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  formattedResetTime.value = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+}
+
 onMounted(async () => {
   localStorage.removeItem("clicker-ban")
 
@@ -25,6 +73,11 @@ onMounted(async () => {
     const response = await api.get('/slots/count', { params: { name: 'strawberry' } })
     count.value = response.data.count ?? 0
   } catch {}
+
+  await userStore.fetchUser()
+
+  updateTimer()
+  timerInterval = setInterval(updateTimer, 1000)
 
   setInterval(flushClicks, 2000)
 
@@ -36,26 +89,43 @@ onMounted(async () => {
   })
 })
 
+onUnmounted(() => {
+  if (timerInterval) clearInterval(timerInterval)
+})
+
 const flushClicks = async () => {
   if (pendingClicks === 0) return
 
   try {
     const response = await api.post('/slots/take', { name: 'strawberry', count: pendingClicks })
-    count.value = response.data
+    if (typeof response.data === 'object' && response.data !== null) {
+      count.value = response.data.count ?? count.value
+      if (response.data.remainingDailyClicks !== undefined) {
+        userStore.setRemainingClicks(response.data.remainingDailyClicks, response.data.nextClickResetTime)
+      }
+    } else {
+      count.value = response.data
+    }
     pendingClicks = 0
-    await userStore.fetchUser()
   } catch (error: any) {
     console.error("Помилка при відправці кліків:", error)
+    pendingClicks = 0
+    await userStore.fetchUser()
     const errText = error.response?.data?.message || error.response?.data || t('clicker.daily_limit_reached')
     const messageStr = typeof errText === 'string' ? errText : JSON.stringify(errText)
     toastStore.showToast(messageStr, 'error')
-    pendingClicks = 0
   }
 }
 
 const handleClick = () => {
+  if (isLimitReached.value) {
+    toastStore.showToast(t('clicker.limit_reached_toast', { time: formattedResetTime.value }), 'warning')
+    return
+  }
+
   playHarvestSound()
 
+  userStore.decrementRemainingClicks(1)
   userStore.addStrawberries(1)
   count.value++
 
@@ -104,9 +174,13 @@ const sellAllStrawberries = async (e: MouseEvent) => {
 <template>
   <div class="clicker-container">
     <div class="clicker-section">
+
+      <!-- Картка ліміту кліків у загальному піксельному стилі (Card.9) -->
+
       <div class="click-area" @click="handleClick">
         <button
             class="strawberry-button"
+            :class="{ 'strawberry-button--disabled': isLimitReached }"
             @click="$emit('click')"
         >
           <img
@@ -114,8 +188,11 @@ const sellAllStrawberries = async (e: MouseEvent) => {
               alt="Strawberry"
               oncontextmenu="return false;"
               class="strawberry-icon"
-              :class="{ 'pop-animation': isClicking }"
+              :class="{ 'pop-animation': isClicking, 'disabled-icon': isLimitReached }"
           />
+          <div v-if="isLimitReached" class="lock-overlay">
+            <img src="/honeywood/icons/interface/lock.png" alt="Locked" class="lock-icon-img" />
+          </div>
         </button>
 
         <div class="particles-container">
@@ -139,6 +216,35 @@ const sellAllStrawberries = async (e: MouseEvent) => {
       >
         {{ t('clicker.sell_all') }}
       </ButtonText>
+
+
+      <Card width="100%" height="auto" :padding="10" class="limit-card-wrapper">
+        <div class="limit-status-box">
+          <div class="limit-header">
+            <span class="limit-title">{{ t('clicker.limit_info', { remaining: remainingClicks }) }}</span>
+          </div>
+
+          <div class="pixel-progress-frame">
+            <div
+                class="pixel-progress-fill"
+                :class="{ 'fill-danger': isLimitReached }"
+                :style="{ width: `${progressPercent}%` }"
+            ></div>
+          </div>
+
+          <div v-if="isLimitReached" class="limit-alert-banner">
+            <img src="/honeywood/icons/interface/lock.png" alt="Lock" class="limit-alert-icon" />
+            <div class="limit-alert-text">
+              <span class="alert-title">{{ t('clicker.limit_reached_title') }}</span>
+              <span class="alert-timer">{{ t('clicker.limit_resets_in', { time: formattedResetTime }) }}</span>
+            </div>
+          </div>
+          <div v-else class="limit-timer-sub">
+            <span>⏳ {{ t('clicker.limit_resets_in', { time: formattedResetTime }) }}</span>
+          </div>
+        </div>
+      </Card>
+
     </div>
   </div>
 </template>
@@ -156,8 +262,118 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  width: 100%;
+  max-width: 320px;
 }
 
+/* Limit Status Box inside Card */
+.limit-card-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.limit-status-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: 'Crumbline', sans-serif;
+  color: #3f2e21;
+}
+
+.limit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.limit-title {
+  font-size: 18px;
+  font-weight: normal;
+  color: #3f2e21;
+}
+
+.limit-badge-max {
+  background-color: #c62828;
+  color: #ffffff;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #8e0000;
+  animation: pulse-max 1.5s infinite;
+}
+
+@keyframes pulse-max {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Pixel Progress Frame */
+.pixel-progress-frame {
+  width: 100%;
+  height: 12px;
+  background-color: #e8d8c3;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 2px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.pixel-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #2e7d32);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.pixel-progress-fill.fill-danger {
+  background: linear-gradient(90deg, #e53935, #c62828);
+}
+
+.limit-timer-sub {
+  font-size: 15px;
+  color: #5d4037;
+  text-align: right;
+}
+
+/* Alert Banner when Limit Reached */
+.limit-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffebee;
+  border: 2px solid #c62828;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-top: 4px;
+}
+
+.limit-alert-icon {
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.limit-alert-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.alert-title {
+  font-size: 16px;
+  color: #c62828;
+  font-weight: bold;
+}
+
+.alert-timer {
+  font-size: 15px;
+  color: #3f2e21;
+}
+
+/* Click Area */
 .click-area {
   position: relative;
   display: inline-block;
@@ -174,31 +390,50 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
-.strawberry-button:active {
+.strawberry-button:active:not(.strawberry-button--disabled) {
   transform: translateY(3px);
   box-shadow: 0 3px 0 0 #5e6d8a, 0 0 0 2px #333446 inset;
+}
+
+.strawberry-button--disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  box-shadow: 0 4px 0 0 #5e6d8a, 0 0 0 2px #333446 inset;
 }
 
 .strawberry-icon {
   width: 200px;
   height: 200px;
   image-rendering: pixelated;
-  transition: transform 0.1s ease-in-out;
+  transition: transform 0.1s ease-in-out, filter 0.3s ease;
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-drag: none;
   touch-action: manipulation;
 }
 
-.strawberry-count {
-  font-size: 16px;
-  font-weight: bold;
-  color: #ffd700;
-  text-shadow: 2px 2px #1c1d2e;
-  margin: 5px 0;
-  font-family: var(--font-pixel);
+.disabled-icon {
+  filter: grayscale(0.65) opacity(0.7);
+}
+
+.lock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(63, 46, 33, 0.25);
+  border-radius: 8px;
+}
+
+.lock-icon-img {
+  width: 56px;
+  height: 56px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
 }
 
 .particles-container {

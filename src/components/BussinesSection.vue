@@ -173,9 +173,6 @@ async function directCollect(userBiz: UserBusiness) {
                 <span class="biz-meta">
                   {{ countOf(biz) }} {{ t('business.count_pcs') }} · <strong class="yield-val">+{{ yieldOf(biz) }}</strong>
                 </span>
-                <span v-if="timerMap[biz.id] > 0" class="biz-timer">
-                  {{ t('business.collect_in', { time: formatRemainingTime(timerMap[biz.id]) }) }}
-                </span>
               </div>
 
               <ButtonText

@@ -14,8 +14,10 @@ export interface User {
   lang: string | null
   premium: boolean
   banned: boolean
+  admin?: boolean
   dailyStrawberryClicks?: number
   remainingDailyClicks?: number
+  nextClickResetTime?: string | null
   slots: Slot[]
   businesses: UserBusiness[]
   invites: InvitedUser[]

@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import { computed } from 'vue'
 import {
   GameButton,
   ShopButton,
   TopButton,
+  AdminButton,
   CardPrimary
 } from '@/components/pixel'
-import BusinessButton from "@/components/pixel/BusinessButton.vue";
+import BusinessButton from "@/components/pixel/BusinessButton.vue"
+import { useUserStore } from '@/stores/user'
 
-export type TabType = 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug' | 'settings'
+export type TabType = 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug' | 'settings' | 'admin'
 
 const props = defineProps<{ activeTab: TabType }>()
 const emit = defineEmits<{
   (e: 'changeTab', tab: TabType): void
 }>()
+
+const userStore = useUserStore()
+const isAdmin = computed(() => !!userStore.user?.admin)
 
 function switchTab(tab: TabType) {
   emit('changeTab', tab)
@@ -22,7 +27,7 @@ function switchTab(tab: TabType) {
 
 <template>
   <div class="bottom-navigation-container">
-    <CardPrimary width="300px" height="70px" :padding="1">
+    <CardPrimary :width="isAdmin ? '360px' : '300px'" height="70px" :padding="1">
       <div class="bottom-navigation-bar">
 
         <GameButton
@@ -31,11 +36,10 @@ function switchTab(tab: TabType) {
             @click="switchTab('clicker')"
         />
 
-
         <BusinessButton
             size="64"
             :active="props.activeTab === 'business'"
-            @click="switchTab('business')" 
+            @click="switchTab('business')"
         />
 
         <ShopButton
@@ -48,6 +52,13 @@ function switchTab(tab: TabType) {
             size="64"
             :active="props.activeTab === 'users'"
             @click="switchTab('users')"
+        />
+
+        <AdminButton
+            v-if="isAdmin"
+            size="64"
+            :active="props.activeTab === 'admin'"
+            @click="switchTab('admin')"
         />
 
       </div>
