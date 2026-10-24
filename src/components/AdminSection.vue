@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { User } from '@/types/User.ts'
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PixelModal, Switch } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PixelModal, Switch, PremiumBadge } from '@/components/pixel'
 import { playClickSound } from '@/services/sound'
 import { useToastStore } from '@/stores/toast.ts'
 
@@ -171,6 +171,23 @@ async function toggleAdmin(u: User) {
     toastStore.showToast(err.response?.data || t('business.operation_error'), 'error')
   } finally {
     actionLoadingMap.value[`admin_${u.userId}`] = false
+  }
+}
+
+async function togglePremium(u: User) {
+  playClickSound()
+  actionLoadingMap.value[`premium_${u.userId}`] = true
+  try {
+    const res = await api.post<User>(`/admin/users/${u.userId}/toggle-premium`)
+    const index = users.value.findIndex(item => item.userId === u.userId)
+    if (index !== -1) {
+      users.value[index] = res.data
+    }
+    toastStore.showToast(t('admin.success_update'), 'success')
+  } catch (err: any) {
+    toastStore.showToast(err.response?.data || t('business.operation_error'), 'error')
+  } finally {
+    actionLoadingMap.value[`premium_${u.userId}`] = false
   }
 }
 
@@ -379,6 +396,7 @@ function formatDateTime(isoStr?: string | null): string {
                   <span class="user-name">
                     {{ u.firstName || u.lastName ? (u.firstName ?? '') + ' ' + (u.lastName ?? '') : t('profile.no_name') }}
                   </span>
+                  <PremiumBadge v-if="u.premium" />
                   <span v-if="u.admin" class="tag tag-admin">ADMIN</span>
                   <span v-if="u.banned" class="tag tag-banned">BANNED</span>
                 </div>
@@ -439,6 +457,14 @@ function formatDateTime(isoStr?: string | null): string {
                   @click="toggleAdmin(u)"
               >
                 {{ t('admin.toggle_admin') }}
+              </ButtonText>
+
+              <ButtonText
+                  padding="0 10px"
+                  :loading="actionLoadingMap[`premium_${u.userId}`]"
+                  @click="togglePremium(u)"
+              >
+                PRO
               </ButtonText>
             </div>
           </li>
@@ -748,6 +774,7 @@ function formatDateTime(isoStr?: string | null): string {
   font-weight: bold;
 }
 
+.tag-premium { background-color: #2e7d32; }
 .tag-admin { background-color: #d97706; }
 .tag-banned { background-color: #c62828; }
 

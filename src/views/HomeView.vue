@@ -22,7 +22,7 @@ const { t } = useI18n()
 const isLoading = ref(true)
 const userStore = useUserStore()
 const { initDataUnsafe } = useWebApp()
-const user = initDataUnsafe.user || { id: 1850543749, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.dangerous.pp.ua/image/null.png" }
+const user = initDataUnsafe.user || { id: 1, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.dangerous.pp.ua/image/null.png" }
 
 if (user === undefined) {
   const router = useRouter()

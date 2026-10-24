@@ -3,6 +3,7 @@ import { onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { AppScreen, AppCard, AppText } from '@/components/ui'
+import { PremiumBadge } from '@/components/pixel'
 import InvitedUserList from "@/components/InvitedUserList.vue";
 import { useUserStore } from "@/stores/user.ts"
 
@@ -37,10 +38,7 @@ function getItemIcon(itemName: string) {
             {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
           </AppText>
           <div class="status-tags">
-            <span v-if="player.premium" class="tag premium">
-              <Icon icon="pixelarticons:zap" class="tag-icon" />
-              <span>{{ t('profile.premium') }}</span>
-            </span>
+            <PremiumBadge v-if="player.premium" :text="t('profile.premium')" />
             <span v-if="player.banned" class="tag banned">
               <Icon icon="pixelarticons:close" class="tag-icon" />
               <span>{{ t('profile.banned') }}</span>
