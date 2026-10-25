@@ -16,6 +16,7 @@ import MarketSection from "@/components/MarketSection.vue"
 import SettingsSection from "@/components/SettingsSection.vue"
 import AdminNavigation, { type AdminTabType } from '@/components/admin/AdminNavigation.vue'
 import AdminTelemetrySection from '@/components/admin/AdminTelemetrySection.vue'
+import AdminChatsSection from '@/components/admin/AdminChatsSection.vue'
 import AdminBusinessesSection from '@/components/admin/AdminBusinessesSection.vue'
 import AdminItemsSection from '@/components/admin/AdminItemsSection.vue'
 import AdminUsersSection from '@/components/admin/AdminUsersSection.vue'
@@ -114,6 +115,7 @@ onMounted(async () => {
         <SettingsSection v-show="activeTab === 'settings'" @close="activeTab = 'clicker'" />
         <template v-if="userStore.user?.admin">
           <AdminTelemetrySection v-if="activeTab === 'admin-telemetry'" />
+          <AdminChatsSection v-if="activeTab === 'admin-chats'" />
           <AdminBusinessesSection v-if="activeTab === 'admin-businesses'" />
           <AdminItemsSection v-if="activeTab === 'admin-items'" />
           <AdminUsersSection v-if="activeTab === 'admin-users'" />

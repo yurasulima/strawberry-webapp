@@ -18,6 +18,9 @@ const businessesForSale = ref<Business[]>([])
 const isLoading = ref(true)
 const buyingName = ref<string | null>(null)
 
+const userLevel = computed(() => userStore.user?.level || 1)
+const isPremiumUser = computed(() => !!userStore.user?.premium)
+
 const sortedBusinessesForSale = computed(() => {
   const list = [...businessesForSale.value]
   return list.sort((a, b) => {
@@ -53,6 +56,13 @@ function translateError(err: any): string {
   const str = typeof raw === 'string' ? raw : JSON.stringify(raw)
   const lower = str.toLowerCase()
 
+  if (lower.includes('requires level') || lower.includes('level')) {
+    const match = str.match(/\d+/)
+    return t('business.requires_level', { level: match ? match[0] : '' })
+  }
+  if (lower.includes('premium')) {
+    return t('business.requires_premium')
+  }
   if (lower.includes('wait') || lower.includes('have to wait') || lower.includes('collecting exception')) {
     return t('clicker.daily_limit_reached')
   }
@@ -116,17 +126,30 @@ async function directBuy(biz: Business) {
           <ul class="biz-list">
             <li v-for="biz in sortedBusinessesForSale" :key="biz.id" class="biz-row">
               <div class="biz-info">
-                <span class="biz-name">{{ formatBizName(biz.name) }}</span>
+                <span class="biz-name">
+                  {{ formatBizName(biz.name) }}
+
+                  <span v-if="biz.premiumOnly" class="tag-premium">
+                    {{ t('business.premium_req') }}
+                  </span>
+                </span>
                 <span class="biz-meta">
                   {{ t('business.price', { price: biz.price || 100 }) }} · <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong>
                 </span>
               </div>
 
               <ButtonText
+                :disabled="userLevel < (biz.minLevel || 1) || (biz.premiumOnly && !isPremiumUser)"
                 :loading="buyingName === biz.name"
                 @click="directBuy(biz)"
               >
-                {{ t('business.buy') }}
+                {{
+                  userLevel < (biz.minLevel || 1)
+                    ? `Рівень ${biz.minLevel}`
+                    : (biz.premiumOnly && !isPremiumUser
+                        ? 'Premium'
+                        : t('business.buy'))
+                }}
               </ButtonText>
             </li>
           </ul>
@@ -201,6 +224,32 @@ async function directBuy(biz: Business) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tag-level {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  background-color: #2e7d32;
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.tag-level.level-locked {
+  background-color: #c62828;
+}
+
+.tag-premium {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  background-color: #d97706;
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
 }
 
 .biz-meta {

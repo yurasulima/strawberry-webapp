@@ -59,6 +59,7 @@
     "success_update": "Дані гравця оновлено",
     "access_denied": "Доступ заборонено (потрібні права адміна)",
     "telemetry_title": "Телеметрія кліків",
+    "telemetry_date": "Дата:",
     "total_clicks_all_time": "Всього наклікано",
     "clicks_today": "Кліків за сьогодні",
     "avg_per_user": "Сер. на клікера",
@@ -76,10 +77,23 @@
     "nav": {
       "back": "Вихід",
       "telemetry": "Телеметрія",
+      "chats": "Чати",
       "businesses": "Бізнеси",
       "items": "Предмети",
       "users": "Гравці"
     },
+    "chats_title": "Статистика чатів",
+    "chats_count": "Всього чатів",
+    "chat_detail_modal": "Деталі чату",
+    "total_messages": "Повідомлень",
+    "total_commands": "Команд бота",
+    "avg_messages_per_day": "Сер. повідомлень/день",
+    "avg_commands_per_day": "Сер. команд/день",
+    "active_users": "Учасників",
+    "daily_stats": "Статистика за днями",
+    "top_users": "Топ активних учасників",
+    "first_activity": "Перша активність",
+    "last_activity": "Остання активність",
     "no_data": "Немає даних",
     "unique_clickers": "Унікальні клікери",
     "total_batches": "Пакетів кліків",
@@ -102,6 +116,9 @@
     "unit_s": "с",
     "no_items": "Предметів ще немає",
     "item_create_title": "Новий предмет",
+    "item_edit_title": "Редагування предмета",
+    "sell_price": "Ціна продажу",
+    "buy_price": "Ціна купівлі",
     "item_given": "Предмет гравцю оновлено",
     "amount": "Кількість",
     "amount_hint": "Від'ємне значення забирає предмет"
@@ -124,12 +141,17 @@
     "not_enough_money": "Недостатньо монет!",
     "not_found": "Бізнес не знайдено",
     "operation_error": "Виникла помилка під час виконання операції",
+    "requires_level": "Потрібен рівень {level}",
+    "requires_premium": "Доступно тільки для Premium користувачів",
+    "level_req": "Рвн {level}+",
+    "premium_req": "PREMIUM",
     "names": {
       "garden_bed": "Грядка",
       "garden_bussines": "Сад",
       "garden_business": "Сад",
       "garden_bussiness": "Сад",
       "strawberry_farm": "Полунична ферма",
+      "strawberry_juice_factory": "Фабрика полуничного соку",
       "bakery": "Пекарня",
       "factory": "Фабрика"
     }
@@ -147,7 +169,9 @@
   },
   "items": {
     "strawberry": "Полуничка",
-    "money": "Монета"
+    "money": "Монета",
+    "blueberry": "Чорниця",
+    "strawberry_juice": "Полуничний сік"
   },
   "players": {
     "title": "Топ гравців",

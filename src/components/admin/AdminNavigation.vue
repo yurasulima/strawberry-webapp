@@ -4,6 +4,7 @@ import {AdminButton, CardPrimary, LeftButton, PixelButton} from '@/components/pi
 
 export type AdminTabType =
   | 'admin-telemetry'
+  | 'admin-chats'
   | 'admin-businesses'
   | 'admin-items'
   | 'admin-users'
@@ -19,6 +20,7 @@ const { t } = useI18n()
 
 const tabs: { id: AdminTabType; emoji: string; labelKey: string }[] = [
   { id: 'admin-telemetry', emoji: '📊', labelKey: 'admin.nav.telemetry' },
+  { id: 'admin-chats', emoji: '💬', labelKey: 'admin.nav.chats' },
   { id: 'admin-businesses', emoji: '🏭', labelKey: 'admin.nav.businesses' },
   { id: 'admin-items', emoji: '📦', labelKey: 'admin.nav.items' },
   { id: 'admin-users', emoji: '👥', labelKey: 'admin.nav.users' },
@@ -28,7 +30,7 @@ const tabs: { id: AdminTabType; emoji: string; labelKey: string }[] = [
 <template>
   <div class="admin-nav-container">
 
-    <CardPrimary width="350px" height="70px" :padding="1">
+    <CardPrimary width="410px" height="70px" :padding="1">
       <div class="admin-nav-bar">
 
         <div class="admin-nav-item">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import { CardPrimary, Card, ButtonText } from '@/components/pixel'
@@ -27,12 +27,16 @@ const stats = ref<AdminStats | null>(null)
 const telemetry = ref<GlobalTelemetry | null>(null)
 const isLoading = ref(true)
 
+const selectedDate = ref<string>(new Date().toISOString().split('T')[0])
+
 async function load() {
   isLoading.value = true
   try {
     const [s, tm] = await Promise.allSettled([
       api.get<AdminStats>('/admin/stats'),
-      api.get<GlobalTelemetry>('/admin/telemetry'),
+      api.get<GlobalTelemetry>('/admin/telemetry', {
+        params: { date: selectedDate.value }
+      }),
     ])
     if (s.status === 'fulfilled') stats.value = s.value.data
     else console.error('Error fetching admin stats:', s.reason)
@@ -42,6 +46,10 @@ async function load() {
     isLoading.value = false
   }
 }
+
+watch(selectedDate, () => {
+  load()
+})
 
 onMounted(load)
 </script>
@@ -83,7 +91,13 @@ onMounted(load)
 
       <Card v-if="telemetry" width="100%" height="auto" :padding="10" class="telemetry-card">
         <div class="telemetry-box">
-          <span class="telemetry-header">{{ t('admin.telemetry_title') }}</span>
+          <div class="telemetry-header-row">
+            <span class="telemetry-header">{{ t('admin.telemetry_title') }}</span>
+            <div class="date-picker-wrapper">
+              <label class="date-label">{{ t('admin.telemetry_date') }}</label>
+              <input type="date" v-model="selectedDate" class="pixel-input-date" />
+            </div>
+          </div>
           <div class="telemetry-grid">
             <div class="telemetry-item">
               <span class="telemetry-label">{{ t('admin.total_clicks_all_time') }}</span>

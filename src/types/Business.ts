@@ -7,4 +7,6 @@ export interface Business {
     yieldInterval: string;
     item: string;
     price?: number;
+    minLevel?: number;
+    premiumOnly?: boolean;
 }

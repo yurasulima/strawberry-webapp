@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
-import { CardPrimary, Card, ButtonText, PixelModal } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PixelModal, Switch } from '@/components/pixel'
 import { playClickSound, playPurchaseSound } from '@/services/sound'
 import { useToastStore } from '@/stores/toast.ts'
 
@@ -23,6 +23,8 @@ interface AdminBusiness {
   yieldCount: number
   yieldIntervalSeconds: number
   item: string
+  minLevel?: number
+  premiumOnly?: boolean
 }
 
 const businesses = ref<AdminBusiness[]>([])
@@ -39,6 +41,8 @@ const form = ref({
   yieldCount: 10 as number | null,
   yieldIntervalSeconds: 3600 as number | null,
   item: 'strawberry',
+  minLevel: 1 as number | null,
+  premiumOnly: false,
 })
 
 // Підтвердження видалення
@@ -97,7 +101,7 @@ async function load() {
 function openCreate() {
   playClickSound()
   editingId.value = null
-  form.value = { name: '', price: 100, yieldCount: 10, yieldIntervalSeconds: 3600, item: 'strawberry' }
+  form.value = { name: '', price: 100, yieldCount: 10, yieldIntervalSeconds: 3600, item: 'strawberry', minLevel: 1, premiumOnly: false }
   isFormOpen.value = true
 }
 
@@ -110,6 +114,8 @@ function openEdit(b: AdminBusiness) {
     yieldCount: b.yieldCount,
     yieldIntervalSeconds: b.yieldIntervalSeconds,
     item: b.item,
+    minLevel: b.minLevel ?? 1,
+    premiumOnly: !!b.premiumOnly,
   }
   isFormOpen.value = true
 }
@@ -123,6 +129,8 @@ async function save() {
     yieldCount: form.value.yieldCount,
     yieldIntervalSeconds: form.value.yieldIntervalSeconds,
     item: form.value.item.trim(),
+    minLevel: form.value.minLevel ?? 1,
+    premiumOnly: form.value.premiumOnly,
   }
   try {
     if (editingId.value === null) {
@@ -229,6 +237,14 @@ onMounted(load)
         <div class="input-field-row">
           <label>{{ t('admin.field_item') }}</label>
           <input v-model="form.item" type="text" class="pixel-input" placeholder="strawberry" />
+        </div>
+        <div class="input-field-row">
+          <label>Мінімальний рівень</label>
+          <input v-model.number="form.minLevel" type="number" min="1" class="pixel-input" />
+        </div>
+        <div class="mode-switch-row">
+          <label>Тільки Premium</label>
+          <Switch v-model="form.premiumOnly" />
         </div>
         <div class="modal-actions">
           <ButtonText padding="0 20px" :loading="isSaving" :disabled="!isFormValid" @click="save">

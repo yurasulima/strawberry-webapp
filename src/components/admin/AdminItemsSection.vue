@@ -21,6 +21,8 @@ const toastStore = useToastStore()
 interface AdminItem {
   id: number
   name: string
+  sellPrice?: number | null
+  buyPrice?: number | null
 }
 
 const items = ref<AdminItem[]>([])
@@ -30,7 +32,16 @@ const deletingId = ref<number | null>(null)
 // Створення предмета
 const isCreateOpen = ref(false)
 const newItemName = ref('')
+const newSellPrice = ref<number | null>(1)
+const newBuyPrice = ref<number | null>(1)
 const isCreating = ref(false)
+
+// Редагування предмета (цін)
+const isEditOpen = ref(false)
+const editingItem = ref<AdminItem | null>(null)
+const editSellPrice = ref<number | null>(1)
+const editBuyPrice = ref<number | null>(1)
+const isSavingEdit = ref(false)
 
 // Підтвердження видалення
 const isDeleteOpen = ref(false)
@@ -83,6 +94,8 @@ async function load() {
 function openCreate() {
   playClickSound()
   newItemName.value = ''
+  newSellPrice.value = 1
+  newBuyPrice.value = 1
   isCreateOpen.value = true
 }
 
@@ -90,7 +103,11 @@ async function createItem() {
   if (!isNameValid.value || isCreating.value) return
   isCreating.value = true
   try {
-    await api.post('/admin/items', { name: newItemName.value.trim() })
+    await api.post('/admin/items', {
+      name: newItemName.value.trim(),
+      sellPrice: newSellPrice.value ?? 1,
+      buyPrice: newBuyPrice.value ?? 1,
+    })
     toastStore.showToast(t('admin.success_update'), 'success')
     isCreateOpen.value = false
     await load()
@@ -98,6 +115,33 @@ async function createItem() {
     toastStore.showToast(errorText(err), 'error')
   } finally {
     isCreating.value = false
+  }
+}
+
+function openEdit(item: AdminItem) {
+  playClickSound()
+  editingItem.value = item
+  editSellPrice.value = item.sellPrice ?? 1
+  editBuyPrice.value = item.buyPrice ?? 1
+  isEditOpen.value = true
+}
+
+async function saveEdit() {
+  if (!editingItem.value || isSavingEdit.value) return
+  isSavingEdit.value = true
+  try {
+    await api.put(`/admin/items/${editingItem.value.id}`, {
+      name: editingItem.value.name,
+      sellPrice: editSellPrice.value ?? 1,
+      buyPrice: editBuyPrice.value ?? 1,
+    })
+    toastStore.showToast(t('admin.success_update'), 'success')
+    isEditOpen.value = false
+    await load()
+  } catch (err) {
+    toastStore.showToast(errorText(err), 'error')
+  } finally {
+    isSavingEdit.value = false
   }
 }
 
@@ -181,9 +225,14 @@ onMounted(load)
           <li v-for="item in sortedItems" :key="item.id" class="entity-row">
             <div class="entity-info">
               <span class="entity-name">{{ itemTitle(item.name) }}</span>
-              <span class="hint-text">ID {{ item.id }} · {{ item.name }}</span>
+              <span class="hint-text">
+                ID {{ item.id }} · {{ item.name }}
+                <br />
+                💰 {{ t('admin.sell_price') }}: <strong>{{ item.sellPrice ?? '-' }}</strong> · {{ t('admin.buy_price') }}: <strong>{{ item.buyPrice ?? '-' }}</strong>
+              </span>
             </div>
             <div class="entity-actions">
+              <ButtonText padding="0 10px" @click="openEdit(item)">{{ t('admin.edit') }}</ButtonText>
               <ButtonText padding="0 10px" @click="openGive(item)">{{ t('admin.give') }}</ButtonText>
               <ButtonText padding="0 10px" :loading="deletingId === item.id" @click="askDelete(item)">
                 {{ t('admin.delete') }}
@@ -206,12 +255,42 @@ onMounted(load)
             type="text"
             class="pixel-input"
             placeholder="chest_gardener"
-            @keyup.enter="createItem"
           />
           <span class="hint-text">a-z, 0-9, _</span>
         </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.sell_price') }}</label>
+          <input v-model.number="newSellPrice" type="number" min="0" class="pixel-input" />
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.buy_price') }}</label>
+          <input v-model.number="newBuyPrice" type="number" min="0" class="pixel-input" />
+        </div>
         <div class="modal-actions">
           <ButtonText padding="0 20px" :loading="isCreating" :disabled="!isNameValid" @click="createItem">
+            {{ t('admin.save') }}
+          </ButtonText>
+        </div>
+      </div>
+    </PixelModal>
+
+    <!-- Редагування цін предмета -->
+    <PixelModal v-model="isEditOpen" :title="t('admin.item_edit_title')" width="320px" @close="isEditOpen = false">
+      <div class="modal-body">
+        <div class="user-telemetry-title">{{ editingItem ? itemTitle(editingItem.name) : '' }}</div>
+
+        <div class="input-field-row">
+          <label>{{ t('admin.sell_price') }}</label>
+          <input v-model.number="editSellPrice" type="number" min="0" class="pixel-input" />
+        </div>
+
+        <div class="input-field-row">
+          <label>{{ t('admin.buy_price') }}</label>
+          <input v-model.number="editBuyPrice" type="number" min="0" class="pixel-input" />
+        </div>
+
+        <div class="modal-actions">
+          <ButtonText padding="0 20px" :loading="isSavingEdit" @click="saveEdit">
             {{ t('admin.save') }}
           </ButtonText>
         </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { User } from '@/types/User.ts'
@@ -87,10 +87,14 @@ const editLevel = ref<number | null>(null)
 const isAddMode = ref(false)
 const isSavingResources = ref(false)
 
+// Telemetry state
+const selectedDate = ref<string>(new Date().toISOString().split('T')[0])
+
 // Telemetry Modal state
 const isUserTelemetryModalOpen = ref(false)
 const selectedUserTelemetry = ref<UserTelemetry | null>(null)
 const isLoadingUserTelemetry = ref(false)
+const selectedUserTelemetryDate = ref<string>(new Date().toISOString().split('T')[0])
 
 const actionLoadingMap = ref<Record<string, boolean>>({})
 
@@ -114,12 +118,18 @@ async function fetchStats() {
 
 async function fetchTelemetry() {
   try {
-    const res = await api.get<GlobalTelemetry>('/admin/telemetry')
+    const res = await api.get<GlobalTelemetry>('/admin/telemetry', {
+      params: { date: selectedDate.value }
+    })
     telemetry.value = res.data
   } catch (err: any) {
     console.error('Error fetching telemetry:', err)
   }
 }
+
+watch(selectedDate, () => {
+  fetchTelemetry()
+})
 
 async function fetchUsers() {
   isLoadingUsers.value = true
@@ -226,7 +236,9 @@ async function openUserTelemetry(u: User) {
   isUserTelemetryModalOpen.value = true
   isLoadingUserTelemetry.value = true
   try {
-    const res = await api.get<UserTelemetry>(`/admin/telemetry/user/${u.userId}`)
+    const res = await api.get<UserTelemetry>(`/admin/telemetry/user/${u.userId}`, {
+      params: { date: selectedUserTelemetryDate.value }
+    })
     selectedUserTelemetry.value = res.data
   } catch (err: any) {
     toastStore.showToast(err.response?.data || t('business.operation_error'), 'error')
@@ -234,6 +246,12 @@ async function openUserTelemetry(u: User) {
     isLoadingUserTelemetry.value = false
   }
 }
+
+watch(selectedUserTelemetryDate, () => {
+  if (selectedUser.value && isUserTelemetryModalOpen.value) {
+    openUserTelemetry(selectedUser.value)
+  }
+})
 
 async function saveResources() {
   if (!selectedUser.value) return
@@ -329,7 +347,13 @@ function formatDateTime(isoStr?: string | null): string {
       <!-- Глобальна телеметрія кліків -->
       <Card v-if="telemetry" width="100%" height="auto" :padding="10" class="telemetry-card">
         <div class="telemetry-box">
-          <span class="telemetry-header">{{ t('admin.telemetry_title') }}</span>
+          <div class="telemetry-header-row">
+            <span class="telemetry-header">{{ t('admin.telemetry_title') }}</span>
+            <div class="date-picker-wrapper">
+              <label class="date-label">{{ t('admin.telemetry_date') }}</label>
+              <input type="date" v-model="selectedDate" class="pixel-input-date" />
+            </div>
+          </div>
           <div class="telemetry-grid">
             <div class="telemetry-item">
               <span class="telemetry-label">{{ t('admin.total_clicks_all_time') }}</span>
@@ -528,6 +552,11 @@ function formatDateTime(isoStr?: string | null): string {
       </div>
       <div v-else-if="selectedUserTelemetry" class="telemetry-modal-body">
         <div class="user-telemetry-title">{{ selectedUserTelemetry.userName }}</div>
+
+        <div class="date-picker-wrapper" style="margin-bottom: 8px;">
+          <label class="date-label">{{ t('admin.telemetry_date') }}</label>
+          <input type="date" v-model="selectedUserTelemetryDate" class="pixel-input-date" />
+        </div>
 
         <div class="telemetry-info-row">
           <span>{{ t('admin.total_clicks_all_time') }}:</span>

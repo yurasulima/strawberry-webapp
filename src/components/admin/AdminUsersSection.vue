@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { User } from '@/types/User.ts'
@@ -71,6 +71,7 @@ const isSavingResources = ref(false)
 const isUserTelemetryModalOpen = ref(false)
 const selectedUserTelemetry = ref<UserTelemetry | null>(null)
 const isLoadingUserTelemetry = ref(false)
+const selectedUserTelemetryDate = ref<string>(new Date().toISOString().split('T')[0])
 
 const actionLoadingMap = ref<Record<string, boolean>>({})
 
@@ -182,7 +183,9 @@ async function openUserTelemetry(u: User) {
   isUserTelemetryModalOpen.value = true
   isLoadingUserTelemetry.value = true
   try {
-    const res = await api.get<UserTelemetry>(`/admin/telemetry/user/${u.userId}`)
+    const res = await api.get<UserTelemetry>(`/admin/telemetry/user/${u.userId}`, {
+      params: { date: selectedUserTelemetryDate.value }
+    })
     selectedUserTelemetry.value = res.data
   } catch (err: any) {
     toastStore.showToast(err.response?.data || t('business.operation_error'), 'error')
@@ -190,6 +193,12 @@ async function openUserTelemetry(u: User) {
     isLoadingUserTelemetry.value = false
   }
 }
+
+watch(selectedUserTelemetryDate, () => {
+  if (selectedUser.value && isUserTelemetryModalOpen.value) {
+    openUserTelemetry(selectedUser.value)
+  }
+})
 
 async function saveResources() {
   if (!selectedUser.value) return
@@ -438,6 +447,11 @@ function formatDateTime(isoStr?: string | null): string {
       </div>
       <div v-else-if="selectedUserTelemetry" class="telemetry-modal-body">
         <div class="user-telemetry-title">{{ selectedUserTelemetry.userName }}</div>
+
+        <div class="date-picker-wrapper" style="margin-bottom: 8px;">
+          <label class="date-label">{{ t('admin.telemetry_date') }}</label>
+          <input type="date" v-model="selectedUserTelemetryDate" class="pixel-input-date" />
+        </div>
 
         <div class="telemetry-info-row">
           <span>{{ t('admin.total_clicks_all_time') }}:</span>

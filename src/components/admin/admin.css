@@ -59,6 +59,42 @@
   color: #3f2e21;
 }
 
+.telemetry-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.date-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-label {
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.pixel-input-date {
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 14px;
+  color: #3f2e21;
+  outline: none;
+  cursor: pointer;
+}
+
+.pixel-input-date:focus {
+  border-color: #2e7d32;
+}
+
 .telemetry-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -400,4 +436,86 @@
   border-radius: 50%;
   border: 2px solid #5d4037;
   object-fit: cover;
+}
+
+/* ───── Стилі для списку чатів та детальної статистики ───── */
+.chat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.chat-row:hover {
+  background-color: rgba(63, 46, 33, 0.05);
+}
+
+.chat-row + .chat-row {
+  border-top: 2px solid rgba(63, 46, 33, 0.18);
+}
+
+.chat-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #3f2e21;
+}
+
+.chat-id-badge {
+  font-size: 12px;
+  color: #7c624d;
+}
+
+.chat-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  background: #fff8eb;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #5d4037;
+}
+
+.chat-stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.chat-stat-label {
+  color: #5d4037;
+}
+
+.chat-stat-val {
+  font-weight: bold;
+}
+
+.daily-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.daily-table th, .daily-table td {
+  border: 1px solid #5d4037;
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.daily-table th {
+  background: #f0e2cd;
+  font-weight: bold;
+  color: #3f2e21;
+}
+
+.daily-table tr:nth-child(even) {
+  background: #fff8eb;
 }

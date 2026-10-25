@@ -13,13 +13,9 @@
     "owned": "В наличии: {count}",
     "items": {
       "strawberry": "Клубника",
-      "money": "Монеты",
-      "money_v2": "Монеты V2",
-      "strawberry_jam": "Клубничное Варенье",
-      "chest_gardener": "Сундук Садовника",
-      "chest_super": "Супер-Сундук",
-      "chest_mega": "Мега-Сундук",
-      "chest_royal": "Королевский Сундук"
+      "blueberry": "Черника",
+      "strawberry_juice": "Клубничний сок",
+      "money": "Монеты"
     }
   },
   "clicker": {
@@ -59,6 +55,7 @@
     "success_update": "Данные игрока обновлены",
     "access_denied": "Доступ запрещен (нужны права админа)",
     "telemetry_title": "Телеметрия кликов",
+    "telemetry_date": "Дата:",
     "total_clicks_all_time": "Всего накликано",
     "clicks_today": "Кликов за сегодня",
     "avg_per_user": "Ср. на кликера",
@@ -76,10 +73,23 @@
     "nav": {
       "back": "Выход",
       "telemetry": "Телеметрия",
+      "chats": "Чаты",
       "businesses": "Бизнесы",
       "items": "Предметы",
       "users": "Игроки"
     },
+    "chats_title": "Статистика чатов",
+    "chats_count": "Всего чатов",
+    "chat_detail_modal": "Детали чата",
+    "total_messages": "Сообщений",
+    "total_commands": "Команд бота",
+    "avg_messages_per_day": "Ср. сообщений/день",
+    "avg_commands_per_day": "Ср. команд/день",
+    "active_users": "Участников",
+    "daily_stats": "Статистика по дням",
+    "top_users": "Топ активных участников",
+    "first_activity": "Первая активность",
+    "last_activity": "Последняя активность",
     "no_data": "Нет данных",
     "unique_clickers": "Уникальные кликеры",
     "total_batches": "Пакетов кликов",
@@ -102,6 +112,9 @@
     "unit_s": "с",
     "no_items": "Предметов пока нет",
     "item_create_title": "Новый предмет",
+    "item_edit_title": "Редактирование предмета",
+    "sell_price": "Цена продажи",
+    "buy_price": "Цена покупки",
     "item_given": "Предмет игроку обновлён",
     "amount": "Количество",
     "amount_hint": "Отрицательное значение забирает предмет"
@@ -124,6 +137,10 @@
     "not_enough_money": "Недостаточно монет!",
     "not_found": "Бизнес не найден",
     "operation_error": "Произошла ошибка при выполнении операции",
+    "requires_level": "Требуется уровень {level}",
+    "requires_premium": "Доступно только для Premium пользователей",
+    "level_req": "Ур {level}+",
+    "premium_req": "PREMIUM",
     "names": {
       "garden_bed": "Грядка",
       "garden_bussines": "Сад",
@@ -131,7 +148,8 @@
       "garden_bussiness": "Сад",
       "strawberry_farm": "Клубничная ферма",
       "bakery": "Пекарня",
-      "factory": "Фабрика"
+      "factory": "Фабрика",
+      "strawberry_juice_factory": "Фабрика клубничного соку"
     }
   },
   "profile": {

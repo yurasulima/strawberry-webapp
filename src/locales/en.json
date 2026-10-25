@@ -14,12 +14,8 @@
     "items": {
       "strawberry": "Strawberry",
       "money": "Coins",
-      "money_v2": "Coins V2",
-      "strawberry_jam": "Strawberry Jam",
-      "chest_gardener": "Gardener's Chest",
-      "chest_super": "Super Chest",
-      "chest_mega": "Mega Chest",
-      "chest_royal": "Royal Chest"
+      "blueberry": "Blueberry",
+      "strawberry_juice": "Strawberry Juice"
     }
   },
   "clicker": {
@@ -59,6 +55,7 @@
     "success_update": "Player data updated",
     "access_denied": "Access denied (admin privileges required)",
     "telemetry_title": "Click Telemetry",
+    "telemetry_date": "Date:",
     "total_clicks_all_time": "Total Clicks",
     "clicks_today": "Clicks Today",
     "avg_per_user": "Avg per Clicker",
@@ -76,10 +73,23 @@
     "nav": {
       "back": "Exit",
       "telemetry": "Telemetry",
+      "chats": "Chats",
       "businesses": "Businesses",
       "items": "Items",
       "users": "Users"
     },
+    "chats_title": "Chat Statistics",
+    "chats_count": "Total Chats",
+    "chat_detail_modal": "Chat Details",
+    "total_messages": "Messages",
+    "total_commands": "Bot Commands",
+    "avg_messages_per_day": "Avg messages/day",
+    "avg_commands_per_day": "Avg commands/day",
+    "active_users": "Active Users",
+    "daily_stats": "Daily Breakdown",
+    "top_users": "Top Active Users",
+    "first_activity": "First activity",
+    "last_activity": "Last activity",
     "no_data": "No data",
     "unique_clickers": "Unique clickers",
     "total_batches": "Click batches",
@@ -102,6 +112,9 @@
     "unit_s": "s",
     "no_items": "No items yet",
     "item_create_title": "New item",
+    "item_edit_title": "Edit Item Prices",
+    "sell_price": "Sell Price",
+    "buy_price": "Buy Price",
     "item_given": "Item updated for player",
     "amount": "Amount",
     "amount_hint": "Negative value takes the item away"
@@ -124,6 +137,10 @@
     "not_enough_money": "Not enough coins!",
     "not_found": "Business not found",
     "operation_error": "An error occurred during the operation",
+    "requires_level": "Requires level {level}",
+    "requires_premium": "Available for Premium users only",
+    "level_req": "Lvl {level}+",
+    "premium_req": "PREMIUM",
     "names": {
       "garden_bed": "Garden Bed",
       "garden_bussines": "Garden",
@@ -131,7 +148,8 @@
       "garden_bussiness": "Garden",
       "strawberry_farm": "Strawberry Farm",
       "bakery": "Bakery",
-      "factory": "Factory"
+      "factory": "Factory",
+      "strawberry_juice_factory": "Strawberry juice factory"
     }
   },
   "profile": {
