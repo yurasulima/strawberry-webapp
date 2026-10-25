@@ -36,6 +36,12 @@ export const UI_TEXTURES = [
   '/ui/button_admin_pressed.png',
   '/ui/money.png',
   '/ui/strawberry.png',
+  '/ui/loading.png',
+  '/ui/lock.png',
+  '/ui/button_sound_enabled.png',
+  '/ui/button_sound_disabled.png',
+  '/ui/button_music_enabled.png',
+  '/ui/button_music_disabled.png',
 ]
 
 const cache = new Map<string, HTMLImageElement>()

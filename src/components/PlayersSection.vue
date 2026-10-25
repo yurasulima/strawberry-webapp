@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PremiumBadge } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PremiumBadge, PixelText } from '@/components/pixel'
 import type { User } from "@/types/User.ts"
 import { useToastStore } from "@/stores/toast.ts"
 
@@ -76,8 +76,7 @@ onMounted(() => {
 
               <div class="player-info">
                 <div class="player-name-wrapper">
-                  <span class="player-name">{{ formatPlayerName(player) }}</span>
-
+                  <span class="player-name"><PixelText :text="formatPlayerName(player)" /></span>
                 </div>
                 <PremiumBadge v-if="player.premium" />
               </div>

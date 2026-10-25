@@ -1,5 +1,27 @@
 {
   "loading": "Loading...",
+  "inventory": {
+    "title": "Inventory",
+    "empty": "Your inventory is empty",
+    "select_item": "Select an item from inventory",
+    "quantity": "Quantity:",
+    "amount_to_sell": "Sell quantity:",
+    "sell": "Sell",
+    "sell_all": "Sell All",
+    "sell_success": "Successfully sold {count} items! +{coins} coins",
+    "sell_error": "Failed to sell item",
+    "owned": "In inventory: {count}",
+    "items": {
+      "strawberry": "Strawberry",
+      "money": "Coins",
+      "money_v2": "Coins V2",
+      "strawberry_jam": "Strawberry Jam",
+      "chest_gardener": "Gardener's Chest",
+      "chest_super": "Super Chest",
+      "chest_mega": "Mega Chest",
+      "chest_royal": "Royal Chest"
+    }
+  },
   "clicker": {
     "banned_until": "You are banned for autoclicking until {time}",
     "strawberries": "Strawberries",
@@ -106,6 +128,8 @@
   "settings": {
     "title": "Settings",
     "language_label": "Language:",
+    "sound_label": "Sound:",
+    "music_label": "Music:",
     "save": "Save",
     "saved_success": "Settings saved",
     "languages": {
@@ -135,5 +159,61 @@
   "not_found": {
     "title": "Page Not Found",
     "back_home": "Go to Home"
+  },
+  "daily_rewards": {
+    "title": "Reward Calendar",
+    "streak_label": "Daily streak",
+    "upcoming": "Upcoming rewards",
+    "available": "Available",
+    "received": "Received",
+    "claim_title": "Today's reward",
+    "come_back_tomorrow": "Come back tomorrow for another reward",
+    "keep_streak": "Check in every day to keep your streak going!",
+    "strawberries": "Strawberries",
+    "coins": "Coins",
+    "streak_info": "Daily Streak: {streak} days",
+    "claim": "Claim Reward",
+    "claimed": "Claimed",
+    "already_claimed": "You've already claimed your reward today!",
+    "claimed_toast": "Claimed Day {day} reward!",
+    "day_title": "Day {day}",
+    "weeks": {
+      "w1": "Week 1",
+      "w2": "Week 2",
+      "w3": "Week 3",
+      "w4": "Week 4"
+    },
+    "rewards": {
+      "day1": "50 Strawberries",
+      "day2": "x2 Clicks (30m)",
+      "day3": "Strawberry Jam",
+      "day4": "+100 Clicks",
+      "day5": "Gardener's Chest",
+      "day6": "Business Boost",
+      "day7": "Super Chest + 2000 Coins",
+      "day8": "75 Strawberries",
+      "day9": "+150 Clicks",
+      "day10": "300 Coins",
+      "day11": "2x Strawberry Jam",
+      "day12": "Gardener's Chest",
+      "day13": "Business Boost",
+      "day14": "Mega Chest + 3500 Coins",
+      "day15": "100 Strawberries",
+      "day16": "x3 Clicks (30m)",
+      "day17": "500 Coins",
+      "day18": "+200 Clicks",
+      "day19": "2x Gardener's Chest",
+      "day20": "Business Boost",
+      "day21": "Hyper Chest + 5000 Coins",
+      "day22": "150 Strawberries",
+      "day23": "750 Coins",
+      "day24": "+250 Clicks",
+      "day25": "3x Strawberry Jam",
+      "day26": "2x Gardener's Chest",
+      "day27": "Business Boost",
+      "day28": "Royal Chest + 7500 Coins",
+      "day29": "300 Strawberries",
+      "day30": "LEGENDARY TROPHY + 15,000 Coins"
+    }
   }
 }

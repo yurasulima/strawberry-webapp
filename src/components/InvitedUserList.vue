@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import api from '@/services/api.ts'
 import { useI18n } from 'vue-i18n'
 import { AppCard, AppText } from '@/components/ui'
+import { PixelText } from '@/components/pixel'
 import type { InvitedUser } from "@/types/InvitedUser.ts";
 
 const { t } = useI18n()
@@ -47,7 +48,7 @@ onMounted(async () => {
         />
         <div class="invite-info">
           <AppText variant="subtitle" as="div" class="invite-name">
-            {{ invite.invitedUser.firstName }} {{ invite.invitedUser.lastName }}
+            <PixelText :text="`${invite.invitedUser.firstName ?? ''} ${invite.invitedUser.lastName ?? ''}`.trim()" />
           </AppText>
           <AppText variant="caption" color="muted" class="invite-date">
             {{ new Date(invite.createdAt).toLocaleString() }}

@@ -3,7 +3,7 @@ import { onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { AppScreen, AppCard, AppText } from '@/components/ui'
-import { PremiumBadge } from '@/components/pixel'
+import { PremiumBadge, PixelText } from '@/components/pixel'
 import InvitedUserList from "@/components/InvitedUserList.vue";
 import { useUserStore } from "@/stores/user.ts"
 
@@ -35,7 +35,7 @@ function getItemIcon(itemName: string) {
         />
         <div class="profile-name-status">
           <AppText variant="title" as="h2" class="profile-name">
-            {{ player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name') }}
+            <PixelText :text="player.firstName || player.lastName ? (player.firstName ?? '') + ' ' + (player.lastName ?? '') : t('profile.no_name')" />
           </AppText>
           <div class="status-tags">
             <PremiumBadge v-if="player.premium" :text="t('profile.premium')" />

@@ -5,7 +5,8 @@ import { Icon } from '@iconify/vue'
 import {
   Card, CardPrimary, PixelModal, AvatarBorder, Message,
   ShopButton, GameButton, SettingsButton, TopButton,
-  CloseButton, OkButton, HelpButton, ButtonText, Switch
+  CloseButton, OkButton, HelpButton, ButtonText, Switch, Loading,
+  Lock, SoundButton, MusicButton
 } from '@/components/pixel'
 
 const router = useRouter()
@@ -320,6 +321,27 @@ const demoModal = ref(false)
         <div class="demo-row dark">
           <GameButton size="64" /><ShopButton size="64" /><TopButton size="64" /><SettingsButton size="64" />
           <OkButton size="64" /><HelpButton size="64" /><CloseButton size="64" />
+        </div>
+      </div>
+
+      <div class="comp-block">
+        <h2>Індикатор завантаження · Loading (32x32 sprite)</h2>
+        <div class="demo-row dark" style="gap: 20px; align-items: center;">
+          <Loading size="32" />
+          <Loading size="48" text="Завантаження..." />
+          <Loading size="64" vertical text="Будь ласка, зачекайте" />
+        </div>
+      </div>
+
+      <div class="comp-block">
+        <h2>Кнопки звуку, музики та замка (Lock, Sound, Music)</h2>
+        <div class="demo-row dark" style="gap: 20px; align-items: center;">
+          <Lock size="32" />
+          <Lock size="48" clickable />
+          <SoundButton size="32" v-model="sfx" />
+          <SoundButton size="48" v-model="sfx" />
+          <MusicButton size="32" v-model="music" />
+          <MusicButton size="48" v-model="music" />
         </div>
       </div>
 

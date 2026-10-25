@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWebApp } from 'vue-tg'
-import { CardPrimary, Card, ButtonText, LeftButton, RightButton } from '@/components/pixel'
-import { playClickSound, playPurchaseSound } from '@/services/sound'
+import { CardPrimary, Card, ButtonText, LeftButton, RightButton, SoundButton, MusicButton } from '@/components/pixel'
+import { playClickSound, playPurchaseSound, isSoundEnabled, setSoundEnabled, isMusicEnabled, setMusicEnabled } from '@/services/sound'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 
@@ -14,6 +14,17 @@ const toastStore = useToastStore()
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
+
+const soundState = ref(isSoundEnabled())
+const musicState = ref(isMusicEnabled())
+
+watch(soundState, (val) => {
+  setSoundEnabled(val)
+})
+
+watch(musicState, (val) => {
+  setMusicEnabled(val)
+})
 
 const { initDataUnsafe } = useWebApp()
 const telegramUser = initDataUnsafe?.user
@@ -74,6 +85,8 @@ function saveSettings() {
   playPurchaseSound()
   locale.value = selectedLangCode.value
   localStorage.setItem('lang', selectedLangCode.value)
+  setSoundEnabled(soundState.value)
+  setMusicEnabled(musicState.value)
   toastStore.showToast(t('settings.saved_success'), 'success')
   emit('close')
 }
@@ -94,6 +107,18 @@ function saveSettings() {
               <span class="lang-label">{{ currentLangLabel }}</span>
               <RightButton size="64" @click="nextLang" />
             </div>
+          </div>
+
+          <!-- Налаштування звуку -->
+          <div class="setting-row">
+            <span class="setting-label">{{ t('settings.sound_label') }}</span>
+            <SoundButton v-model="soundState" size="48" />
+          </div>
+
+          <!-- Налаштування музики -->
+          <div class="setting-row">
+            <span class="setting-label">{{ t('settings.music_label') }}</span>
+            <MusicButton v-model="musicState" size="48" />
           </div>
 
           <!-- Кнопка Зберегти -->
@@ -143,7 +168,7 @@ function saveSettings() {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 64px;
+  min-height: 52px;
   width: 100%;
 }
 

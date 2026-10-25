@@ -19,6 +19,9 @@ export interface User {
   dailyStrawberryClicks?: number
   remainingDailyClicks?: number
   nextClickResetTime?: string | null
+  dailyStreak?: number
+  lastClaimedDailyAt?: string | null
+  canClaimDaily?: boolean
   slots: Slot[]
   businesses: UserBusiness[]
   invites: InvitedUser[]

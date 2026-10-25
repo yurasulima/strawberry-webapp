@@ -31,6 +31,7 @@ class SoundEngine {
   }
 
   playSound(key: string, volume = 0.5) {
+    if (!soundEnabled) return
     const ctx = this.getContext()
     const buffer = this.buffers.get(key)
     if (!ctx || !buffer) return
@@ -49,6 +50,39 @@ class SoundEngine {
     } catch (e) {
       console.warn('Sound play error:', e)
     }
+  }
+}
+
+let soundEnabled = true
+let musicEnabled = true
+
+if (typeof window !== 'undefined') {
+  const savedSound = localStorage.getItem('sound_enabled')
+  if (savedSound !== null) soundEnabled = savedSound === 'true'
+
+  const savedMusic = localStorage.getItem('music_enabled')
+  if (savedMusic !== null) musicEnabled = savedMusic === 'true'
+}
+
+export function isSoundEnabled(): boolean {
+  return soundEnabled
+}
+
+export function setSoundEnabled(enabled: boolean) {
+  soundEnabled = enabled
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('sound_enabled', enabled ? 'true' : 'false')
+  }
+}
+
+export function isMusicEnabled(): boolean {
+  return musicEnabled
+}
+
+export function setMusicEnabled(enabled: boolean) {
+  musicEnabled = enabled
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('music_enabled', enabled ? 'true' : 'false')
   }
 }
 

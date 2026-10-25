@@ -118,7 +118,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  color: #3f2e21;
+  color: #25211c;
 }
 
 .pixel-modal-header {
@@ -132,10 +132,10 @@ onUnmounted(() => {
 }
 
 .pixel-modal-title {
-  font-family: var(--font-pixel);
-  font-size: 16px;
+  font-family: var(--font-pixel),serif;
+  font-size: 18px;
   margin: 0;
-  color: #d97706;
+  color: #9e5c5c;
   text-shadow: 1px 1px 0 #1a1008;
 }
 

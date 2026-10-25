@@ -9,8 +9,9 @@ import {
 } from '@/components/pixel'
 import BusinessButton from "@/components/pixel/BusinessButton.vue"
 import { useUserStore } from '@/stores/user'
+import InventoryButton from "@/components/pixel/InventoryButton.vue";
 
-export type TabType = 'clicker' | 'profile' | 'users' | 'shop' | 'business' | 'debug' | 'settings' | 'admin'
+export type TabType = 'clicker' | 'inventory' | 'profile' | 'users' | 'shop' | 'business' | 'debug' | 'settings' | 'admin'
 
 const props = defineProps<{ activeTab: TabType }>()
 const emit = defineEmits<{
@@ -27,13 +28,19 @@ function switchTab(tab: TabType) {
 
 <template>
   <div class="bottom-navigation-container">
-    <CardPrimary :width="isAdmin ? '360px' : '300px'" height="70px" :padding="1">
+    <CardPrimary :width="isAdmin ? '410px' : '350px'" height="70px" :padding="1">
       <div class="bottom-navigation-bar">
 
         <GameButton
             size="64"
             :active="props.activeTab === 'clicker'"
             @click="switchTab('clicker')"
+        />
+
+        <InventoryButton
+            size="64"
+            :active="props.activeTab === 'inventory'"
+            @click="switchTab('inventory')"
         />
 
         <BusinessButton
@@ -84,6 +91,6 @@ function switchTab(tab: TabType) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
 }
 </style>

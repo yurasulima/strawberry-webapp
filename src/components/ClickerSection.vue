@@ -191,7 +191,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
               :class="{ 'pop-animation': isClicking, 'disabled-icon': isLimitReached }"
           />
           <div v-if="isLimitReached" class="lock-overlay">
-            <img src="/honeywood/icons/interface/lock.png" alt="Locked" class="lock-icon-img" />
+            <img src="/ui/lock.png" alt="Locked" class="lock-icon-img" />
           </div>
         </button>
 
@@ -207,21 +207,21 @@ const sellAllStrawberries = async (e: MouseEvent) => {
         </div>
       </div>
 
-      <ButtonText
-          height="64"
-          padding="12px 20px"
-          :loading="isSelling"
-          :disabled="count <= 0 && pendingClicks === 0"
-          @click="sellAllStrawberries"
-      >
-        {{ t('clicker.sell_all') }}
-      </ButtonText>
+<!--      <ButtonText-->
+<!--          height="64"-->
+<!--          padding="12px 20px"-->
+<!--          :loading="isSelling"-->
+<!--          :disabled="count <= 0 && pendingClicks === 0"-->
+<!--          @click="sellAllStrawberries"-->
+<!--      >-->
+<!--        {{ t('clicker.sell_all') }}-->
+<!--      </ButtonText>-->
 
 
       <Card v-if="isLimitReached" width="100%" height="auto" :padding="10" class="limit-card-wrapper">
         <div   class="limit-status-box">
           <div class="limit-alert-banner">
-            <img src="/honeywood/icons/interface/lock.png" alt="Lock" class="limit-alert-icon" />
+            <img src="/ui/lock.png" alt="Lock" class="limit-alert-icon" />
             <div class="limit-alert-text">
               <span class="alert-title">{{ t('clicker.limit_reached_title') }}</span>
               <span class="alert-timer">{{ t('clicker.limit_resets_in', { time: formattedResetTime }) }}</span>

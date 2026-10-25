@@ -7,19 +7,22 @@ import { useUserStore } from "@/stores/user.ts"
 import Toolbar from "@/components/Toolbar.vue"
 import PlayersSection from '@/components/PlayersSection.vue'
 import ClickerSection from '@/components/ClickerSection.vue'
+import InventorySection from '@/components/InventorySection.vue'
 import ProfileSection from '@/components/ProfileSection.vue'
 import DebugSection from '@/components/DebugSection.vue'
-import BottomNavigation from '@/components/BottomNavigation.vue'
-import BussinesSection from "@/components/BussinesSection.vue";
-import MarketSection from "@/components/MarketSection.vue";
-import SettingsSection from "@/components/SettingsSection.vue";
-import AdminSection from "@/components/AdminSection.vue";
-import { PixelToastContainer } from "@/components/pixel";
+import BottomNavigation, { type TabType } from '@/components/BottomNavigation.vue'
+import BussinesSection from "@/components/BussinesSection.vue"
+import MarketSection from "@/components/MarketSection.vue"
+import SettingsSection from "@/components/SettingsSection.vue"
+import AdminSection from "@/components/AdminSection.vue"
+import DailyRewardsModal from "@/components/DailyRewardsModal.vue"
+import { PixelToastContainer } from "@/components/pixel"
 import api from "@/services/api.ts"
 import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const isLoading = ref(true)
+const showDailyRewards = ref(false)
 const userStore = useUserStore()
 const { initDataUnsafe } = useWebApp()
 const user = initDataUnsafe.user || { id: 1, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.dangerous.pp.ua/image/null.png" }
@@ -29,7 +32,7 @@ if (user === undefined) {
   router.replace('/404')
 }
 
-const activeTab = ref<'clicker' | 'profile' | 'users' | 'debug' | 'business' | 'shop' | 'settings' | 'admin'>('clicker')
+const activeTab = ref<TabType>('clicker')
 
 watch(activeTab, () => {
   userStore.fetchUser()
@@ -59,6 +62,9 @@ onMounted(async () => {
       const auth = useAuthStore()
       auth.login(response.data)
       userStore.setUser(response.data)
+      if (userStore.canClaimDaily) {
+        showDailyRewards.value = true
+      }
     }
   } catch (error) {
     console.error('API call error:', error)
@@ -88,10 +94,14 @@ onMounted(async () => {
           :money="userStore.money"
           :strawberry="userStore.strawberries"
           @openSettings="activeTab = activeTab === 'settings' ? 'clicker' : 'settings'"
+          @openDailyRewards="showDailyRewards = true"
       />
+
+      <DailyRewardsModal v-model="showDailyRewards" />
 
       <div class="main-content">
         <ClickerSection v-show="activeTab === 'clicker'" />
+        <InventorySection v-show="activeTab === 'inventory'" />
         <ProfileSection v-show="activeTab === 'profile'" />
         <BussinesSection v-show="activeTab === 'business'" :user="user" />
         <MarketSection v-show="activeTab === 'shop'" :user="user" />

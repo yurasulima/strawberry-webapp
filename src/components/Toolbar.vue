@@ -1,12 +1,17 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import {
   CardPrimary,
   AvatarBorder,
   SettingsButton,
   Image,
-  Card
+  Card,
+  PixelText
 } from '@/components/pixel'
 import { playClickSound } from '@/services/sound'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const props = defineProps<{
   firstName?: string | null
@@ -19,11 +24,19 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'openSettings'): void
+  (e: 'openDailyRewards'): void
 }>()
+
+const canClaimDaily = computed(() => userStore.canClaimDaily)
 
 function handleOpenSettings() {
   playClickSound()
   emit('openSettings')
+}
+
+function handleOpenDaily() {
+  playClickSound()
+  emit('openDailyRewards')
 }
 </script>
 
@@ -42,13 +55,19 @@ function handleOpenSettings() {
         <div class="user-info-side">
           <div class="user-info-header">
             <span class="user-name">
-              {{ props.firstName ?? '' }} {{ props.lastName ?? '' }}
+              <PixelText :text="`${props.firstName ?? ''} ${props.lastName ?? ''}`.trim()" />
             </span>
-            <SettingsButton
-                size="64"
-                @click="handleOpenSettings"
-                class="settings-btn"
-            />
+            <div class="toolbar-actions">
+              <button class="gift-btn" @click="handleOpenDaily" title="Daily Rewards">
+                <span class="gift-emoji">🎁</span>
+                <span v-if="canClaimDaily" class="gift-badge-dot"></span>
+              </button>
+              <SettingsButton
+                  size="64"
+                  @click="handleOpenSettings"
+                  class="settings-btn"
+              />
+            </div>
           </div>
         </div>
       </CardPrimary>
@@ -139,6 +158,56 @@ function handleOpenSettings() {
   word-break: break-word;
   text-align: center;
   flex-grow: 1;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.gift-btn {
+  position: relative;
+  background-color: #5977a3;
+  border: 2px solid #1b5e20;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 2px 0 #1b5e20;
+  transition: transform 0.05s ease;
+}
+
+.gift-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 #1b5e20;
+}
+
+.gift-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.gift-badge-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  background-color: #e53935;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  animation: pulse-dot 1.2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
 }
 
 .settings-btn {
