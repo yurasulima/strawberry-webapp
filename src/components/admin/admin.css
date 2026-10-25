@@ -1,0 +1,403 @@
+.admin-container {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  font-family: 'Crumbline', sans-serif;
+  color: #3f2e21;
+}
+
+.title {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: normal;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.stat-card {
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 3px 0 #3e2723;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #3f2e21;
+}
+
+.telemetry-card {
+  width: 100%;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.telemetry-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.telemetry-header {
+  font-size: 16px;
+  font-weight: bold;
+  color: #3f2e21;
+}
+
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.telemetry-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.telemetry-label {
+  font-size: 13px;
+  color: #5d4037;
+}
+
+.telemetry-value {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.text-danger { color: #c62828; }
+.text-gold { color: #d97706; }
+.text-success { color: #2e7d32; }
+
+.search-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sort-label {
+  font-size: 15px;
+  color: #5d4037;
+}
+
+.pixel-select {
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 15px;
+  color: #3f2e21;
+  outline: none;
+  cursor: pointer;
+}
+
+.pixel-input {
+  flex: 1;
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 16px;
+  color: #3f2e21;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.pixel-input:focus {
+  border-color: #2e7d32;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 16px;
+  font-size: 16px;
+}
+
+.users-card {
+  width: 100%;
+}
+
+.user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 6px;
+}
+
+.user-row + .user-row {
+  border-top: 2px solid rgba(63, 46, 33, 0.18);
+}
+
+.user-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #5d4037;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-name {
+  font-size: 18px;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-online-line {
+  font-size: 13px;
+  margin: 1px 0;
+}
+
+.online-indicator {
+  color: #7c624d;
+}
+
+.online-indicator.is-online {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.tag {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.tag-premium { background-color: #2e7d32; }
+.tag-admin { background-color: #d97706; }
+.tag-banned { background-color: #c62828; }
+
+.user-meta {
+  font-size: 14px;
+  color: #5d4037;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.meta-res {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.res-icon-inline {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+.user-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Modal styles */
+.modal-body, .telemetry-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+  font-family: 'Crumbline', sans-serif;
+}
+
+.user-telemetry-title {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  color: #3f2e21;
+}
+
+.telemetry-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.mode-switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.input-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-field-row label {
+  font-size: 16px;
+  color: #5d4037;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* ───── Нові стилі для розділів керування бізнесами / предметами ───── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-header .title {
+  margin: 0;
+  text-align: left;
+}
+
+.list-card {
+  width: 100%;
+}
+
+.entity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.entity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 6px;
+}
+
+.entity-row + .entity-row {
+  border-top: 2px solid rgba(63, 46, 33, 0.18);
+}
+
+.entity-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entity-name {
+  font-size: 18px;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-meta {
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.entity-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.hint-text {
+  font-size: 13px;
+  color: #7c624d;
+}
+
+.user-pick-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  background: #fff8eb;
+}
+
+.user-pick-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.user-pick-item + .user-pick-item {
+  border-top: 1px solid rgba(63, 46, 33, 0.18);
+}
+
+.user-pick-item.is-selected {
+  background: rgba(46, 125, 50, 0.18);
+  font-weight: bold;
+}
+
+.user-pick-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #5d4037;
+  object-fit: cover;
+}

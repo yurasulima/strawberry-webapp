@@ -10,8 +10,9 @@ import {
 import BusinessButton from "@/components/pixel/BusinessButton.vue"
 import { useUserStore } from '@/stores/user'
 import InventoryButton from "@/components/pixel/InventoryButton.vue";
+import type { AdminTabType } from '@/components/admin/AdminNavigation.vue'
 
-export type TabType = 'clicker' | 'inventory' | 'profile' | 'users' | 'shop' | 'business' | 'debug' | 'settings' | 'admin'
+export type TabType = 'clicker' | 'inventory' | 'profile' | 'users' | 'shop' | 'business' | 'debug' | 'settings' | AdminTabType
 
 const props = defineProps<{ activeTab: TabType }>()
 const emit = defineEmits<{
@@ -20,6 +21,7 @@ const emit = defineEmits<{
 
 const userStore = useUserStore()
 const isAdmin = computed(() => !!userStore.user?.admin)
+const isAdminActive = computed(() => props.activeTab.startsWith('admin'))
 
 function switchTab(tab: TabType) {
   emit('changeTab', tab)
@@ -64,8 +66,8 @@ function switchTab(tab: TabType) {
         <AdminButton
             v-if="isAdmin"
             size="64"
-            :active="props.activeTab === 'admin'"
-            @click="switchTab('admin')"
+            :active="isAdminActive"
+            @click="switchTab('admin-telemetry')"
         />
 
       </div>

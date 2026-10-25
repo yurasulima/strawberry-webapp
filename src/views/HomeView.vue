@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWebApp } from "vue-tg"
 import { useAuthStore } from "@/stores/auth.ts"
@@ -14,7 +14,11 @@ import BottomNavigation, { type TabType } from '@/components/BottomNavigation.vu
 import BussinesSection from "@/components/BussinesSection.vue"
 import MarketSection from "@/components/MarketSection.vue"
 import SettingsSection from "@/components/SettingsSection.vue"
-import AdminSection from "@/components/AdminSection.vue"
+import AdminNavigation, { type AdminTabType } from '@/components/admin/AdminNavigation.vue'
+import AdminTelemetrySection from '@/components/admin/AdminTelemetrySection.vue'
+import AdminBusinessesSection from '@/components/admin/AdminBusinessesSection.vue'
+import AdminItemsSection from '@/components/admin/AdminItemsSection.vue'
+import AdminUsersSection from '@/components/admin/AdminUsersSection.vue'
 import DailyRewardsModal from "@/components/DailyRewardsModal.vue"
 import { PixelToastContainer } from "@/components/pixel"
 import api from "@/services/api.ts"
@@ -33,6 +37,7 @@ if (user === undefined) {
 }
 
 const activeTab = ref<TabType>('clicker')
+const isAdminMode = computed(() => activeTab.value.startsWith('admin'))
 
 watch(activeTab, () => {
   userStore.fetchUser()
@@ -86,7 +91,7 @@ onMounted(async () => {
     <!-- Основний контент показуємо, якщо не завантажуємо -->
     <template v-else>
       <Toolbar
-          v-if="activeTab !== 'admin'"
+          v-if="!isAdminMode"
           :language_code="user.language_code"
           :firstName="user.first_name"
           :lastName="user.last_name"
@@ -99,7 +104,7 @@ onMounted(async () => {
 
       <DailyRewardsModal v-model="showDailyRewards" />
 
-      <div class="main-content">
+      <div class="main-content" :class="{ 'main-content--admin': isAdminMode }">
         <ClickerSection v-show="activeTab === 'clicker'" />
         <InventorySection v-show="activeTab === 'inventory'" />
         <ProfileSection v-show="activeTab === 'profile'" />
@@ -107,11 +112,23 @@ onMounted(async () => {
         <MarketSection v-show="activeTab === 'shop'" :user="user" />
         <PlayersSection v-show="activeTab === 'users'" />
         <SettingsSection v-show="activeTab === 'settings'" @close="activeTab = 'clicker'" />
-        <AdminSection v-show="activeTab === 'admin'" />
+        <template v-if="userStore.user?.admin">
+          <AdminTelemetrySection v-if="activeTab === 'admin-telemetry'" />
+          <AdminBusinessesSection v-if="activeTab === 'admin-businesses'" />
+          <AdminItemsSection v-if="activeTab === 'admin-items'" />
+          <AdminUsersSection v-if="activeTab === 'admin-users'" />
+        </template>
         <DebugSection v-show="activeTab === 'debug'" />
       </div>
 
-      <BottomNavigation class="bott" :activeTab="activeTab" @changeTab="activeTab = $event" />
+      <AdminNavigation
+          v-if="isAdminMode"
+          class="bott"
+          :activeTab="activeTab"
+          @changeTab="activeTab = $event"
+          @exit="activeTab = 'clicker'"
+      />
+      <BottomNavigation v-else class="bott" :activeTab="activeTab" @changeTab="activeTab = $event" />
     </template>
   </div>
 </template>
@@ -156,6 +173,11 @@ onMounted(async () => {
   justify-content: center;
   width: 100%;
   padding-bottom: 70px;
+}
+.main-content--admin {
+  justify-content: flex-start;
+  padding-top: 8px;
+  padding-bottom: 110px;
 }
 .bott {
 
