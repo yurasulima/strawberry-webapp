@@ -54,9 +54,9 @@ function getItemIcon(itemName?: string): string {
   const clean = itemName.toLowerCase().trim()
   if (clean === 'strawberry') return '/ui/strawberry.png'
   if (clean === 'money') return '/ui/money.png'
-  if (clean === 'money_v2') return '/ui/money_v2.png'
-  if (clean === 'strawberry_jam') return '/ui/button_inventory.png'
-  if (clean.includes('chest')) return '/ui/button_shop.png'
+  if (clean === 'strawberry_juice') return '/ui/strawberry_juice.png'
+  if (clean === 'blueberry') return '/ui/blueberry.png'
+  if (clean === 'water') return '/ui/water.png'
   return '/ui/strawberry.png'
 }
 
