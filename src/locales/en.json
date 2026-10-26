@@ -14,6 +14,8 @@
     "items": {
       "strawberry": "Strawberry",
       "money": "Coins",
+      "demo_item": "Demo Item",
+      "water": "Water",
       "blueberry": "Blueberry",
       "strawberry_juice": "Strawberry Juice"
     }
@@ -149,7 +151,7 @@
       "strawberry_farm": "Strawberry Farm",
       "bakery": "Bakery",
       "factory": "Factory",
-      "strawberry_juice_factory": "Strawberry juice factory"
+      "strawberry_juice_factory": "Strawberry Juice Factory"
     }
   },
   "profile": {
@@ -165,7 +167,11 @@
   },
   "items": {
     "strawberry": "Strawberry",
-    "money": "Coin"
+    "money": "Coin",
+    "demo_item": "Demo Item",
+    "water": "Water",
+    "blueberry": "Blueberry",
+    "strawberry_juice": "Strawberry Juice"
   },
   "players": {
     "title": "Top Players",

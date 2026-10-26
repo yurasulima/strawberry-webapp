@@ -4,10 +4,11 @@ import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import type { Business } from "@/types/Business.ts"
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, ItemIcon } from '@/components/pixel'
 import { playClickSound, playPurchaseSound } from "@/services/sound"
 import { useUserStore } from "@/stores/user.ts"
 import { useToastStore } from "@/stores/toast.ts"
+import { formatBizName as formatBizNameUtil, translateError as translateErrorUtil } from '@/utils/business'
 
 const props = defineProps<{ user?: any }>()
 const { t, te } = useI18n()
@@ -37,42 +38,11 @@ const sortedBusinessesForSale = computed(() => {
 })
 
 function formatBizName(rawName?: string): string {
-  if (!rawName) return t('business.default_name')
-  const clean = rawName.toLowerCase().trim()
-  const key = `business.names.${clean}`
-  if (te(key)) {
-    return t(key)
-  }
-  const altClean = clean.replace(/bussines/g, 'business').replace(/bussiness/g, 'business')
-  const altKey = `business.names.${altClean}`
-  if (te(altKey)) {
-    return t(altKey)
-  }
-  return rawName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return formatBizNameUtil(rawName, t, te)
 }
 
 function translateError(err: any): string {
-  const raw = err.response?.data?.message || err.response?.data || err.message || ''
-  const str = typeof raw === 'string' ? raw : JSON.stringify(raw)
-  const lower = str.toLowerCase()
-
-  if (lower.includes('requires level') || lower.includes('level')) {
-    const match = str.match(/\d+/)
-    return t('business.requires_level', { level: match ? match[0] : '' })
-  }
-  if (lower.includes('premium')) {
-    return t('business.requires_premium')
-  }
-  if (lower.includes('wait') || lower.includes('have to wait') || lower.includes('collecting exception')) {
-    return t('clicker.daily_limit_reached')
-  }
-  if (lower.includes('not enough money') || lower.includes('no money')) {
-    return t('business.not_enough_money')
-  }
-  if (lower.includes('not found')) {
-    return t('business.not_found')
-  }
-  return str || t('business.operation_error')
+  return translateErrorUtil(err, t)
 }
 
 async function loadData() {
@@ -134,17 +104,17 @@ async function directBuy(biz: Business) {
                   </span>
                 </span>
                 <span class="biz-meta">
-                  {{ t('business.price', { price: biz.price || 100 }) }} · <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong>
+                  {{ t('business.price', { price: biz.price || 100 }) }} · <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong> <ItemIcon :item="biz.item" size="18" style="vertical-align: middle;" />
                 </span>
               </div>
 
               <ButtonText
-                :disabled="userLevel < (biz.minLevel || 1) || (biz.premiumOnly && !isPremiumUser)"
+                :disabled="userLevel < (biz.minLevel ?? 0) || (biz.premiumOnly && !isPremiumUser)"
                 :loading="buyingName === biz.name"
                 @click="directBuy(biz)"
               >
                 {{
-                  userLevel < (biz.minLevel || 1)
+                  userLevel < (biz.minLevel ?? 0)
                     ? `Рівень ${biz.minLevel}`
                     : (biz.premiumOnly && !isPremiumUser
                         ? 'Premium'

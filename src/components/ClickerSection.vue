@@ -5,10 +5,12 @@ import { useI18n } from 'vue-i18n'
 import { playHarvestSound, playCoinSound } from '@/services/sound'
 import { ButtonText, Card } from '@/components/pixel'
 import { useUserStore } from "@/stores/user.ts"
+import { useAuthStore } from "@/stores/auth.ts"
 import { useToastStore } from "@/stores/toast.ts"
 
 const { t } = useI18n()
 const userStore = useUserStore()
+const authStore = useAuthStore()
 const toastStore = useToastStore()
 
 let particleId = 0
@@ -20,6 +22,7 @@ let pendingClicks = 0
 
 const formattedResetTime = ref('00:00:00')
 let timerInterval: ReturnType<typeof setInterval> | null = null
+let flushInterval: ReturnType<typeof setInterval> | null = null
 
 const remainingClicks = computed(() => userStore.remainingDailyClicks)
 const isLimitReached = computed(() => remainingClicks.value <= 0)
@@ -66,6 +69,24 @@ const updateTimer = () => {
   formattedResetTime.value = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
 }
 
+const handleBeforeUnload = () => {
+  if (pendingClicks > 0) {
+    const body = JSON.stringify({ name: "strawberry", count: pendingClicks })
+    const token = authStore.token
+    const baseUrl = api.defaults.baseURL || 'https://strawberryapi.dangerous.pp.ua'
+
+    fetch(`${baseUrl}/slots/take`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body,
+      keepalive: true
+    }).catch(() => {})
+  }
+}
+
 onMounted(async () => {
   localStorage.removeItem("clicker-ban")
 
@@ -78,19 +99,15 @@ onMounted(async () => {
 
   updateTimer()
   timerInterval = setInterval(updateTimer, 1000)
+  flushInterval = setInterval(flushClicks, 2000)
 
-  setInterval(flushClicks, 2000)
-
-  window.addEventListener("beforeunload", () => {
-    if (pendingClicks > 0) {
-      const data = JSON.stringify({ name: "strawberry", count: pendingClicks })
-      navigator.sendBeacon("/api/slots/take", data)
-    }
-  })
+  window.addEventListener("beforeunload", handleBeforeUnload)
 })
 
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
+  if (flushInterval) clearInterval(flushInterval)
+  window.removeEventListener("beforeunload", handleBeforeUnload)
 })
 
 const flushClicks = async () => {

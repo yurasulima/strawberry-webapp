@@ -34,3 +34,5 @@ export { default as Selected } from './Selected.vue'
 export { default as PixelSelected } from './Selected.vue'
 export { default as PixelText } from './PixelText.vue'
 export { default as PixelName } from './PixelText.vue'
+export { default as ItemIcon } from './ItemIcon.vue'
+

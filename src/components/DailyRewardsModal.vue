@@ -3,9 +3,8 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PixelModal from '@/components/pixel/PixelModal.vue'
 import Card from '@/components/pixel/Card.vue'
-import Selected from '@/components/pixel/Selected.vue'
-import ButtonText from '@/components/pixel/ButtonText.vue'
 import Lock from '@/components/pixel/Lock.vue'
+import ItemIcon from '@/components/pixel/ItemIcon.vue'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import { playClickSound, playCoinSound } from '@/services/sound'
@@ -132,20 +131,19 @@ function rewardParts(day?: RewardDay) {
   ]
 }
 
-async function handleClaim() {
+async function handleClaim(dayToClaim?: number) {
+  const targetDay = dayToClaim ?? currentStreak.value
   if (!canClaim.value || isClaiming.value) return
 
   playClickSound()
   isClaiming.value = true
 
-  const dayToClaim = currentStreak.value
-
   try {
-    await userStore.claimDailyReward(dayToClaim)
+    await userStore.claimDailyReward(targetDay)
     playCoinSound()
 
     toastStore.showToast(
-        t('daily_rewards.claimed_toast', { day: dayToClaim }),
+        t('daily_rewards.claimed_toast', { day: targetDay }),
         'success'
     )
 
@@ -204,16 +202,19 @@ async function handleClaim() {
         </span>
       </div>
 
+      <!-- Grid of Days -->
       <div class="days-grid">
         <div
             v-for="day in visibleDays"
             :key="day.day"
             class="day-wrapper"
             :class="{
-            'day-wrapper-current': day.isCurrent,
-            'day-wrapper-claimed': day.isClaimed,
-            'day-wrapper-milestone': day.isMilestone,
-          }"
+              'day-wrapper-current': day.isCurrent,
+              'day-wrapper-claimed': day.isClaimed,
+              'day-wrapper-milestone': day.isMilestone,
+              'day-wrapper-clickable': day.isCurrent && canClaim,
+            }"
+            @click="day.isCurrent && canClaim && handleClaim(day.day)"
         >
           <Card
               width="100%"
@@ -221,60 +222,45 @@ async function handleClaim() {
               :padding="4"
               class="day-card"
               :class="{
-              'is-claimed': day.isClaimed,
-              'is-current': day.isCurrent,
-              'is-locked': day.isLocked,
-              'is-milestone': day.isMilestone,
-            }"
+                'is-claimed': day.isClaimed,
+                'is-current': day.isCurrent,
+                'is-locked': day.isLocked,
+                'is-milestone': day.isMilestone,
+              }"
           >
             <div class="day-card-inner">
               <span class="day-number">{{ day.day }}</span>
 
               <div class="reward-values" :aria-label="rewardDescription(day)">
                 <span v-for="reward in rewardParts(day)" :key="reward.icon" class="reward-value">
-                  <img :src="reward.icon" :alt="reward.label" class="reward-value-icon" />
+                  <ItemIcon :item="reward.icon" size="28" class="reward-value-icon" />
                   <span>+{{ reward.amount }}</span>
                 </span>
               </div>
 
               <span v-if="day.isClaimed" class="claimed-mark">✓</span>
+              <div v-else-if="day.isCurrent && canClaim" class="claim-badge">
+                {{ isClaiming ? '...' : 'Тисни!' }}
+              </div>
               <div v-else-if="day.isLocked" class="lock-overlay">
-                <Lock width="48" height="48" />
+                <Lock width="40" height="40" />
               </div>
             </div>
           </Card>
         </div>
       </div>
 
-      <!-- Claim action -->
+      <!-- Info panel without separate button -->
       <div class="claim-panel">
         <div class="claim-copy">
-          <span class="claim-title">
-            {{
-              canClaim
-                  ? t('daily_rewards.claim_title')
-                  : t('daily_rewards.already_claimed')
-            }}
-          </span>
-
-          <div v-if="canClaim" class="claim-reward-values" :aria-label="rewardDescription(visibleDays[0])">
+          <div v-if="canClaim && visibleDays[0]" class="claim-reward-values" :aria-label="rewardDescription(visibleDays[0])">
             <span v-for="reward in rewardParts(visibleDays[0])" :key="reward.icon" class="reward-value">
-              <img :src="reward.icon" :alt="reward.label" class="reward-value-icon" />
+              <ItemIcon :item="reward.icon" size="20" class="reward-value-icon" />
               <span>+{{ reward.amount }}</span>
             </span>
           </div>
           <span v-else class="claim-description">{{ t('daily_rewards.come_back_tomorrow') }}</span>
         </div>
-
-        <ButtonText
-            v-if="canClaim"
-            height="44"
-            padding="8px 18px"
-            :loading="isClaiming"
-            @click="handleClaim"
-        >
-          {{ t('daily_rewards.claim') }}
-        </ButtonText>
       </div>
 
     </div>
@@ -424,6 +410,33 @@ async function handleClaim() {
   width: 100%;
   aspect-ratio: 1;
   filter: drop-shadow(0 2px 0 rgba(63, 46, 33, 0.12));
+  user-select: none;
+}
+
+.day-wrapper-clickable {
+  cursor: pointer;
+}
+
+.day-wrapper-clickable .day-card {
+  border: 2px solid #e9b955;
+  animation: pulse-card 1.5s infinite ease-in-out;
+}
+
+.day-wrapper-clickable:hover .day-card {
+  transform: translateY(-4px) scale(1.03);
+}
+
+.day-wrapper-clickable:active .day-card {
+  transform: translateY(0) scale(0.97);
+}
+
+@keyframes pulse-card {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(233, 185, 85, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 8px 4px rgba(233, 185, 85, 0.8);
+  }
 }
 
 .day-card {
@@ -488,8 +501,8 @@ async function handleClaim() {
 }
 
 .reward-value-icon {
-  width: 48px;
-  height: 48px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -535,6 +548,22 @@ async function handleClaim() {
   z-index: 2;
 }
 
+.claim-badge {
+  font-size: 9px;
+  font-weight: bold;
+  background: var(--berry);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 2px;
+  animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
 .lock-overlay {
   position: absolute;
   inset: 0;
@@ -557,10 +586,6 @@ async function handleClaim() {
   box-shadow: 0 3px 0 #b99a77;
 }
 
-.daily-modal :deep(.claim-panel .btn-text) {
-  font-size: 14px;
-}
-
 .claim-copy {
   display: flex;
   flex: 1;
@@ -577,7 +602,7 @@ async function handleClaim() {
 
 .claim-description {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -617,7 +642,9 @@ async function handleClaim() {
 
 @media (prefers-reduced-motion: reduce) {
   .day-card,
-  .progress-fill {
+  .progress-fill,
+  .claim-badge {
+    animation: none;
     transition: none;
   }
 }

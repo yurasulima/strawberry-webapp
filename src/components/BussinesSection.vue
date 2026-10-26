@@ -8,6 +8,7 @@ import { CardPrimary, Card, ButtonText } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user.ts'
 import { useToastStore } from '@/stores/toast.ts'
+import { formatBizName as formatBizNameUtil, translateError as translateErrorUtil } from '@/utils/business'
 
 const props = defineProps<{ user?: any }>()
 const { t, te } = useI18n()
@@ -23,18 +24,7 @@ const timerMap = ref<Record<number, number>>({})
 let timerInterval: any = null
 
 function formatBizName(rawName?: string): string {
-  if (!rawName) return t('business.default_name')
-  const clean = rawName.toLowerCase().trim()
-  const key = `business.names.${clean}`
-  if (te(key)) {
-    return t(key)
-  }
-  const altClean = clean.replace(/bussines/g, 'business').replace(/bussiness/g, 'business')
-  const altKey = `business.names.${altClean}`
-  if (te(altKey)) {
-    return t(altKey)
-  }
-  return rawName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return formatBizNameUtil(rawName, t, te)
 }
 
 function translateError(err: any): string {
@@ -45,9 +35,7 @@ function translateError(err: any): string {
   if (lower.includes('wait') || lower.includes('have to wait') || lower.includes('collecting exception')) {
     return t('clicker.daily_limit_reached')
   }
-  if (lower.includes('not enough money') || lower.includes('no money')) return t('business.not_enough_money')
-  if (lower.includes('not found')) return t('business.not_found')
-  return str || t('business.operation_error')
+  return translateErrorUtil(err, t)
 }
 
 const countOf = (biz: UserBusiness) => biz.count || 1

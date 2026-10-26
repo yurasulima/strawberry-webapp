@@ -162,6 +162,15 @@ function handleOpenDaily() {
   flex-grow: 1;
 }
 
+.clickable-avatar {
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.clickable-avatar:active {
+  transform: scale(0.96);
+}
+
 .toolbar-actions {
   display: flex;
 

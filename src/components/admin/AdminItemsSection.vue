@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { User } from '@/types/User.ts'
-import { CardPrimary, Card, ButtonText, PixelModal } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PixelModal, ItemIcon } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useToastStore } from '@/stores/toast.ts'
 
@@ -224,7 +224,10 @@ onMounted(load)
         <ul class="entity-list">
           <li v-for="item in sortedItems" :key="item.id" class="entity-row">
             <div class="entity-info">
-              <span class="entity-name">{{ itemTitle(item.name) }}</span>
+              <span class="entity-name">
+                <ItemIcon :item="item.name" size="24" style="vertical-align: middle; margin-right: 6px;" />
+                {{ itemTitle(item.name) }}
+              </span>
               <span class="hint-text">
                 ID {{ item.id }} · {{ item.name }}
                 <br />

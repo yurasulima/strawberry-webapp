@@ -15,6 +15,10 @@
       "strawberry": "Полуниця",
       "money": "Монети",
       "money_v2": "Монети V2",
+      "demo_item": "Демо Предмет",
+      "water": "Вода",
+      "blueberry": "Чорниця",
+      "strawberry_juice": "Полуничний Сік",
       "strawberry_jam": "Полуничне Варення",
       "chest_gardener": "Скриня Садівника",
       "chest_super": "Супер-Скриня",
@@ -170,6 +174,8 @@
   "items": {
     "strawberry": "Полуничка",
     "money": "Монета",
+    "demo_item": "Демо предмет",
+    "water": "Вода",
     "blueberry": "Чорниця",
     "strawberry_juice": "Полуничний сік"
   },

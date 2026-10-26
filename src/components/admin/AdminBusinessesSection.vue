@@ -114,7 +114,7 @@ function openEdit(b: AdminBusiness) {
     yieldCount: b.yieldCount,
     yieldIntervalSeconds: b.yieldIntervalSeconds,
     item: b.item,
-    minLevel: b.minLevel ?? 1,
+    minLevel: b.minLevel ?? 0,
     premiumOnly: !!b.premiumOnly,
   }
   isFormOpen.value = true
@@ -129,7 +129,7 @@ async function save() {
     yieldCount: form.value.yieldCount,
     yieldIntervalSeconds: form.value.yieldIntervalSeconds,
     item: form.value.item.trim(),
-    minLevel: form.value.minLevel ?? 1,
+    minLevel: form.value.minLevel ?? 0,
     premiumOnly: form.value.premiumOnly,
   }
   try {
@@ -240,7 +240,7 @@ onMounted(load)
         </div>
         <div class="input-field-row">
           <label>Мінімальний рівень</label>
-          <input v-model.number="form.minLevel" type="number" min="1" class="pixel-input" />
+          <input v-model.number="form.minLevel" type="number" min="0" class="pixel-input" />
         </div>
         <div class="mode-switch-row">
           <label>Тільки Premium</label>

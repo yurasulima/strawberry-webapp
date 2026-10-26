@@ -19,6 +19,10 @@ class SoundEngine {
   async loadSound(key: string, url: string) {
     try {
       const res = await fetch(url)
+      if (!res.ok) {
+        console.warn(`Sound file not found (${res.status}): ${url}`)
+        return
+      }
       const arrayBuffer = await res.arrayBuffer()
       const ctx = this.getContext()
       if (ctx) {
@@ -88,13 +92,17 @@ export function setMusicEnabled(enabled: boolean) {
 
 const engine = new SoundEngine()
 
-// Попереднє завантаження аудіофайлів у пам'ять
+// Попереднє завантаження аудіофайлів у пам'ять із нових ассетів sfx/
 if (typeof window !== 'undefined') {
-  engine.loadSound('tab', '/honeywood/sounds/ui_tab.ogg')
-  engine.loadSound('click', '/honeywood/sounds/ui_click.ogg')
+  engine.loadSound('tab', '/sfx/tab-switch-1.wav')
+  engine.loadSound('click', '/sfx/click-wood-1.wav')
   engine.loadSound('harvest', '/click.mp3')
-  engine.loadSound('purchase', '/honeywood/sounds/purchase.ogg')
-  engine.loadSound('coin', '/honeywood/sounds/coin_few.ogg')
+  engine.loadSound('purchase', '/sfx/confirm-1.wav')
+  engine.loadSound('coin', '/sfx/coin.wav')
+  engine.loadSound('success', '/sfx/success-1.wav')
+  engine.loadSound('error', '/sfx/error-1.wav')
+  engine.loadSound('popupOpen', '/sfx/popup-open.wav')
+  engine.loadSound('popupClose', '/sfx/popup-close.wav')
 }
 
 export function playTabSound() {
@@ -115,4 +123,20 @@ export function playPurchaseSound() {
 
 export function playCoinSound() {
   engine.playSound('coin', 0.5)
+}
+
+export function playSuccessSound() {
+  engine.playSound('success', 0.5)
+}
+
+export function playErrorSound() {
+  engine.playSound('error', 0.5)
+}
+
+export function playPopupOpenSound() {
+  engine.playSound('popupOpen', 0.5)
+}
+
+export function playPopupCloseSound() {
+  engine.playSound('popupClose', 0.5)
 }

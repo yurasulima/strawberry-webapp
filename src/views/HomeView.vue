@@ -8,7 +8,6 @@ import Toolbar from "@/components/Toolbar.vue"
 import PlayersSection from '@/components/PlayersSection.vue'
 import ClickerSection from '@/components/ClickerSection.vue'
 import InventorySection from '@/components/InventorySection.vue'
-import ProfileSection from '@/components/ProfileSection.vue'
 import DebugSection from '@/components/DebugSection.vue'
 import BottomNavigation, { type TabType } from '@/components/BottomNavigation.vue'
 import BussinesSection from "@/components/BussinesSection.vue"
@@ -108,7 +107,6 @@ onMounted(async () => {
       <div class="main-content" :class="{ 'main-content--admin': isAdminMode }">
         <ClickerSection v-show="activeTab === 'clicker'" />
         <InventorySection v-show="activeTab === 'inventory'" />
-        <ProfileSection v-show="activeTab === 'profile'" />
         <BussinesSection v-show="activeTab === 'business'" :user="user" />
         <MarketSection v-show="activeTab === 'shop'" :user="user" />
         <PlayersSection v-show="activeTab === 'users'" />

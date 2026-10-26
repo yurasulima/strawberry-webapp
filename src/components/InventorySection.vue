@@ -3,7 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
 import type { Slot } from '@/types/Slot'
-import { CardPrimary, Card, ButtonText, Selected } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, Selected, ItemIcon } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
@@ -163,7 +163,7 @@ onMounted(() => {
                 height="100%"
               >
                 <div class="slot-square">
-                  <img :src="getItemIcon(s.item.name)" :alt="s.item.name" class="slot-img" />
+                  <ItemIcon :item="s.item.name" size="44" class="slot-img" />
                   <span class="slot-count">x{{ s.count }}</span>
                   <span class="slot-name">{{ getItemTitle(s.item.name) }}</span>
                 </div>

@@ -9,6 +9,8 @@ export interface User {
   userId: number
   telegramId: number
   level: number
+  xp?: number
+  xpToNextLevel?: number
   firstName: string | null
   lastName: string | null
   username?: string | null

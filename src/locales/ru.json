@@ -13,9 +13,11 @@
     "owned": "В наличии: {count}",
     "items": {
       "strawberry": "Клубника",
+      "money": "Монеты",
+      "demo_item": "Демо Предмет",
+      "water": "Вода",
       "blueberry": "Черника",
-      "strawberry_juice": "Клубничний сок",
-      "money": "Монеты"
+      "strawberry_juice": "Клубничный Сок"
     }
   },
   "clicker": {
@@ -149,7 +151,7 @@
       "strawberry_farm": "Клубничная ферма",
       "bakery": "Пекарня",
       "factory": "Фабрика",
-      "strawberry_juice_factory": "Фабрика клубничного соку"
+      "strawberry_juice_factory": "Фабрика клубничного сока"
     }
   },
   "profile": {
@@ -165,7 +167,11 @@
   },
   "items": {
     "strawberry": "Клубничка",
-    "money": "Монета"
+    "money": "Монета",
+    "demo_item": "Демо предмет",
+    "water": "Вода",
+    "blueberry": "Черника",
+    "strawberry_juice": "Клубничный сок"
   },
   "players": {
     "title": "Топ игроков",
