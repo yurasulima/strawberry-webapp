@@ -47,6 +47,7 @@ function switchTab(tab: TabType) {
             :width="btnSize"
             :height="btnSize"
             :active="props.activeTab === 'inventory'"
+            class="nav-inventory-btn"
             @click="switchTab('inventory')"
         />
 
@@ -108,5 +109,19 @@ function switchTab(tab: TabType) {
 
 .bottom-navigation-bar.is-admin-bar {
   gap: 1px;
+}
+
+.nav-inventory-btn {
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+:deep(.nav-inventory-bump) {
+  animation: nav-btn-bump 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@keyframes nav-btn-bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25) rotate(-5deg); filter: brightness(1.25); }
+  100% { transform: scale(1); }
 }
 </style>

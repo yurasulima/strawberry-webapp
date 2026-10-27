@@ -13,11 +13,19 @@ const userStore = useUserStore()
 const authStore = useAuthStore()
 const toastStore = useToastStore()
 
+interface FlyingParticle {
+  id: number
+  startX: number
+  startY: number
+  dx: number
+  dy: number
+}
+
 let particleId = 0
 const count = ref(0)
 const isClicking = ref(false)
 const isSelling = ref(false)
-const particles = ref<{ id: number; offsetX: number; offsetY: number }[]>([])
+const particles = ref<FlyingParticle[]>([])
 let pendingClicks = 0
 
 const formattedResetTime = ref('00:00:00')
@@ -113,8 +121,9 @@ onUnmounted(() => {
 const flushClicks = async () => {
   if (pendingClicks === 0) return
 
+  const countToSend = pendingClicks
   try {
-    const response = await api.post('/slots/take', { name: 'strawberry', count: pendingClicks })
+    const response = await api.post('/slots/take', { name: 'strawberry', count: countToSend })
     if (typeof response.data === 'object' && response.data !== null) {
       count.value = response.data.count ?? count.value
       if (response.data.remainingDailyClicks !== undefined) {
@@ -123,10 +132,11 @@ const flushClicks = async () => {
     } else {
       count.value = response.data
     }
-    pendingClicks = 0
+    pendingClicks = Math.max(0, pendingClicks - countToSend)
   } catch (error: any) {
     console.error("Помилка при відправці кліків:", error)
     pendingClicks = 0
+    userStore.setRemainingClicks(0)
     await userStore.fetchUser()
     const errText = error.response?.data?.message || error.response?.data || t('clicker.daily_limit_reached')
     const messageStr = typeof errText === 'string' ? errText : JSON.stringify(errText)
@@ -134,7 +144,7 @@ const flushClicks = async () => {
   }
 }
 
-const handleClick = () => {
+const handleClick = (e?: MouseEvent) => {
   if (isLimitReached.value) {
     toastStore.showToast(t('clicker.limit_reached_toast', { time: formattedResetTime.value }), 'error')
     return
@@ -146,24 +156,53 @@ const handleClick = () => {
   userStore.addStrawberries(1)
   count.value++
 
-  const button = document.querySelector('.strawberry-button') as HTMLElement
-  if (button) {
-    const buttonRect = button.getBoundingClientRect()
-    const offsetX = Math.random() * buttonRect.width
-    const offsetY = Math.random() * buttonRect.height
-
-    particles.value.push({ id: particleId++, offsetX, offsetY })
+  if (userStore.remainingDailyClicks <= 0) {
+    flushClicks()
   }
+
+  let startX = 0
+  let startY = 0
+
+  if (e && e.clientX && e.clientY) {
+    startX = e.clientX
+    startY = e.clientY
+  } else {
+    const button = document.querySelector('.strawberry-button') as HTMLElement
+    if (button) {
+      const rect = button.getBoundingClientRect()
+      startX = rect.left + rect.width / 2 + (Math.random() * 40 - 20)
+      startY = rect.top + rect.height / 2 + (Math.random() * 40 - 20)
+    }
+  }
+
+  const targetEl = document.querySelector('.toolbar-strawberry-card') || document.querySelector('.toolbar-strawberry-icon')
+  let dx = 0
+  let dy = -280
+
+  if (targetEl) {
+    const targetRect = targetEl.getBoundingClientRect()
+    dx = (targetRect.left + targetRect.width / 2) - startX
+    dy = (targetRect.top + targetRect.height / 2) - startY
+  }
+
+  const currentId = particleId++
+  particles.value.push({ id: currentId, startX, startY, dx, dy })
+
+  // Влучання в тулбарний лічильник через 500мс
+  setTimeout(() => {
+    if (targetEl) {
+      targetEl.classList.add('toolbar-strawberry-bump')
+      setTimeout(() => targetEl.classList.remove('toolbar-strawberry-bump'), 280)
+    }
+  }, 500)
+
+  // Видалення частинки
+  setTimeout(() => {
+    particles.value = particles.value.filter(p => p.id !== currentId)
+  }, 620)
 
   pendingClicks++
   isClicking.value = true
-
-  setTimeout(() => {
-    if (particles.value.length > 0) {
-      particles.value.shift()
-    }
-  }, 1000)
-
   setTimeout(() => (isClicking.value = false), 150)
 }
 
@@ -211,18 +250,27 @@ const sellAllStrawberries = async (e: MouseEvent) => {
             <img src="/ui/lock.png" alt="Locked" class="lock-icon-img" />
           </div>
         </button>
-
-        <div class="particles-container">
-          <span
-              v-for="p in particles"
-              :key="p.id"
-              class="particle-text"
-              :style="{ left: `${p.offsetX}px`, top: `${p.offsetY}px` }"
-          >
-            {{ t('clicker.plusOne') }}
-          </span>
-        </div>
       </div>
+
+      <!-- Летючі частинки полуничок до тулбара -->
+      <Teleport to="body">
+        <div class="flying-particles-layer">
+          <div
+            v-for="p in particles"
+            :key="p.id"
+            class="flying-particle"
+            :style="{
+              left: `${p.startX}px`,
+              top: `${p.startY}px`,
+              '--dx': `${p.dx}px`,
+              '--dy': `${p.dy}px`
+            }"
+          >
+            <img src="/ui/strawberry.png" class="particle-img" alt="" />
+            <span class="particle-val">+1</span>
+          </div>
+        </div>
+      </Teleport>
 
 <!--      <ButtonText-->
 <!--          height="64"-->
@@ -438,34 +486,54 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
 }
 
-.particles-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+/* Летючі частинки до тулбару */
+.flying-particles-layer {
+  position: fixed;
+  inset: 0;
   pointer-events: none;
-  overflow: visible;
+  z-index: 9999;
+  overflow: hidden;
 }
 
-.particle-text {
-  position: absolute;
-  font-size: 24px;
+.flying-particle {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 22px;
   font-weight: bold;
-  color: #ffa07a;
-  animation: float-up-fade 1s ease-out forwards;
-  text-shadow: 0 0 5px #000;
-  white-space: nowrap;
+  color: #ff6b6b;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  user-select: none;
+  pointer-events: none;
+  animation: fly-to-target 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  will-change: transform, opacity;
 }
 
-@keyframes float-up-fade {
+.particle-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.particle-val {
+  font-size: 20px;
+}
+
+@keyframes fly-to-target {
   0% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.55), calc(var(--dy) * 0.55 - 20px)) scale(1.2);
   }
   100% {
-    opacity: 0;
-    transform: translateY(-70px) scale(1.2);
+    opacity: 0.1;
+    transform: translate(var(--dx), var(--dy)) scale(0.6);
   }
 }
 </style>

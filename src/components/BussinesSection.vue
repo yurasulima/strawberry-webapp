@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { UserBusiness } from '@/types/UserBusiness.ts'
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, SlideFade } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, SlideFade, ItemIcon } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user.ts'
 import { useToastStore } from '@/stores/toast.ts'
@@ -122,16 +122,89 @@ onUnmounted(() => {
   stopTimer()
 })
 
-async function directCollect(userBiz: UserBusiness) {
+interface FlyingItemParticle {
+  id: number
+  item: string
+  startX: number
+  startY: number
+  dx: number
+  dy: number
+  delay: number
+}
+
+const flyingItems = ref<FlyingItemParticle[]>([])
+let itemParticleId = 0
+
+function spawnFlyingItems(itemName: string, e?: MouseEvent) {
+  const targetEl = document.querySelector('.nav-inventory-btn') || document.querySelector('.bottom-navigation-bar')
+
+  let startX = window.innerWidth / 2
+  let startY = window.innerHeight / 2
+
+  if (e && e.clientX && e.clientY) {
+    startX = e.clientX
+    startY = e.clientY
+  } else {
+    const collectingBtn = document.querySelector('.biz-row .button-text-container') as HTMLElement
+    if (collectingBtn) {
+      const rect = collectingBtn.getBoundingClientRect()
+      startX = rect.left + rect.width / 2
+      startY = rect.top + rect.height / 2
+    }
+  }
+
+  let dx = 0
+  let dy = 300
+
+  if (targetEl) {
+    const targetRect = targetEl.getBoundingClientRect()
+    dx = (targetRect.left + targetRect.width / 2) - startX
+    dy = (targetRect.top + targetRect.height / 2) - startY
+  }
+
+  const particleCount = 4
+
+  for (let i = 0; i < particleCount; i++) {
+    const id = itemParticleId++
+    const offsetX = (Math.random() - 0.5) * 36
+    const offsetY = (Math.random() - 0.5) * 18
+    const delay = i * 65
+
+    flyingItems.value.push({
+      id,
+      item: itemName,
+      startX: startX + offsetX,
+      startY: startY + offsetY,
+      dx: dx - offsetX,
+      dy: dy - offsetY,
+      delay
+    })
+
+    setTimeout(() => {
+      if (targetEl) {
+        targetEl.classList.add('nav-inventory-bump')
+        setTimeout(() => targetEl.classList.remove('nav-inventory-bump'), 280)
+      }
+    }, 500 + delay)
+
+    setTimeout(() => {
+      flyingItems.value = flyingItems.value.filter(item => item.id !== id)
+    }, 650 + delay)
+  }
+}
+
+async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
   if (timerMap.value[userBiz.id] > 0) return
 
   playClickSound()
   const rawName = userBiz.business?.name || ''
+  const itemName = userBiz.business?.item?.name || (userBiz.business as any)?.item || 'strawberry'
   collectingName.value = rawName
 
   try {
     await api.post('/business/collect', { name: rawName })
     playCoinSound()
+    spawnFlyingItems(itemName, e)
     toastStore.showToast(t('business.collected_success', { name: formatBizName(rawName) }), 'success')
     await userStore.fetchUser()
   } catch (err: any) {
@@ -171,7 +244,7 @@ async function directCollect(userBiz: UserBusiness) {
                 <ButtonText
                     :disabled="timerMap[biz.id] > 0"
                     :loading="collectingName === biz.business?.name"
-                    @click="directCollect(biz)"
+                    @click="directCollect(biz, $event)"
                 >
                   {{ timerMap[biz.id] > 1 ? formatRemainingTime(timerMap[biz.id]) : (biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz) ? `+${biz.accumulatedYield}` : t('business.collect')) }}
                 </ButtonText>
@@ -185,6 +258,26 @@ async function directCollect(userBiz: UserBusiness) {
             <p class="empty-subtitle">{{ t('business.buy_first_in_shop') }}</p>
           </div>
         </SlideFade>
+
+        <!-- Летючі предмети до кнопки інвентаря -->
+        <Teleport to="body">
+          <div class="flying-items-layer">
+            <div
+              v-for="p in flyingItems"
+              :key="p.id"
+              class="flying-item"
+              :style="{
+                left: `${p.startX}px`,
+                top: `${p.startY}px`,
+                '--dx': `${p.dx}px`,
+                '--dy': `${p.dy}px`,
+                '--delay': `${p.delay}ms`
+              }"
+            >
+              <ItemIcon :item="p.item" size="28" />
+            </div>
+          </div>
+        </Teleport>
       </template>
     </CardPrimary>
   </div>
@@ -287,4 +380,41 @@ async function directCollect(userBiz: UserBusiness) {
 .empty-icon { font-size: 32px; color: #5d4037; margin-bottom: 6px; }
 .empty-title { margin: 0 0 4px; font-size: 20px; }
 .empty-subtitle { margin: 0; font-size: 16px; color: #5d4037; }
+
+/* Летючі предмети до кнопки інвентарю */
+.flying-items-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.flying-item {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  pointer-events: none;
+  animation: fly-to-inventory 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: var(--delay);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+@keyframes fly-to-inventory {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.55), calc(var(--dy) * 0.55 + 20px)) scale(1.2) rotate(180deg);
+  }
+  100% {
+    opacity: 0.1;
+    transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(360deg);
+  }
+}
 </style>

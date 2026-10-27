@@ -77,16 +77,16 @@ function handleOpenDaily() {
 
     <!-- Resource Cards underneath avatar on the left -->
     <div class="resource-cards-list">
-      <Card width="fit-content" height="36px" :padding="0" class="resource-card">
+      <Card width="fit-content" height="36px" :padding="0" class="resource-card toolbar-money-card">
         <div class="resource-row">
-          <Image src="/ui/money.png" size="28" alt="Money" class="res-icon" />
+          <Image src="/ui/money.png" size="28" alt="Money" class="res-icon toolbar-money-icon" />
           <span class="res-amount">{{ props.money ?? 0 }}</span>
         </div>
       </Card>
 
-      <Card width="fit-content" height="36px" :padding="0" class="resource-card">
+      <Card width="fit-content" height="36px" :padding="0" class="resource-card toolbar-strawberry-card">
         <div class="resource-row">
-          <Image src="/ui/strawberry.png" size="24" alt="Strawberry" class="res-icon" />
+          <Image src="/ui/strawberry.png" size="24" alt="Strawberry" class="res-icon toolbar-strawberry-icon" />
           <span class="res-amount">{{ props.strawberry ?? 0 }}</span>
         </div>
       </Card>
@@ -176,6 +176,34 @@ function handleOpenDaily() {
 
   align-items: center;
   flex-shrink: 0;
+}
+
+.toolbar-strawberry-card {
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+:deep(.toolbar-strawberry-bump) {
+  animation: toolbar-bump 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@keyframes toolbar-bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.28) rotate(-4deg); filter: brightness(1.3); }
+  100% { transform: scale(1); }
+}
+
+.toolbar-money-card {
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+:deep(.toolbar-money-bump) {
+  animation: toolbar-money-bump 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@keyframes toolbar-money-bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.28) rotate(4deg); filter: brightness(1.3) drop-shadow(0 0 6px #d97706); }
+  100% { transform: scale(1); }
 }
 
 

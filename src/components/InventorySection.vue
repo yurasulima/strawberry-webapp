@@ -12,9 +12,20 @@ const { t, te } = useI18n()
 const userStore = useUserStore()
 const toastStore = useToastStore()
 
+interface FlyingCoin {
+  id: number
+  startX: number
+  startY: number
+  dx: number
+  dy: number
+  delay: number
+}
+
 const selectedSlotId = ref<number | null>(null)
 const sellAmount = ref<number>(1)
 const isSelling = ref<boolean>(false)
+const flyingCoins = ref<FlyingCoin[]>([])
+let coinParticleId = 0
 
 const slots = computed<Slot[]>(() => {
   if (!userStore.user?.slots) return []
@@ -110,7 +121,65 @@ function setMaxAmount() {
   sellAmount.value = selectedSlot.value.count
 }
 
-async function handleSell() {
+function spawnFlyingCoins(coinsEarned: number, e?: MouseEvent) {
+  const targetEl = document.querySelector('.toolbar-money-card') || document.querySelector('.toolbar-money-icon')
+  const btnEl = document.querySelector('.sell-action') as HTMLElement
+
+  let startX = 0
+  let startY = 0
+
+  if (e && e.clientX && e.clientY) {
+    startX = e.clientX
+    startY = e.clientY
+  } else if (btnEl) {
+    const rect = btnEl.getBoundingClientRect()
+    startX = rect.left + rect.width / 2
+    startY = rect.top + rect.height / 2
+  } else {
+    startX = window.innerWidth / 2
+    startY = window.innerHeight / 2
+  }
+
+  let dx = 0
+  let dy = -300
+
+  if (targetEl) {
+    const targetRect = targetEl.getBoundingClientRect()
+    dx = (targetRect.left + targetRect.width / 2) - startX
+    dy = (targetRect.top + targetRect.height / 2) - startY
+  }
+
+  const coinCount = Math.max(0, Math.min(coinsEarned, 8))
+
+  for (let i = 0; i < coinCount; i++) {
+    const id = coinParticleId++
+    const offsetX = (Math.random() - 0.5) * 36
+    const offsetY = (Math.random() - 0.5) * 18
+    const delay = i * 55
+
+    flyingCoins.value.push({
+      id,
+      startX: startX + offsetX,
+      startY: startY + offsetY,
+      dx: dx - offsetX,
+      dy: dy - offsetY,
+      delay
+    })
+
+    setTimeout(() => {
+      if (targetEl) {
+        targetEl.classList.add('toolbar-money-bump')
+        setTimeout(() => targetEl.classList.remove('toolbar-money-bump'), 280)
+      }
+    }, 500 + delay)
+
+    setTimeout(() => {
+      flyingCoins.value = flyingCoins.value.filter(c => c.id !== id)
+    }, 650 + delay)
+  }
+}
+
+async function handleSell(e?: MouseEvent) {
   const slot = selectedSlot.value
   if (!slot || sellAmount.value <= 0 || isMoney(slot.item.name)) return
 
@@ -130,7 +199,9 @@ async function handleSell() {
     }
 
     playCoinSound()
-    const coinsEarned = res.data?.coinsEarned ?? res.data?.coins ?? 0
+    const coinsEarned = res.data?.coinsEarned ?? res.data?.coins ?? totalCoinsEarned.value
+    spawnFlyingCoins(coinsEarned, e)
+
     toastStore.showToast(
       t('inventory.sell_success', { count: countToSell, coins: coinsEarned }),
       'success'
@@ -209,16 +280,12 @@ onMounted(() => {
                 <div class="detail-info">
                   <span class="detail-title">{{ getItemTitle(selectedSlot.item.name) }}</span>
                   <span class="detail-owned">{{ t('inventory.owned', { count: selectedSlot.count }) }}</span>
-                  <span class="detail-price">💰 Ціна: <strong>{{ getItemUnitPrice(selectedSlot.item.name) }} 💰 / шт.</strong></span>
+                  <span class="detail-price">Ціна: <strong>{{ getItemUnitPrice(selectedSlot.item.name) }}</strong></span>
                 </div>
               </div>
 
               <!-- Зручні контроли кількості для продажу -->
               <div class="sell-controls">
-                <div class="price-summary-row">
-                  <span>Сума продажу:</span>
-                  <strong class="text-gold">+{{ totalCoinsEarned }} 💰</strong>
-                </div>
 
                 <!-- Покрокові кнопки та поля інпуту -->
                 <div class="stepper-row">
@@ -269,13 +336,33 @@ onMounted(() => {
                     :loading="isSelling"
                     @click="handleSell"
                   >
-                    {{ t('inventory.sell') }} ({{ sellAmount }}) · +{{ totalCoinsEarned }} 💰
+                    {{ t('inventory.sell') }} {{ sellAmount }} шт. (+{{ totalCoinsEarned }})
                   </ButtonText>
                 </div>
               </div>
             </div>
           </Card>
         </SlideFade>
+
+        <!-- Летючі монетки до тулбару -->
+        <Teleport to="body">
+          <div class="flying-coins-layer">
+            <div
+              v-for="c in flyingCoins"
+              :key="c.id"
+              class="flying-coin"
+              :style="{
+                left: `${c.startX}px`,
+                top: `${c.startY}px`,
+                '--dx': `${c.dx}px`,
+                '--dy': `${c.dy}px`,
+                '--delay': `${c.delay}ms`
+              }"
+            >
+              <img src="/ui/money.png" class="coin-img" alt="" />
+            </div>
+          </div>
+        </Teleport>
       </template>
     </CardPrimary>
   </div>
@@ -598,5 +685,50 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   margin-top: 4px;
+}
+
+/* Летючі монети до тулбару */
+.flying-coins-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.flying-coin {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  pointer-events: none;
+  animation: fly-coin 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: var(--delay);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.coin-img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+@keyframes fly-coin {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.55), calc(var(--dy) * 0.55 - 25px)) scale(1.2) rotate(180deg);
+  }
+  100% {
+    opacity: 0.1;
+    transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(360deg);
+  }
 }
 </style>
