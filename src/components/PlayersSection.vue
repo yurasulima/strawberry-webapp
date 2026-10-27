@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PremiumBadge, PixelText } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PremiumBadge, PixelText, SlideFade } from '@/components/pixel'
 import type { User } from "@/types/User.ts"
 import { useToastStore } from "@/stores/toast.ts"
 
@@ -60,39 +60,41 @@ onMounted(() => {
       </div>
 
       <template v-else>
-        <Card v-if="players.length" width="100%" height="auto" :padding="6">
-          <ul class="players-list">
-            <li v-for="(player, index) in players" :key="player.userId || index" class="player-row">
-              <span class="player-rank" :class="{ 'gold': index === 0, 'silver': index === 1, 'bronze': index === 2 }">
-                #{{ index + 1 }}
-              </span>
+        <SlideFade>
+          <Card v-if="players.length" width="100%" height="auto" :padding="6">
+            <ul class="players-list">
+              <li v-for="(player, index) in players" :key="player.userId || index" class="player-row">
+                <span class="player-rank" :class="{ 'gold': index === 0, 'silver': index === 1, 'bronze': index === 2 }">
+                  #{{ index + 1 }}
+                </span>
 
-              <img
-                  :src="player.photoUrl || '/default-avatar.png'"
-                  alt=""
-                  class="player-avatar"
-                  draggable="false"
-              />
+                <img
+                    :src="player.photoUrl || '/default-avatar.png'"
+                    alt=""
+                    class="player-avatar"
+                    draggable="false"
+                />
 
-              <div class="player-info">
-                <div class="player-name-wrapper">
-                  <span class="player-name"><PixelText :text="formatPlayerName(player)" /></span>
+                <div class="player-info">
+                  <div class="player-name-wrapper">
+                    <span class="player-name"><PixelText :text="formatPlayerName(player)" /></span>
+                  </div>
+                  <PremiumBadge v-if="player.premium" />
                 </div>
-                <PremiumBadge v-if="player.premium" />
-              </div>
 
-              <div class="player-score">
-                <img src="/ui/money.png" alt="" class="score-icon" />
-                <strong class="score-val">{{ getMoneyCount(player) }}</strong>
-              </div>
-            </li>
-          </ul>
-        </Card>
+                <div class="player-score">
+                  <img src="/ui/money.png" alt="" class="score-icon" />
+                  <strong class="score-val">{{ getMoneyCount(player) }}</strong>
+                </div>
+              </li>
+            </ul>
+          </Card>
 
-        <div v-else class="empty-state">
-          <Icon icon="pixelarticons:info-box" class="empty-icon" />
-          <p class="empty-title">{{ t('players.empty') }}</p>
-        </div>
+          <div v-else class="empty-state">
+            <Icon icon="pixelarticons:info-box" class="empty-icon" />
+            <p class="empty-title">{{ t('players.empty') }}</p>
+          </div>
+        </SlideFade>
       </template>
     </CardPrimary>
   </div>

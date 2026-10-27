@@ -2,7 +2,7 @@
 import { ref, computed, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWebApp } from 'vue-tg'
-import { CardPrimary, Card, ButtonText, LeftButton, RightButton, SoundButton, MusicButton } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, LeftButton, RightButton, SoundButton, MusicButton, SlideFade } from '@/components/pixel'
 import { playClickSound, playPurchaseSound, isSoundEnabled, setSoundEnabled, isMusicEnabled, setMusicEnabled } from '@/services/sound'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
@@ -97,38 +97,40 @@ function saveSettings() {
     <CardPrimary width="100%" height="auto" :padding="12">
       <h2 class="title">{{ t('settings.title') }}</h2>
 
-      <Card width="100%" height="auto" :padding="12" class="settings-card">
-        <div class="settings-list">
-          <!-- Перемикання мови стрілочками LeftButton / RightButton -->
-          <div class="setting-row">
-            <span class="setting-label">{{ t('settings.language_label') }}</span>
-            <div class="lang-selector">
-              <LeftButton size="64" @click="prevLang" />
-              <span class="lang-label">{{ currentLangLabel }}</span>
-              <RightButton size="64" @click="nextLang" />
+      <SlideFade>
+        <Card width="100%" height="auto" :padding="12" class="settings-card">
+          <div class="settings-list">
+            <!-- Перемикання мови стрілочками LeftButton / RightButton -->
+            <div class="setting-row">
+              <span class="setting-label">{{ t('settings.language_label') }}</span>
+              <div class="lang-selector">
+                <LeftButton size="64" @click="prevLang" />
+                <span class="lang-label">{{ currentLangLabel }}</span>
+                <RightButton size="64" @click="nextLang" />
+              </div>
+            </div>
+
+            <!-- Налаштування звуку -->
+            <div class="setting-row">
+              <span class="setting-label">{{ t('settings.sound_label') }}</span>
+              <SoundButton v-model="soundState" size="48" />
+            </div>
+
+            <!-- Налаштування музики -->
+            <div class="setting-row">
+              <span class="setting-label">{{ t('settings.music_label') }}</span>
+              <MusicButton v-model="musicState" size="48" />
+            </div>
+
+            <!-- Кнопка Зберегти -->
+            <div class="settings-actions">
+              <ButtonText height="52" padding="10px 24px" @click="saveSettings">
+                {{ t('settings.save') }}
+              </ButtonText>
             </div>
           </div>
-
-          <!-- Налаштування звуку -->
-          <div class="setting-row">
-            <span class="setting-label">{{ t('settings.sound_label') }}</span>
-            <SoundButton v-model="soundState" size="48" />
-          </div>
-
-          <!-- Налаштування музики -->
-          <div class="setting-row">
-            <span class="setting-label">{{ t('settings.music_label') }}</span>
-            <MusicButton v-model="musicState" size="48" />
-          </div>
-
-          <!-- Кнопка Зберегти -->
-          <div class="settings-actions">
-            <ButtonText height="52" padding="10px 24px" @click="saveSettings">
-              {{ t('settings.save') }}
-            </ButtonText>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </SlideFade>
     </CardPrimary>
   </div>
 </template>

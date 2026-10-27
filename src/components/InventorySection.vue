@@ -3,7 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
 import type { Slot } from '@/types/Slot'
-import { CardPrimary, Card, ButtonText, Selected, ItemIcon } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, Selected, ItemIcon, SlideFade } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
@@ -49,17 +49,6 @@ function isMoney(itemName?: string): boolean {
   return clean === 'money' || clean === 'money_v2'
 }
 
-function getItemIcon(itemName?: string): string {
-  if (!itemName) return '/ui/strawberry.png'
-  const clean = itemName.toLowerCase().trim()
-  if (clean === 'strawberry') return '/ui/strawberry.png'
-  if (clean === 'money') return '/ui/money.png'
-  if (clean === 'strawberry_juice') return '/ui/strawberry_juice.png'
-  if (clean === 'blueberry') return '/ui/blueberry.png'
-  if (clean === 'water') return '/ui/water.png'
-  return '/ui/strawberry.png'
-}
-
 function getItemTitle(itemName?: string): string {
   if (!itemName) return 'Предмет'
   const key = `inventory.items.${itemName.toLowerCase().trim()}`
@@ -68,6 +57,21 @@ function getItemTitle(itemName?: string): string {
   }
   return itemName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
+
+function getItemUnitPrice(itemName?: string): number {
+  if (!itemName) return 1
+  const clean = itemName.toLowerCase().trim()
+  if (clean === 'strawberry') return 1
+  if (clean === 'strawberry_juice') return 5
+  if (clean === 'blueberry') return 3
+  if (clean === 'water') return 2
+  return 1
+}
+
+const totalCoinsEarned = computed(() => {
+  if (!selectedSlot.value) return 0
+  return sellAmount.value * getItemUnitPrice(selectedSlot.value.item.name)
+})
 
 function selectSlot(slot: Slot) {
   playClickSound()
@@ -78,10 +82,26 @@ function selectSlot(slot: Slot) {
   }
 }
 
-function setQuickAmount(amount: number) {
-  playClickSound()
+function adjustAmount(delta: number) {
   if (!selectedSlot.value) return
-  sellAmount.value = Math.min(Math.max(1, amount), selectedSlot.value.count)
+  playClickSound()
+  const next = sellAmount.value + delta
+  sellAmount.value = Math.max(1, Math.min(selectedSlot.value.count, next))
+}
+
+function clampAmount() {
+  if (!selectedSlot.value) return
+  if (!sellAmount.value || isNaN(sellAmount.value) || sellAmount.value < 1) {
+    sellAmount.value = 1
+  } else if (sellAmount.value > selectedSlot.value.count) {
+    sellAmount.value = selectedSlot.value.count
+  }
+}
+
+function setPreset(percent: number) {
+  if (!selectedSlot.value) return
+  playClickSound()
+  sellAmount.value = Math.max(1, Math.min(selectedSlot.value.count, Math.ceil(selectedSlot.value.count * percent)))
 }
 
 function setMaxAmount() {
@@ -147,7 +167,7 @@ onMounted(() => {
       </Card>
 
       <template v-else>
-        <!-- Сітка предметів інвентарю з квадратних div -->
+        <!-- Сітка предметів інвентарю z квадратних div -->
         <Card width="100%" height="auto" :padding="10" class="inventory-card">
           <div class="slots-grid">
             <div
@@ -172,84 +192,90 @@ onMounted(() => {
           </div>
         </Card>
 
-        <!-- Картка продажу для обраного предмета (монети продавати не можна) -->
-        <Card
-          v-if="selectedSlot && !isMoney(selectedSlot.item.name)"
-          width="100%"
-          height="auto"
-          :padding="12"
-          class="detail-card"
-        >
-          <div class="detail-content">
-            <div class="detail-header">
-              <div class="detail-icon-wrap">
-                <img :src="getItemIcon(selectedSlot.item.name)" :alt="selectedSlot.item.name" class="detail-img" />
+        <!-- Анімована картка продажу для обраного предмета -->
+        <SlideFade>
+          <Card
+            v-if="selectedSlot && !isMoney(selectedSlot.item.name)"
+            width="100%"
+            height="auto"
+            :padding="12"
+            class="detail-card"
+          >
+            <div class="detail-content">
+              <div class="detail-header">
+                <div class="detail-icon-wrap">
+                  <ItemIcon :item="selectedSlot.item.name" size="36" />
+                </div>
+                <div class="detail-info">
+                  <span class="detail-title">{{ getItemTitle(selectedSlot.item.name) }}</span>
+                  <span class="detail-owned">{{ t('inventory.owned', { count: selectedSlot.count }) }}</span>
+                  <span class="detail-price">💰 Ціна: <strong>{{ getItemUnitPrice(selectedSlot.item.name) }} 💰 / шт.</strong></span>
+                </div>
               </div>
-              <div class="detail-info">
-                <span class="detail-title">{{ getItemTitle(selectedSlot.item.name) }}</span>
-                <span class="detail-owned">{{ t('inventory.owned', { count: selectedSlot.count }) }}</span>
+
+              <!-- Зручні контроли кількості для продажу -->
+              <div class="sell-controls">
+                <div class="price-summary-row">
+                  <span>Сума продажу:</span>
+                  <strong class="text-gold">+{{ totalCoinsEarned }} 💰</strong>
+                </div>
+
+                <!-- Покрокові кнопки та поля інпуту -->
+                <div class="stepper-row">
+                  <div class="step-group">
+                    <button
+                      v-if="selectedSlot.count >= 100"
+                      type="button"
+                      class="step-btn"
+                      @click="adjustAmount(-100)"
+                    >-100</button>
+                    <button
+                      v-if="selectedSlot.count >= 10"
+                      type="button"
+                      class="step-btn"
+                      @click="adjustAmount(-10)"
+                    >-10</button>
+                    <button
+                      type="button"
+                      class="step-btn"
+                      @click="adjustAmount(-1)"
+                    >-1</button>
+                  </div>
+
+                  <div class="step-group">
+                    <button
+                      type="button"
+                      class="step-btn"
+                      @click="adjustAmount(1)"
+                    >+1</button>
+                    <button
+                      v-if="selectedSlot.count >= 10"
+                      type="button"
+                      class="step-btn"
+                      @click="adjustAmount(10)"
+                    >+10</button>
+                    <button
+                      v-if="selectedSlot.count >= 100"
+                      type="button"
+                      class="step-btn"
+                      @click="adjustAmount(100)"
+                    >+100</button>
+                  </div>
+                </div>
+
+                <!-- Кнопка Продати -->
+                <div class="sell-action">
+                  <ButtonText
+                    :loading="isSelling"
+                    @click="handleSell"
+                  >
+                    {{ t('inventory.sell') }} ({{ sellAmount }}) · +{{ totalCoinsEarned }} 💰
+                  </ButtonText>
+                </div>
               </div>
             </div>
-
-            <!-- Контроли кількості для продажу -->
-            <div class="sell-controls">
-              <span class="control-label">{{ t('inventory.amount_to_sell') }}</span>
-
-              <div class="quick-buttons">
-                <button
-                  type="button"
-                  class="quick-btn"
-                  :class="{ active: sellAmount === 1 }"
-                  @click="setQuickAmount(1)"
-                >1</button>
-                <button
-                  v-if="selectedSlot.count >= 10"
-                  type="button"
-                  class="quick-btn"
-                  :class="{ active: sellAmount === 10 }"
-                  @click="setQuickAmount(10)"
-                >10</button>
-                <button
-                  v-if="selectedSlot.count >= 100"
-                  type="button"
-                  class="quick-btn"
-                  :class="{ active: sellAmount === 100 }"
-                  @click="setQuickAmount(100)"
-                >100</button>
-                <button
-                  type="button"
-                  class="quick-btn max-btn"
-                  :class="{ active: sellAmount === selectedSlot.count }"
-                  @click="setMaxAmount()"
-                >{{ t('inventory.sell_all') }}</button>
-              </div>
-
-              <div class="slider-row">
-                <input
-                  v-model.number="sellAmount"
-                  type="range"
-                  min="1"
-                  :max="selectedSlot.count"
-                  step="1"
-                  class="pixel-range"
-                />
-                <span class="amount-badge">{{ sellAmount }} / {{ selectedSlot.count }}</span>
-              </div>
-
-              <!-- Кнопка Продати -->
-              <div class="sell-action">
-                <ButtonText
-                  height="52"
-                  padding="10px 24px"
-                  :loading="isSelling"
-                  @click="handleSell"
-                >
-                  {{ t('inventory.sell') }} ({{ sellAmount }})
-                </ButtonText>
-              </div>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </SlideFade>
       </template>
     </CardPrimary>
   </div>
@@ -363,6 +389,25 @@ onMounted(() => {
   margin-top: 1px;
 }
 
+/* Slide-Fade Анімація появи панелі продажу */
+.slide-fade-enter-active {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.slide-fade-leave-active {
+  transition: all 0.18s ease-in;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.97);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+}
+
 .detail-card {
   margin-top: 10px;
 }
@@ -390,13 +435,6 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.detail-img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
 .detail-info {
   display: flex;
   flex-direction: column;
@@ -410,8 +448,14 @@ onMounted(() => {
 }
 
 .detail-owned {
-  font-size: 16px;
+  font-size: 15px;
   color: #666;
+}
+
+.detail-price {
+  font-size: 14px;
+  color: #5d4037;
+  margin-top: 2px;
 }
 
 .sell-controls {
@@ -422,63 +466,132 @@ onMounted(() => {
   border-top: 1px dashed rgba(63, 46, 33, 0.3);
 }
 
+.price-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  background: #fff8eb;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #5d4037;
+}
+
+.text-gold {
+  color: #d97706;
+}
+
 .control-label {
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: bold;
   color: #3f2e21;
 }
 
-.quick-buttons {
+/* Новий рядок з покроковими кнопками та інпутом */
+.stepper-row {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 6px;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
-.quick-btn {
+.step-group {
+  display: flex;
+  gap: 4px;
+}
+
+.step-btn {
   background-color: #e2d3be;
-  border: 1px solid #3f2e21;
+  border: 1px solid #5d4037;
   color: #3f2e21;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
-  padding: 4px 10px;
+  padding: 6px 8px;
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
-  transition: all 0.05s ease;
+  transition: all 0.1s ease;
+  min-width: 32px;
 }
 
-.quick-btn:hover {
-  background-color: #d8c5aa;
+.step-btn:hover {
+  background-color: #d2c0a8;
 }
 
-.quick-btn.active {
-  background-color: #5977a3;
+.step-btn:active {
+  transform: scale(0.94);
+  background-color: #c4b096;
+}
+
+.input-wrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  max-width: 90px;
+}
+
+.pixel-num-input {
+  width: 100%;
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-family: 'Crumbline', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #3f2e21;
+  text-align: center;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.pixel-num-input:focus {
+  border-color: #2e7d32;
+}
+
+/* Відсоткові пресети */
+.quick-presets {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.preset-btn {
+  flex: 1;
+  background-color: #e2d3be;
+  border: 1px solid #5d4037;
+  color: #3f2e21;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 5px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  transition: all 0.1s ease;
+}
+
+.preset-btn:hover {
+  background-color: #d2c0a8;
+}
+
+.preset-btn.active {
+  background-color: #4f8b55;
   color: #fff;
-  border-color: #1b5e20;
+  border-color: #2e7d32;
 }
 
 .max-btn {
-  margin-left: auto;
+  background-color: #d97706;
+  color: #fff;
+  border-color: #b45309;
 }
 
-.slider-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.pixel-range {
-  flex-grow: 1;
-  accent-color: #5977a3;
-  cursor: pointer;
-}
-
-.amount-badge {
-  font-size: 16px;
-  font-weight: bold;
-  color: #3f2e21;
-  min-width: 70px;
-  text-align: right;
+.max-btn:hover {
+  background-color: #b45309;
 }
 
 .sell-action {

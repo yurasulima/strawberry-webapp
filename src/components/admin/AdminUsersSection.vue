@@ -20,6 +20,11 @@ interface UserTelemetry {
   totalBatches: number
   avgClicksPerBatch: number
   lastClickTime: string | null
+  coinsStolenByPlayer?: number
+  coinsTransferredByPlayer?: number
+  coinsStolenFromPlayer?: number
+  totalStealAttemptsByPlayer?: number
+  failedStealAttemptsByPlayer?: number
 }
 
 const users = ref<User[]>([])
@@ -27,7 +32,7 @@ const search = ref('')
 const isLoadingUsers = ref(true)
 
 type SortOption = 'id_desc' | 'id_asc' | 'money_desc' | 'strawberries_desc' | 'online_desc' | 'name_asc'
-const sortBy = ref<SortOption>('id_desc')
+const sortBy = ref<SortOption>('online_desc')
 
 const sortedUsers = computed(() => {
   const list = [...users.value]
@@ -287,11 +292,11 @@ function formatDateTime(isoStr?: string | null): string {
       <div class="sort-bar">
         <span class="sort-label">{{ t('admin.sort_by') }}</span>
         <select v-model="sortBy" class="pixel-select">
+          <option value="online_desc">{{ t('admin.sort_online') }}</option>
           <option value="id_desc">{{ t('admin.sort_id_desc') }}</option>
           <option value="id_asc">{{ t('admin.sort_id_asc') }}</option>
           <option value="money_desc">{{ t('admin.sort_money') }}</option>
           <option value="strawberries_desc">{{ t('admin.sort_strawberries') }}</option>
-          <option value="online_desc">{{ t('admin.sort_online') }}</option>
           <option value="name_asc">{{ t('admin.sort_name') }}</option>
         </select>
       </div>
@@ -383,7 +388,7 @@ function formatDateTime(isoStr?: string | null): string {
                   :loading="actionLoadingMap[`premium_${u.userId}`]"
                   @click="togglePremium(u)"
               >
-                PRO
+                Premium
               </ButtonText>
             </div>
           </li>
@@ -471,6 +476,26 @@ function formatDateTime(isoStr?: string | null): string {
         <div class="telemetry-info-row">
           <span>{{ t('admin.last_click_time') }}</span>
           <strong>{{ formatDateTime(selectedUserTelemetry.lastClickTime) }}</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>🏴‍☠️ Украдено монет:</span>
+          <strong class="text-gold">{{ selectedUserTelemetry.coinsStolenByPlayer ?? 0 }}</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>💸 Передано монет:</span>
+          <strong class="text-success">{{ selectedUserTelemetry.coinsTransferredByPlayer ?? 0 }}</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>🛡️ В нього украли:</span>
+          <strong class="text-danger">{{ selectedUserTelemetry.coinsStolenFromPlayer ?? 0 }}</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>🎯 Спроб крадіжок:</span>
+          <strong>{{ selectedUserTelemetry.totalStealAttemptsByPlayer ?? 0 }} (невдалих: {{ selectedUserTelemetry.failedStealAttemptsByPlayer ?? 0 }})</strong>
         </div>
       </div>
     </PixelModal>

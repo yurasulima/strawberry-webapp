@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { UserBusiness } from '@/types/UserBusiness.ts'
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, SlideFade } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user.ts'
 import { useToastStore } from '@/stores/toast.ts'
@@ -152,37 +152,39 @@ async function directCollect(userBiz: UserBusiness) {
       </div>
 
       <template v-else>
-        <!-- Один Card на весь список (від найкрутішого до меншого) -->
-        <Card v-if="sortedMyBusinesses.length" width="100%" height="auto" :padding="6">
-          <ul class="biz-list">
-            <li v-for="biz in sortedMyBusinesses" :key="biz.id" class="biz-row">
-              <div class="biz-info">
-                <span class="biz-name">
-                  {{ formatBizName(biz.business?.name) }}
-                  <span v-if="biz.accumulatedYield && biz.maxAccumulatedYield && biz.accumulatedYield >= biz.maxAccumulatedYield" class="tag-max">MAX (7d)</span>
-                </span>
-                <span class="biz-meta">
-                  {{ countOf(biz) }} {{ t('business.count_pcs') }} · <strong class="yield-val">+{{ yieldOf(biz) }}</strong>
-                  <span v-if="biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz)" class="acc-val"> (Готово: +{{ biz.accumulatedYield }})</span>
-                </span>
-              </div>
+        <!-- Один Card на весь список з анімацією SlideFade -->
+        <SlideFade>
+          <Card v-if="sortedMyBusinesses.length" width="100%" height="auto" :padding="6">
+            <ul class="biz-list">
+              <li v-for="biz in sortedMyBusinesses" :key="biz.id" class="biz-row">
+                <div class="biz-info">
+                  <span class="biz-name">
+                    {{ formatBizName(biz.business?.name) }}
+                    <span v-if="biz.accumulatedYield && biz.maxAccumulatedYield && biz.accumulatedYield >= biz.maxAccumulatedYield" class="tag-max">MAX (7d)</span>
+                  </span>
+                  <span class="biz-meta">
+                    {{ countOf(biz) }} {{ t('business.count_pcs') }} · <strong class="yield-val">+{{ yieldOf(biz) }}</strong>
+                    <span v-if="biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz)" class="acc-val"> (Готово: +{{ biz.accumulatedYield }})</span>
+                  </span>
+                </div>
 
-              <ButtonText
-                  :disabled="timerMap[biz.id] > 0"
-                  :loading="collectingName === biz.business?.name"
-                  @click="directCollect(biz)"
-              >
-                {{ timerMap[biz.id] > 0 ? formatRemainingTime(timerMap[biz.id]) : (biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz) ? `+${biz.accumulatedYield}` : t('business.collect')) }}
-              </ButtonText>
-            </li>
-          </ul>
-        </Card>
+                <ButtonText
+                    :disabled="timerMap[biz.id] > 0"
+                    :loading="collectingName === biz.business?.name"
+                    @click="directCollect(biz)"
+                >
+                  {{ timerMap[biz.id] > 1 ? formatRemainingTime(timerMap[biz.id]) : (biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz) ? `+${biz.accumulatedYield}` : t('business.collect')) }}
+                </ButtonText>
+              </li>
+            </ul>
+          </Card>
 
-        <div v-else class="empty-state">
-          <Icon icon="pixelarticons:info-box" class="empty-icon" />
-          <p class="empty-title">{{ t('business.empty_businesses') }}</p>
-          <p class="empty-subtitle">{{ t('business.buy_first_in_shop') }}</p>
-        </div>
+          <div v-else class="empty-state">
+            <Icon icon="pixelarticons:info-box" class="empty-icon" />
+            <p class="empty-title">{{ t('business.empty_businesses') }}</p>
+            <p class="empty-subtitle">{{ t('business.buy_first_in_shop') }}</p>
+          </div>
+        </SlideFade>
       </template>
     </CardPrimary>
   </div>

@@ -2,9 +2,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
-import { CardPrimary, Card, ButtonText, PixelModal, Switch } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PixelModal, Switch, ItemIcon } from '@/components/pixel'
 import { playClickSound, playPurchaseSound } from '@/services/sound'
 import { useToastStore } from '@/stores/toast.ts'
+import EditButton from "@/components/pixel/EditButton.vue";
+import DeleteButton from "@/components/pixel/DeleteButton.vue";
 
 const { t, te } = useI18n()
 const toastStore = useToastStore()
@@ -188,7 +190,10 @@ onMounted(load)
         <ul class="entity-list">
           <li v-for="b in sorted" :key="b.id" class="entity-row">
             <div class="entity-info">
-              <span class="entity-name">{{ displayName(b.name) }}</span>
+              <span class="entity-name">
+                <ItemIcon :item="b.item" size="24" style="vertical-align: middle; margin-right: 6px;" />
+                {{ displayName(b.name) }}
+              </span>
               <span class="entity-meta">
                 {{ t('business.price', { price: b.price }) }} ·
                 <strong class="text-success">+{{ b.yieldCount }}</strong>
@@ -197,10 +202,8 @@ onMounted(load)
               <span class="hint-text">ID {{ b.id }} · {{ b.name }}</span>
             </div>
             <div class="entity-actions">
-              <ButtonText padding="0 10px" @click="openEdit(b)">{{ t('admin.edit') }}</ButtonText>
-              <ButtonText padding="0 10px" :loading="deletingId === b.id" @click="askDelete(b)">
-                {{ t('admin.delete') }}
-              </ButtonText>
+              <EditButton size="48" @click="openEdit(b)" />
+              <DeleteButton  size="48" :loading="deletingId === b.id" @click="askDelete(b)" />
             </div>
           </li>
         </ul>

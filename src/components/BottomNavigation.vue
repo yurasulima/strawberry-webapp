@@ -23,6 +23,9 @@ const userStore = useUserStore()
 const isAdmin = computed(() => !!userStore.user?.admin)
 const isAdminActive = computed(() => props.activeTab.startsWith('admin'))
 
+const btnSize = computed(() => (isAdmin.value ? 62 : 62))
+const cardWidth = computed(() => (isAdmin.value ? 'min(380px, calc(100vw - 12px))' : 'min(336px, calc(100vw - 12px))'))
+
 function switchTab(tab: TabType) {
   emit('changeTab', tab)
 }
@@ -30,42 +33,48 @@ function switchTab(tab: TabType) {
 
 <template>
   <div class="bottom-navigation-container">
-    <CardPrimary :width="isAdmin ? '410px' : '350px'" height="70px" :padding="1">
-      <div class="bottom-navigation-bar">
+    <CardPrimary :width="cardWidth" height="66px" :padding="2">
+      <div class="bottom-navigation-bar" :class="{ 'is-admin-bar': isAdmin }">
 
         <GameButton
-            size="64"
+            :width="btnSize"
+            :height="btnSize"
             :active="props.activeTab === 'clicker'"
             @click="switchTab('clicker')"
         />
 
         <InventoryButton
-            size="64"
+            :width="btnSize"
+            :height="btnSize"
             :active="props.activeTab === 'inventory'"
             @click="switchTab('inventory')"
         />
 
         <BusinessButton
-            size="64"
+            :width="btnSize"
+            :height="btnSize"
             :active="props.activeTab === 'business'"
             @click="switchTab('business')"
         />
 
         <ShopButton
-            size="64"
+            :width="btnSize"
+            :height="btnSize"
             :active="props.activeTab === 'shop'"
             @click="switchTab('shop')"
         />
 
         <TopButton
-            size="64"
+            :width="btnSize"
+            :height="btnSize"
             :active="props.activeTab === 'users'"
             @click="switchTab('users')"
         />
 
         <AdminButton
             v-if="isAdmin"
-            size="64"
+            :width="btnSize"
+            :height="btnSize"
             :active="isAdminActive"
             @click="switchTab('admin-telemetry')"
         />
@@ -78,7 +87,7 @@ function switchTab(tab: TabType) {
 <style scoped>
 .bottom-navigation-container {
   position: fixed;
-  bottom: 12px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -86,13 +95,18 @@ function switchTab(tab: TabType) {
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: calc(100vw - 24px);
+  max-width: calc(100vw - 12px);
 }
 
 .bottom-navigation-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
+  width: 100%;
+}
+
+.bottom-navigation-bar.is-admin-bar {
+  gap: 1px;
 }
 </style>

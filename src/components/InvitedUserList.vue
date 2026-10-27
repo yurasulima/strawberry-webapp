@@ -2,8 +2,7 @@
 import { onMounted, ref } from 'vue'
 import api from '@/services/api.ts'
 import { useI18n } from 'vue-i18n'
-import { AppCard, AppText } from '@/components/ui'
-import { PixelText } from '@/components/pixel'
+import { Card, PixelText } from '@/components/pixel'
 import type { InvitedUser } from "@/types/InvitedUser.ts";
 
 const { t } = useI18n()
@@ -30,33 +29,33 @@ onMounted(async () => {
 </script>
 
 <template>
-  <AppCard variant="paper" class="invites-card">
-    <AppText variant="subtitle" as="h3" class="invites-title">{{ t('invite_list.invited_users') }}</AppText>
+  <Card width="100%" height="auto" :padding="12" class="invites-card">
+    <h3 class="invites-title">{{ t('invite_list.invited_users') }}</h3>
 
     <div v-if="isLoading" class="state-msg">
-      <AppText variant="body">{{ t('loading') }}</AppText>
+      <span>{{ t('loading') }}</span>
     </div>
     <div v-else-if="invites.length === 0" class="no-invites">
-      <AppText variant="body" color="muted">{{ t('invite_list.no_invites') }}</AppText>
+      <span>{{ t('invite_list.no_invites') }}</span>
     </div>
     <div v-else class="invites-list">
-      <div class="invite-card honeywood-slot" v-for="invite in invites" :key="invite.id">
+      <div class="invite-card" v-for="invite in invites" :key="invite.id">
         <img
             :src="invite.invitedUser.photoUrl || '/default-avatar.png'"
             class="invite-avatar"
             alt="Avatar"
         />
         <div class="invite-info">
-          <AppText variant="subtitle" as="div" class="invite-name">
+          <div class="invite-name">
             <PixelText :text="`${invite.invitedUser.firstName ?? ''} ${invite.invitedUser.lastName ?? ''}`.trim()" />
-          </AppText>
-          <AppText variant="caption" color="muted" class="invite-date">
+          </div>
+          <span class="invite-date">
             {{ new Date(invite.createdAt).toLocaleString() }}
-          </AppText>
+          </span>
         </div>
       </div>
     </div>
-  </AppCard>
+  </Card>
 </template>
 
 <style scoped>
@@ -66,7 +65,9 @@ onMounted(async () => {
 }
 
 .invites-title {
-  margin-bottom: 12px;
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .invites-list {
@@ -79,8 +80,10 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px;
-  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid rgba(63, 46, 33, 0.2);
+  border-radius: 4px;
+  background: #fff8eb;
 }
 
 .invite-avatar {
@@ -97,8 +100,14 @@ onMounted(async () => {
   gap: 2px;
 }
 
+.invite-date {
+  font-size: 11px;
+  color: #7c624d;
+}
+
 .no-invites, .state-msg {
   text-align: center;
   margin-top: 8px;
+  color: #7c624d;
 }
 </style>

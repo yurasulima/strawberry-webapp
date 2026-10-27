@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import CardPrimary from './CardPrimary.vue'
 import CloseButton from './CloseButton.vue'
-import { playClickSound } from '@/services/sound'
+import { playClickSound, playPopupOpenSound, playPopupCloseSound } from '@/services/sound'
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean
@@ -26,6 +26,14 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
   (e: 'close'): void
 }>()
+
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) {
+    playPopupOpenSound()
+  } else {
+    playPopupCloseSound()
+  }
+})
 
 function closeModal() {
   playClickSound()
@@ -132,7 +140,7 @@ onUnmounted(() => {
 }
 
 .pixel-modal-title {
-  font-family: var(--font-pixel),serif;
+  font-family: var(--font-pixel), serif;
   font-size: 18px;
   margin: 0;
   color: #9e5c5c;
@@ -160,15 +168,22 @@ onUnmounted(() => {
   padding-top: 12px;
 }
 
-/* Modal Fade Animation */
-.pixel-modal-fade-enter-active,
-.pixel-modal-fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+/* Modal Slide-Fade Animation */
+.pixel-modal-fade-enter-active {
+  transition: opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.pixel-modal-fade-enter-from,
+.pixel-modal-fade-leave-active {
+  transition: opacity 0.18s ease-in, transform 0.18s ease-in;
+}
+
+.pixel-modal-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-16px) scale(0.95);
+}
+
 .pixel-modal-fade-leave-to {
   opacity: 0;
-  transform: scale(0.95);
+  transform: translateY(-8px) scale(0.97);
 }
 </style>

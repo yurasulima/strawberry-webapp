@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import {AdminButton, CardPrimary, LeftButton, PixelButton} from '@/components/pixel'
+import { CardPrimary, LeftButton, AdminButton } from '@/components/pixel'
 
 export type AdminTabType =
   | 'admin-telemetry'
@@ -29,24 +29,19 @@ const tabs: { id: AdminTabType; emoji: string; labelKey: string }[] = [
 
 <template>
   <div class="admin-nav-container">
-
-    <CardPrimary width="410px" height="70px" :padding="1">
+    <CardPrimary width="min(390px, calc(100vw - 12px))" height="70px" :padding="2">
       <div class="admin-nav-bar">
-
         <div class="admin-nav-item">
-          <LeftButton size="64" :title="t('admin.nav.back')" @click="emit('exit')" />
+          <LeftButton
+              :size="64"  :title="t('admin.nav.back')" @click="emit('exit')" />
         </div>
-
-
 
         <div v-for="tab in tabs" :key="tab.id" class="admin-nav-item">
           <AdminButton
-              size="64"
+              :size="64"
               :active="props.activeTab === tab.id"
               @click="emit('changeTab', tab.id)"
           />
-
-
         </div>
       </div>
     </CardPrimary>
@@ -56,7 +51,7 @@ const tabs: { id: AdminTabType; emoji: string; labelKey: string }[] = [
 <style scoped>
 .admin-nav-container {
   position: fixed;
-  bottom: 12px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -64,42 +59,20 @@ const tabs: { id: AdminTabType; emoji: string; labelKey: string }[] = [
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: calc(100vw - 24px);
+  max-width: calc(100vw - 12px);
 }
 
 .admin-nav-bar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 1px;
+  width: 100%;
 }
 
 .admin-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 66px;
-}
-
-.admin-nav-emoji {
-  font-size: 26px;
-  line-height: 1;
-}
-
-.admin-nav-label {
-  margin-top: -6px;
-  font-family: 'Crumbline', sans-serif;
-  font-size: 11px;
-  line-height: 1;
-  color: #3f2e21;
-  white-space: nowrap;
-  max-width: 66px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.admin-nav-label.is-active {
-  color: #2e7d32;
-  font-weight: bold;
 }
 </style>

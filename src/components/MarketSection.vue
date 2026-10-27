@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import type { Business } from "@/types/Business.ts"
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, ItemIcon } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, ItemIcon, SlideFade } from '@/components/pixel'
 import { playClickSound, playPurchaseSound } from "@/services/sound"
 import { useUserStore } from "@/stores/user.ts"
 import { useToastStore } from "@/stores/toast.ts"
@@ -91,45 +91,47 @@ async function directBuy(biz: Business) {
       </div>
 
       <template v-else>
-        <!-- Список доступних бізнесів у єдиній картці (від найдешевшого до найдорожчого) -->
-        <Card v-if="sortedBusinessesForSale.length" width="100%" height="auto" :padding="6">
-          <ul class="biz-list">
-            <li v-for="biz in sortedBusinessesForSale" :key="biz.id" class="biz-row">
-              <div class="biz-info">
-                <span class="biz-name">
-                  {{ formatBizName(biz.name) }}
+        <!-- Список доступних бізнесів у єдиній картці -->
+        <SlideFade>
+          <Card v-if="sortedBusinessesForSale.length" width="100%" height="auto" :padding="6">
+            <ul class="biz-list">
+              <li v-for="biz in sortedBusinessesForSale" :key="biz.id" class="biz-row">
+                <div class="biz-info">
+                  <span class="biz-name">
+                    {{ formatBizName(biz.name) }}
 
-                  <span v-if="biz.premiumOnly" class="tag-premium">
-                    {{ t('business.premium_req') }}
+                    <span v-if="biz.premiumOnly" class="tag-premium">
+                      {{ t('business.premium_req') }}
+                    </span>
                   </span>
-                </span>
-                <span class="biz-meta">
-                  {{ t('business.price', { price: biz.price || 100 }) }} · <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong> <ItemIcon :item="biz.item" size="18" style="vertical-align: middle;" />
-                </span>
-              </div>
+                  <span class="biz-meta">
+                    {{ t('business.price', { price: biz.price || 100 }) }} · <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong> <ItemIcon :item="biz.item" size="18" style="vertical-align: middle;" />
+                  </span>
+                </div>
 
-              <ButtonText
-                :disabled="userLevel < (biz.minLevel ?? 0) || (biz.premiumOnly && !isPremiumUser)"
-                :loading="buyingName === biz.name"
-                @click="directBuy(biz)"
-              >
-                {{
-                  userLevel < (biz.minLevel ?? 0)
-                    ? `Рівень ${biz.minLevel}`
-                    : (biz.premiumOnly && !isPremiumUser
-                        ? 'Premium'
-                        : t('business.buy'))
-                }}
-              </ButtonText>
-            </li>
-          </ul>
-        </Card>
+                <ButtonText
+                  :disabled="userLevel < (biz.minLevel ?? 0) || (biz.premiumOnly && !isPremiumUser)"
+                  :loading="buyingName === biz.name"
+                  @click="directBuy(biz)"
+                >
+                  {{
+                    userLevel < (biz.minLevel ?? 0)
+                      ? `Рівень ${biz.minLevel}`
+                      : (biz.premiumOnly && !isPremiumUser
+                          ? 'Premium'
+                          : t('business.buy'))
+                  }}
+                </ButtonText>
+              </li>
+            </ul>
+          </Card>
 
-        <!-- Порожній стан -->
-        <div v-else class="empty-state">
-          <Icon icon="pixelarticons:info-box" class="empty-icon" />
-          <p class="empty-title">{{ t('business.empty_market') }}</p>
-        </div>
+          <!-- Порожній стан -->
+          <div v-else class="empty-state">
+            <Icon icon="pixelarticons:info-box" class="empty-icon" />
+            <p class="empty-title">{{ t('business.empty_market') }}</p>
+          </div>
+        </SlideFade>
       </template>
     </CardPrimary>
   </div>

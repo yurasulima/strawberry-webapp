@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
+import {ref, computed, onMounted} from 'vue'
+import {useI18n} from 'vue-i18n'
 import api from '@/services/api.ts'
-import type { User } from '@/types/User.ts'
-import { CardPrimary, Card, ButtonText, PixelModal, ItemIcon } from '@/components/pixel'
-import { playClickSound, playCoinSound } from '@/services/sound'
-import { useToastStore } from '@/stores/toast.ts'
+import type {User} from '@/types/User.ts'
+import {
+  CardPrimary,
+  Card,
+  ButtonText,
+  PixelModal,
+  ItemIcon,
+  AddButton,
+  DeleteButton,
+  EditButton,
+  SoundButton
+} from '@/components/pixel'
+import {playClickSound, playCoinSound} from '@/services/sound'
+import {useToastStore} from '@/stores/toast.ts'
 
-const { t, te } = useI18n()
+const {t, te} = useI18n()
 const toastStore = useToastStore()
 
 /**
@@ -180,7 +190,7 @@ function openGive(item: AdminItem) {
 async function searchUsers() {
   isSearching.value = true
   try {
-    const res = await api.get<User[]>('/admin/users', { params: { search: userSearch.value } })
+    const res = await api.get<User[]>('/admin/users', {params: {search: userSearch.value}})
     foundUsers.value = (res.data || []).slice(0, 30)
   } catch (err) {
     toastStore.showToast(errorText(err), 'error')
@@ -225,21 +235,23 @@ onMounted(load)
           <li v-for="item in sortedItems" :key="item.id" class="entity-row">
             <div class="entity-info">
               <span class="entity-name">
-                <ItemIcon :item="item.name" size="24" style="vertical-align: middle; margin-right: 6px;" />
+                <ItemIcon :item="item.name" size="24" style="vertical-align: middle; margin-right: 6px;"/>
                 {{ itemTitle(item.name) }}
               </span>
               <span class="hint-text">
-                ID {{ item.id }} · {{ item.name }}
-                <br />
-                💰 {{ t('admin.sell_price') }}: <strong>{{ item.sellPrice ?? '-' }}</strong> · {{ t('admin.buy_price') }}: <strong>{{ item.buyPrice ?? '-' }}</strong>
+                ID: {{ item.id }}
+                <br/>
+                Type: {{ item.name }}
+                <br/>
+                 {{ t('admin.sell_price') }}: <strong>{{ item.sellPrice ?? '-' }}</strong>
+                <br/>
+                {{ t('admin.buy_price') }}: <strong>{{ item.buyPrice ?? '-' }}</strong>
               </span>
             </div>
             <div class="entity-actions">
-              <ButtonText padding="0 10px" @click="openEdit(item)">{{ t('admin.edit') }}</ButtonText>
-              <ButtonText padding="0 10px" @click="openGive(item)">{{ t('admin.give') }}</ButtonText>
-              <ButtonText padding="0 10px" :loading="deletingId === item.id" @click="askDelete(item)">
-                {{ t('admin.delete') }}
-              </ButtonText>
+              <EditButton  @click="openEdit(item)"/>
+              <AddButton   @click="openGive(item)"/>
+              <DeleteButton  :loading="deletingId === item.id" @click="askDelete(item)"/>
             </div>
           </li>
         </ul>
@@ -249,25 +261,26 @@ onMounted(load)
     </CardPrimary>
 
     <!-- Створення предмета -->
-    <PixelModal v-model="isCreateOpen" :title="t('admin.item_create_title')" width="320px" @close="isCreateOpen = false">
+    <PixelModal v-model="isCreateOpen" :title="t('admin.item_create_title')" width="320px"
+                @close="isCreateOpen = false">
       <div class="modal-body">
         <div class="input-field-row">
           <label>{{ t('admin.field_key') }}</label>
           <input
-            v-model="newItemName"
-            type="text"
-            class="pixel-input"
-            placeholder="chest_gardener"
+              v-model="newItemName"
+              type="text"
+              class="pixel-input"
+              placeholder="chest_gardener"
           />
           <span class="hint-text">a-z, 0-9, _</span>
         </div>
         <div class="input-field-row">
           <label>{{ t('admin.sell_price') }}</label>
-          <input v-model.number="newSellPrice" type="number" min="0" class="pixel-input" />
+          <input v-model.number="newSellPrice" type="number" min="0" class="pixel-input"/>
         </div>
         <div class="input-field-row">
           <label>{{ t('admin.buy_price') }}</label>
-          <input v-model.number="newBuyPrice" type="number" min="0" class="pixel-input" />
+          <input v-model.number="newBuyPrice" type="number" min="0" class="pixel-input"/>
         </div>
         <div class="modal-actions">
           <ButtonText padding="0 20px" :loading="isCreating" :disabled="!isNameValid" @click="createItem">
@@ -284,12 +297,12 @@ onMounted(load)
 
         <div class="input-field-row">
           <label>{{ t('admin.sell_price') }}</label>
-          <input v-model.number="editSellPrice" type="number" min="0" class="pixel-input" />
+          <input v-model.number="editSellPrice" type="number" min="0" class="pixel-input"/>
         </div>
 
         <div class="input-field-row">
           <label>{{ t('admin.buy_price') }}</label>
-          <input v-model.number="editBuyPrice" type="number" min="0" class="pixel-input" />
+          <input v-model.number="editBuyPrice" type="number" min="0" class="pixel-input"/>
         </div>
 
         <div class="modal-actions">
@@ -303,7 +316,7 @@ onMounted(load)
     <!-- Підтвердження видалення -->
     <PixelModal v-model="isDeleteOpen" :title="t('admin.confirm_title')" width="320px" @close="isDeleteOpen = false">
       <div class="modal-body">
-        <span>{{ t('admin.confirm_delete', { name: itemToDelete ? itemTitle(itemToDelete.name) : '' }) }}</span>
+        <span>{{ t('admin.confirm_delete', {name: itemToDelete ? itemTitle(itemToDelete.name) : ''}) }}</span>
         <div class="modal-actions">
           <ButtonText padding="0 20px" :loading="deletingId !== null" @click="confirmDelete">
             {{ t('admin.delete') }}
@@ -314,39 +327,39 @@ onMounted(load)
 
     <!-- Видача предмета гравцю -->
     <PixelModal
-      v-model="isGiveOpen"
-      :title="giveItem ? `${t('admin.give')}: ${itemTitle(giveItem.name)}` : t('admin.give')"
-      width="340px"
-      @close="isGiveOpen = false"
+        v-model="isGiveOpen"
+        :title="giveItem ? `${t('admin.give')}: ${itemTitle(giveItem.name)}` : t('admin.give')"
+        width="340px"
+        @close="isGiveOpen = false"
     >
       <div class="modal-body">
         <div class="search-box">
           <input
-            v-model="userSearch"
-            type="text"
-            class="pixel-input"
-            :placeholder="t('admin.user_search_placeholder')"
-            @keyup.enter="searchUsers"
+              v-model="userSearch"
+              type="text"
+              class="pixel-input"
+              :placeholder="t('admin.user_search_placeholder')"
+              @keyup.enter="searchUsers"
           />
           <ButtonText padding="0 14px" :loading="isSearching" @click="searchUsers">OK</ButtonText>
         </div>
 
         <ul v-if="foundUsers.length" class="user-pick-list">
           <li
-            v-for="u in foundUsers"
-            :key="u.userId"
-            class="user-pick-item"
-            :class="{ 'is-selected': selectedUser?.userId === u.userId }"
-            @click="selectedUser = u"
+              v-for="u in foundUsers"
+              :key="u.userId"
+              class="user-pick-item"
+              :class="{ 'is-selected': selectedUser?.userId === u.userId }"
+              @click="selectedUser = u"
           >
-            <img :src="u.photoUrl ?? '/default-avatar.png'" alt="" class="user-pick-avatar" />
+            <img :src="u.photoUrl ?? '/default-avatar.png'" alt="" class="user-pick-avatar"/>
             <span>{{ userTitle(u) }}</span>
           </li>
         </ul>
 
         <div class="input-field-row">
           <label>{{ t('admin.amount') }}</label>
-          <input v-model.number="giveAmount" type="number" class="pixel-input" />
+          <input v-model.number="giveAmount" type="number" class="pixel-input"/>
           <span class="hint-text">{{ t('admin.amount_hint') }}</span>
         </div>
 
