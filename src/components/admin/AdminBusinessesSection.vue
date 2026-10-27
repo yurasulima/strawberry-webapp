@@ -195,11 +195,11 @@ onMounted(load)
                 {{ displayName(b.name) }}
               </span>
               <span class="entity-meta">
-                {{ t('business.price', { price: b.price }) }} ·
+                {{ t('business.price', { price: b.price }) }}  <br>
                 <strong class="text-success">+{{ b.yieldCount }}</strong>
                 {{ b.item }} / {{ formatInterval(b.yieldIntervalSeconds) }}
               </span>
-              <span class="hint-text">ID {{ b.id }} · {{ b.name }}</span>
+              <span class="hint-text">ID {{ b.id }} <br> {{ b.name }}</span>
             </div>
             <div class="entity-actions">
               <EditButton size="48" @click="openEdit(b)" />

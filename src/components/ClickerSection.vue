@@ -32,10 +32,11 @@ const formattedResetTime = ref('00:00:00')
 let timerInterval: ReturnType<typeof setInterval> | null = null
 let flushInterval: ReturnType<typeof setInterval> | null = null
 
+const maxClicks = computed(() => userStore.maxDailyClicks)
 const remainingClicks = computed(() => userStore.remainingDailyClicks)
 const isLimitReached = computed(() => remainingClicks.value <= 0)
-const usedClicks = computed(() => Math.min(200, Math.max(0, 200 - remainingClicks.value)))
-const progressPercent = computed(() => Math.min(100, (usedClicks.value / 200) * 100))
+const usedClicks = computed(() => Math.min(maxClicks.value, Math.max(0, maxClicks.value - remainingClicks.value)))
+const progressPercent = computed(() => Math.min(100, (usedClicks.value / maxClicks.value) * 100))
 
 const getTargetResetDate = (): Date => {
   if (userStore.nextClickResetTime) {
@@ -240,7 +241,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
             @click="$emit('click')"
         >
           <img
-              src="/ui/strawberry.png"
+              src="/items/strawberry.png"
               alt="Strawberry"
               oncontextmenu="return false;"
               class="strawberry-icon"
@@ -266,7 +267,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
               '--dy': `${p.dy}px`
             }"
           >
-            <img src="/ui/strawberry.png" class="particle-img" alt="" />
+            <img src="/items/strawberry.png" class="particle-img" alt="" />
             <span class="particle-val">+1</span>
           </div>
         </div>

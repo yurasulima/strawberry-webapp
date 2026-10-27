@@ -1,52 +1,56 @@
 <script setup lang="ts">
-import { useWebApp } from "vue-tg";
-import { Icon } from "@iconify/vue";
-import { useRouter } from "vue-router";
+import { useWebApp } from "vue-tg"
+import { Icon } from "@iconify/vue"
+import { useRouter } from "vue-router"
+import { CardPrimary, Card } from "@/components/pixel"
 
-const router = useRouter();
+const router = useRouter()
 const { initDataUnsafe } = useWebApp()
-const user = initDataUnsafe.user;
-const start_param = initDataUnsafe.start_param;
+const user = initDataUnsafe.user
+const start_param = initDataUnsafe.start_param
 </script>
 
 <template>
-  <div class="debug-section honeywood-panel-paper">
-    <div class="debug-header">
-      <h2 class="debug-title">
-        <Icon icon="pixelarticons:bug" class="debug-icon" />
-        <span>Debug Menu</span>
-      </h2>
-    </div>
+  <div class="debug-container">
+    <CardPrimary width="100%" height="auto" :padding="12">
+      <div class="debug-header">
+        <h2 class="debug-title">
+          <Icon icon="pixelarticons:bug" class="debug-icon" />
+          <span>Debug Menu</span>
+        </h2>
+      </div>
 
-    <div class="debug-block">
-      <h3 class="debug-heading">Navigation / Showcase</h3>
-      <button class="pixel-link-btn" @click="router.push('/pixel-ui')">
-        <Icon icon="pixelarticons:grid" />
-        <span>Open Pixel UI Showcase</span>
-      </button>
-    </div>
+      <Card width="100%" height="auto" :padding="10">
+        <div class="debug-block">
+          <h3 class="debug-heading">Navigation / Showcase</h3>
+          <button class="pixel-link-btn" @click="router.push('/pixel-ui')">
+            <Icon icon="pixelarticons:grid" />
+            <span>Open Pixel UI Showcase</span>
+          </button>
+        </div>
 
-    <div class="debug-block">
-      <h3 class="debug-heading">User</h3>
-      <pre class="debug-code">{{ JSON.stringify(user, null, 2) }}</pre>
-    </div>
+        <div class="debug-block">
+          <h3 class="debug-heading">User</h3>
+          <pre class="debug-code">{{ JSON.stringify(user, null, 2) }}</pre>
+        </div>
 
-    <div class="debug-block">
-      <h3 class="debug-heading">Start Param</h3>
-      <div class="debug-value">{{ start_param || 'none' }}</div>
-    </div>
+        <div class="debug-block">
+          <h3 class="debug-heading">Start Param</h3>
+          <div class="debug-value">{{ start_param || 'none' }}</div>
+        </div>
+      </Card>
+    </CardPrimary>
   </div>
 </template>
 
 <style scoped>
-.debug-section {
+.debug-container {
   width: 100%;
   max-width: 420px;
   margin: 10px auto;
-  padding: 16px;
-  color: #3f2e21;
   box-sizing: border-box;
-  user-select: none;
+  font-family: 'Crumbline', sans-serif;
+  color: #3f2e21;
 }
 
 .debug-header {
@@ -55,7 +59,7 @@ const start_param = initDataUnsafe.start_param;
 
 .debug-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   color: #3f2e21;
   display: flex;
@@ -76,15 +80,15 @@ const start_param = initDataUnsafe.start_param;
 }
 
 .debug-heading {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: bold;
   margin-bottom: 6px;
   color: #3f2e21;
 }
 
 .debug-code {
-  font-size: 10px;
-  font-family: var(--font-pixel-retro);
+  font-size: 12px;
+  font-family: var(--font-monocraft), monospace;
   background-color: rgba(255, 255, 255, 0.6);
   padding: 8px;
   border-radius: 4px;
@@ -95,8 +99,8 @@ const start_param = initDataUnsafe.start_param;
 }
 
 .debug-value {
-  font-size: 11px;
-  font-family: var(--font-pixel-retro);
+  font-size: 14px;
+  font-family: var(--font-monocraft), monospace;
   color: #3f2e21;
 }
 
@@ -109,8 +113,8 @@ const start_param = initDataUnsafe.start_param;
   color: #f7d070;
   border: 1px solid #1a1008;
   border-radius: 4px;
-  font-family: var(--font-pixel);
-  font-size: 10px;
+  font-family: inherit;
+  font-size: 14px;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }

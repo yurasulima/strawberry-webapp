@@ -51,7 +51,7 @@ const rewardConfigs: RewardConfig[] = Array.from(
       const day = index + 1
       return {
         day,
-        icon: strawberryRewardDays.has(day) ? '/ui/strawberry.png' : '/ui/money.png',
+        icon: strawberryRewardDays.has(day) ? '/items/strawberry.png' : '/items/money.png',
         isMilestone: [7, 14, 21, 28, 30].includes(day),
       }
     }
@@ -126,8 +126,8 @@ function rewardDescription(day?: RewardDay) {
 function rewardParts(day?: RewardDay) {
   if (!day) return []
   return [
-    ...(day.strawberries > 0 ? [{ icon: '/ui/strawberry.png', amount: day.strawberries, label: t('daily_rewards.strawberries') }] : []),
-    ...(day.coins > 0 ? [{ icon: '/ui/money.png', amount: day.coins, label: t('daily_rewards.coins') }] : []),
+    ...(day.strawberries > 0 ? [{ icon: '/items/strawberry.png', amount: day.strawberries, label: t('daily_rewards.strawberries') }] : []),
+    ...(day.coins > 0 ? [{ icon: '/items/money.png', amount: day.coins, label: t('daily_rewards.coins') }] : []),
   ]
 }
 
@@ -180,7 +180,7 @@ async function handleClaim(dayToClaim?: number) {
 
         <div class="streak-fruit">
           <img
-              src="/ui/strawberry.png"
+              src="/items/strawberry.png"
               alt=""
               class="strawberry-large"
           />

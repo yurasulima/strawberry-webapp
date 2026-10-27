@@ -79,14 +79,14 @@ function handleOpenDaily() {
     <div class="resource-cards-list">
       <Card width="fit-content" height="36px" :padding="0" class="resource-card toolbar-money-card">
         <div class="resource-row">
-          <Image src="/ui/money.png" size="28" alt="Money" class="res-icon toolbar-money-icon" />
+          <Image src="/items/money.png" size="28" alt="Money" class="res-icon toolbar-money-icon" />
           <span class="res-amount">{{ props.money ?? 0 }}</span>
         </div>
       </Card>
 
       <Card width="fit-content" height="36px" :padding="0" class="resource-card toolbar-strawberry-card">
         <div class="resource-row">
-          <Image src="/ui/strawberry.png" size="24" alt="Strawberry" class="res-icon toolbar-strawberry-icon" />
+          <Image src="/items/strawberry.png" size="24" alt="Strawberry" class="res-icon toolbar-strawberry-icon" />
           <span class="res-amount">{{ props.strawberry ?? 0 }}</span>
         </div>
       </Card>

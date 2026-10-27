@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<{
   height: undefined,
   alt: '',
   fit: 'contain',
-  fallback: '/ui/strawberry.png'
+  fallback: '/items/strawberry.png'
 })
 
 const itemId = computed<string>(() => {
@@ -31,14 +31,14 @@ const itemId = computed<string>(() => {
 
 const textureSrc = computed<string>(() => {
   const raw = itemId.value
-  if (!raw) return props.fallback || '/ui/strawberry.png'
+  if (!raw) return props.fallback || '/items/strawberry.png'
 
   if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('/') || raw.startsWith('data:')) {
     return raw
   }
 
   const clean = raw.toLowerCase().trim().replace(/[\s-]+/g, '_')
-  return `/ui/${clean}.png`
+  return `/items/${clean}.png`
 })
 
 const computedAlt = computed(() => {

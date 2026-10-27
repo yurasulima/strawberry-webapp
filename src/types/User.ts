@@ -21,6 +21,7 @@ export interface User {
   admin?: boolean
   dailyStrawberryClicks?: number
   remainingDailyClicks?: number
+  maxDailyClicks?: number
   nextClickResetTime?: string | null
   dailyStreak?: number
   lastClaimedDailyAt?: string | null

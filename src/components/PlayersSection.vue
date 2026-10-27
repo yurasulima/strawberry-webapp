@@ -5,12 +5,20 @@ import api from "@/services/api.ts"
 import { Icon } from '@iconify/vue'
 import { CardPrimary, Card, ButtonText, PremiumBadge, PixelText, SlideFade } from '@/components/pixel'
 import type { User } from "@/types/User.ts"
+import { useUserStore } from "@/stores/user.ts"
 import { useToastStore } from "@/stores/toast.ts"
 
 const { t } = useI18n()
+const userStore = useUserStore()
 const toastStore = useToastStore()
 const players = ref<User[]>([])
 const loading = ref(false)
+
+function isMe(player: User): boolean {
+  if (!userStore.user) return false
+  return player.userId === userStore.user.userId ||
+         player.telegramId === userStore.user.telegramId
+}
 
 function formatPlayerName(player: User): string {
   if (player.firstName || player.lastName) {
@@ -63,7 +71,12 @@ onMounted(() => {
         <SlideFade>
           <Card v-if="players.length" width="100%" height="auto" :padding="6">
             <ul class="players-list">
-              <li v-for="(player, index) in players" :key="player.userId || index" class="player-row">
+              <li
+                v-for="(player, index) in players"
+                :key="player.userId || index"
+                class="player-row"
+                :class="{ 'my-rank-row': isMe(player) }"
+              >
                 <span class="player-rank" :class="{ 'gold': index === 0, 'silver': index === 1, 'bronze': index === 2 }">
                   #{{ index + 1 }}
                 </span>
@@ -78,12 +91,13 @@ onMounted(() => {
                 <div class="player-info">
                   <div class="player-name-wrapper">
                     <span class="player-name"><PixelText :text="formatPlayerName(player)" /></span>
+
                   </div>
                   <PremiumBadge v-if="player.premium" />
                 </div>
 
                 <div class="player-score">
-                  <img src="/ui/money.png" alt="" class="score-icon" />
+                  <img src="/items/money.png" alt="" class="score-icon" />
                   <strong class="score-val">{{ getMoneyCount(player) }}</strong>
                 </div>
               </li>
@@ -145,10 +159,29 @@ onMounted(() => {
   gap: 8px;
   min-height: 54px;
   padding: 4px 6px;
+  transition: all 0.15s ease;
 }
 
 .player-row + .player-row {
   border-top: 2px solid rgba(63, 46, 33, 0.18);
+}
+
+.my-rank-row {
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.22), rgba(255, 248, 235, 0.5));
+
+  box-shadow: inset 0 0 0 2px #d97706;
+}
+
+.me-tag {
+  font-family: var(--font-pixel), sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  background-color: #2e7d32;
+  color: #ffffff;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #1b5e20;
+  flex-shrink: 0;
 }
 
 .player-rank {

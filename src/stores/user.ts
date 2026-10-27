@@ -21,8 +21,16 @@ export const useUserStore = defineStore('user', () => {
     return strawberrySlot?.count || 0
   })
 
+  const maxDailyClicks = computed(() => {
+    if (user.value?.maxDailyClicks !== undefined) {
+      return user.value.maxDailyClicks
+    }
+    const lvl = Math.max(1, user.value?.level ?? 1)
+    return 200 + (lvl - 1) * 100
+  })
+
   const remainingDailyClicks = computed(() => {
-    return user.value?.remainingDailyClicks ?? 200
+    return user.value?.remainingDailyClicks ?? maxDailyClicks.value
   })
 
   const nextClickResetTime = computed(() => {
@@ -166,6 +174,7 @@ export const useUserStore = defineStore('user', () => {
     money,
     strawberries,
     remainingDailyClicks,
+    maxDailyClicks,
     nextClickResetTime,
     dailyStreak,
     canClaimDaily,

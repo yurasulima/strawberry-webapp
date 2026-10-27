@@ -241,7 +241,7 @@ onMounted(load)
               <span class="hint-text">
                 ID: {{ item.id }}
                 <br/>
-                Type: {{ item.name }}
+                Тип: {{ item.name }}
                 <br/>
                  {{ t('admin.sell_price') }}: <strong>{{ item.sellPrice ?? '-' }}</strong>
                 <br/>

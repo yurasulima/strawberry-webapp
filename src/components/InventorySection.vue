@@ -359,7 +359,7 @@ onMounted(() => {
                 '--delay': `${c.delay}ms`
               }"
             >
-              <img src="/ui/money.png" class="coin-img" alt="" />
+              <img src="/items/money.png" class="coin-img" alt="" />
             </div>
           </div>
         </Teleport>

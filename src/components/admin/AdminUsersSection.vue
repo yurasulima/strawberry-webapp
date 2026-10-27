@@ -332,11 +332,11 @@ function formatDateTime(isoStr?: string | null): string {
                 <div class="user-meta">
                   <span>ID: {{ u.telegramId || u.userId }}</span>
                   <span class="meta-res">
-                    <img src="/ui/money.png" alt="Money" class="res-icon-inline" />
+                    <img src="/items/money.png" alt="Money" class="res-icon-inline" />
                     {{ getUserMoney(u) }}
                   </span>
                   <span class="meta-res">
-                    <img src="/ui/strawberry.png" alt="Strawberry" class="res-icon-inline" />
+                    <img src="/items/strawberry.png" alt="Strawberry" class="res-icon-inline" />
                     {{ getUserStrawberries(u) }}
                   </span>
                 </div>

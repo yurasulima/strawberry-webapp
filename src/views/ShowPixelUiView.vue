@@ -120,7 +120,7 @@ const demoModal = ref(false)
         <div>
           <div class="t-lg">{{ pending.name }}</div>
           <div class="t-sm muted">+{{ fmt(pending.income) }} монет / хв</div>
-          <div class="t-md price"><img src="/ui/money.png" class="px-img s16" alt="" /> {{ fmt(pending.price) }}</div>
+          <div class="t-md price"><img src="/items/money.png" class="px-img s16" alt="" /> {{ fmt(pending.price) }}</div>
         </div>
       </div>
       <template #footer>
@@ -171,8 +171,8 @@ const demoModal = ref(false)
               <span class="t-sm muted">Рівень 42</span>
             </div>
             <div class="hud-res">
-              <span class="res"><img src="/ui/money.png" class="px-img s16" alt="" />{{ fmt(coins) }}</span>
-              <span class="res"><img src="/ui/strawberry.png" class="px-img s16" alt="" />{{ fmt(berries) }}</span>
+              <span class="res"><img src="/items/money.png" class="px-img s16" alt="" />{{ fmt(coins) }}</span>
+              <span class="res"><img src="/items/strawberry.png" class="px-img s16" alt="" />{{ fmt(berries) }}</span>
             </div>
           </div>
 
@@ -185,7 +185,7 @@ const demoModal = ref(false)
                     v-for="(p, i) in plots" :key="i"
                     class="plot" :class="['st-' + p]" @click="tapPlot(i)"
                 >
-                  <img v-if="p === 2" src="/ui/strawberry.png" class="px-img s32" alt="Готово" />
+                  <img v-if="p === 2" src="/items/strawberry.png" class="px-img s32" alt="Готово" />
                   <span v-else-if="p === 1" class="sprout"></span>
                 </button>
               </div>
@@ -213,7 +213,7 @@ const demoModal = ref(false)
                   <div class="grow">
                     <div class="t-lg">{{ b.name }}</div>
                     <div class="t-sm muted">+{{ fmt(b.income) }} / хв · у вас {{ b.owned }}</div>
-                    <div class="t-md price"><img src="/ui/money.png" class="px-img s16" alt="" />{{ fmt(b.price) }}</div>
+                    <div class="t-md price"><img src="/items/money.png" class="px-img s16" alt="" />{{ fmt(b.price) }}</div>
                   </div>
                   <ButtonText :disabled="coins < b.price" @click="askBuy(b)">Купити</ButtonText>
                 </div>
@@ -250,7 +250,7 @@ const demoModal = ref(false)
                       <div class="t-md">{{ p.name }}</div>
                       <div class="t-sm muted">Рівень {{ p.lvl }}</div>
                     </div>
-                    <span class="res"><img src="/ui/money.png" class="px-img s16" alt="" />{{ fmt(p.score) }}</span>
+                    <span class="res"><img src="/items/money.png" class="px-img s16" alt="" />{{ fmt(p.score) }}</span>
                   </div>
                 </div>
               </Card>
@@ -288,8 +288,8 @@ const demoModal = ref(false)
                 <div class="bar tall"><i style="width: 92%"></i></div>
               </CardPrimary>
               <div class="stat-grid">
-                <Card width="100%" height="auto" :padding="10"><div class="stat"><img src="/ui/money.png" class="px-img s32" alt="" /><span class="t-lg">{{ fmt(coins) }}</span><span class="t-sm muted">Монет</span></div></Card>
-                <Card width="100%" height="auto" :padding="10"><div class="stat"><img src="/ui/strawberry.png" class="px-img s32" alt="" /><span class="t-lg">{{ fmt(berries) }}</span><span class="t-sm muted">Полуничок</span></div></Card>
+                <Card width="100%" height="auto" :padding="10"><div class="stat"><img src="/items/money.png" class="px-img s32" alt="" /><span class="t-lg">{{ fmt(coins) }}</span><span class="t-sm muted">Монет</span></div></Card>
+                <Card width="100%" height="auto" :padding="10"><div class="stat"><img src="/items/strawberry.png" class="px-img s32" alt="" /><span class="t-lg">{{ fmt(berries) }}</span><span class="t-sm muted">Полуничок</span></div></Card>
                 <Card width="100%" height="auto" :padding="10"><div class="stat"><Icon icon="pixelarticons:zap" class="stat-ic" /><span class="t-lg">{{ energy }}</span><span class="t-sm muted">Енергія</span></div></Card>
               </div>
               <Card width="100%" height="auto" :padding="12">
