@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
+import {ref, computed, onMounted} from 'vue'
+import {useI18n} from 'vue-i18n'
 import api from "@/services/api.ts"
-import type { Business } from "@/types/Business.ts"
-import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, ItemIcon, SlideFade } from '@/components/pixel'
-import { playClickSound, playPurchaseSound } from "@/services/sound"
-import { useUserStore } from "@/stores/user.ts"
-import { useToastStore } from "@/stores/toast.ts"
-import { formatBizName as formatBizNameUtil, translateError as translateErrorUtil } from '@/utils/business'
+import type {Business} from "@/types/Business.ts"
+import {Icon} from '@iconify/vue'
+import {CardPrimary, Card, ButtonText, ItemIcon, SlideFade} from '@/components/pixel'
+import {playClickSound, playPurchaseSound} from "@/services/sound"
+import {useUserStore} from "@/stores/user.ts"
+import {useToastStore} from "@/stores/toast.ts"
+import {formatBizName as formatBizNameUtil, translateError as translateErrorUtil} from '@/utils/business'
 
 const props = defineProps<{ user?: any }>()
-const { t, te } = useI18n()
+const {t, te} = useI18n()
 const userStore = useUserStore()
 const toastStore = useToastStore()
 
@@ -57,6 +57,42 @@ function formatBizName(rawName?: string): string {
   return formatBizNameUtil(rawName, t, te)
 }
 
+function formatYieldInterval(interval: any): string {
+  if (!interval) return ' / 6 г'
+
+  let seconds = 0
+  if (typeof interval === 'number') {
+    seconds = interval
+  } else if (typeof interval === 'object' && interval.seconds !== undefined) {
+    seconds = interval.seconds
+  } else if (typeof interval === 'string') {
+    if (interval.startsWith('PT')) {
+      const hMatch = interval.match(/(\d+)H/)
+      const mMatch = interval.match(/(\d+)M/)
+      const sMatch = interval.match(/(\d+)S/)
+      if (hMatch) seconds += parseInt(hMatch[1]) * 3600
+      if (mMatch) seconds += parseInt(mMatch[1]) * 60
+      if (sMatch) seconds += parseInt(sMatch[1])
+    } else {
+      seconds = parseInt(interval) || 21600
+    }
+  }
+
+  if (seconds <= 0) return ' / 6 г'
+
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+
+  if (hours > 0 && minutes > 0) {
+    return ` / ${hours} г ${minutes} хв`
+  } else if (hours > 0) {
+    return ` / ${hours} г`
+  } else if (minutes > 0) {
+    return ` / ${minutes} хв`
+  }
+  return ` / ${seconds} с`
+}
+
 function translateError(err: any): string {
   return translateErrorUtil(err, t)
 }
@@ -83,9 +119,9 @@ async function directBuy(biz: Business) {
   const displayName = formatBizName(biz.name)
 
   try {
-    await api.post('/business/buy', { name: biz.name })
+    await api.post('/business/buy', {name: biz.name})
     playPurchaseSound()
-    toastStore.showToast(t('business.bought_success', { name: displayName }), 'success')
+    toastStore.showToast(t('business.bought_success', {name: displayName}), 'success')
     await loadData()
     await userStore.fetchUser()
   } catch (err: any) {
@@ -111,40 +147,51 @@ async function directBuy(biz: Business) {
         <SlideFade>
           <Card v-if="sortedBusinessesForSale.length" width="100%" height="auto" :padding="6">
             <ul class="biz-list">
-              <li v-for="biz in sortedBusinessesForSale" :key="biz.id" class="biz-row">
-                <div class="biz-info">
-                  <span class="biz-name">
-                    {{ formatBizName(biz.name) }}
 
+              <li v-for="biz in sortedBusinessesForSale" :key="biz.id" class="biz-column">
+
+                 <span class="biz-name">
+                    {{ formatBizName(biz.name) }}
+                  </span>
+
+
+                <div class="biz-row">
+                  <div class="biz-info">
+
+                  <span class="biz-name">
                     <span v-if="biz.premiumOnly" class="tag-premium">
                       {{ t('business.premium_req') }}
                     </span>
                   </span>
-                  <span class="biz-meta">
-                    {{ t('business.price', { price: biz.price || 100 }) }} · <strong class="yield-val">+{{ biz.yieldCount || 10 }}</strong> <ItemIcon :item="biz.item" size="18" style="vertical-align: middle;" />
+                    <span class="biz-meta">
+                    {{ t('business.price', {price: biz.price || 100}) }} <br> <strong
+                        class="yield-val">+{{ biz.yieldCount || 10 }}</strong> <ItemIcon :item="biz.item" size="18"
+                                                                                         style="vertical-align: middle; margin: 0 2px;"/><span
+                        class="yield-time">{{ formatYieldInterval(biz.yieldInterval) }}</span>
                   </span>
-                </div>
+                  </div>
 
-                <ButtonText
-                  :disabled="userLevel < (biz.minLevel ?? 0) || (biz.premiumOnly && !isPremiumUser)"
-                  :loading="buyingName === biz.name"
-                  @click="directBuy(biz)"
-                >
-                  {{
-                    userLevel < (biz.minLevel ?? 0)
-                      ? `Рівень ${biz.minLevel}`
-                      : (biz.premiumOnly && !isPremiumUser
-                          ? 'Premium'
-                          : t('business.buy'))
-                  }}
-                </ButtonText>
+                  <ButtonText
+                      :disabled="userLevel < (biz.minLevel ?? 0) || (biz.premiumOnly && !isPremiumUser)"
+                      :loading="buyingName === biz.name"
+                      @click="directBuy(biz)"
+                  >
+                    {{
+                      userLevel < (biz.minLevel ?? 0)
+                          ? `Рівень ${biz.minLevel}`
+                          : (biz.premiumOnly && !isPremiumUser
+                              ? 'Premium'
+                              : t('business.buy'))
+                    }}
+                  </ButtonText>
+                </div>
               </li>
             </ul>
           </Card>
 
           <!-- Порожній стан -->
           <div v-else class="empty-state">
-            <Icon icon="pixelarticons:info-box" class="empty-icon" />
+            <Icon icon="pixelarticons:info-box" class="empty-icon"/>
             <p class="empty-title">{{ t('business.empty_market') }}</p>
           </div>
         </SlideFade>
@@ -187,6 +234,13 @@ async function directBuy(biz: Business) {
   padding: 0;
 }
 
+.biz-column {
+  display: flex;
+  flex-direction: column;
+  min-height: 64px;
+  padding: 4px 6px;
+}
+
 .biz-row {
   display: flex;
   align-items: center;
@@ -195,7 +249,7 @@ async function directBuy(biz: Business) {
   padding: 4px 6px;
 }
 
-.biz-row + .biz-row {
+.biz-column + .biz-column {
   border-top: 2px solid rgba(63, 46, 33, 0.18);
 }
 
@@ -214,20 +268,6 @@ async function directBuy(biz: Business) {
   white-space: nowrap;
 }
 
-.tag-level {
-  font-family: var(--font-pixel);
-  font-size: 9px;
-  background-color: #2e7d32;
-  color: #fff;
-  padding: 1px 4px;
-  border-radius: 3px;
-  margin-left: 4px;
-  vertical-align: middle;
-}
-
-.tag-level.level-locked {
-  background-color: #c62828;
-}
 
 .tag-premium {
   font-family: var(--font-pixel);
@@ -241,7 +281,7 @@ async function directBuy(biz: Business) {
 }
 
 .biz-meta {
-  font-size: 16px;
+  font-size: 18px;
   color: #5d4037;
 }
 
@@ -251,7 +291,19 @@ async function directBuy(biz: Business) {
 }
 
 /* Порожній стан */
-.empty-state { text-align: center; padding: 16px 8px; }
-.empty-icon { font-size: 32px; color: #5d4037; margin-bottom: 6px; }
-.empty-title { margin: 0 0 4px; font-size: 20px; }
+.empty-state {
+  text-align: center;
+  padding: 16px 8px;
+}
+
+.empty-icon {
+  font-size: 32px;
+  color: #5d4037;
+  margin-bottom: 6px;
+}
+
+.empty-title {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
 </style>

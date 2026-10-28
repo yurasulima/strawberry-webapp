@@ -4,12 +4,17 @@ import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { User } from '@/types/User.ts'
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PixelModal, Switch, PremiumBadge } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PixelModal, Switch, PremiumBadge, ItemIcon } from '@/components/pixel'
 import { playClickSound } from '@/services/sound'
 import { useToastStore } from '@/stores/toast.ts'
 
 const { t } = useI18n()
 const toastStore = useToastStore()
+
+interface ItemYield {
+  itemName: string
+  totalAmount: number
+}
 
 interface UserTelemetry {
   userId: number
@@ -25,6 +30,12 @@ interface UserTelemetry {
   coinsStolenFromPlayer?: number
   totalStealAttemptsByPlayer?: number
   failedStealAttemptsByPlayer?: number
+  totalCoinsEarnedByUser?: number
+  totalBusinessItemsYieldedByUser?: number
+  totalStrawberriesFromDropsByUser?: number
+  totalStrawberriesFromDailyRewardsByUser?: number
+  totalStrawberriesFromTransfersByUser?: number
+  businessYieldBreakdownByUser?: ItemYield[]
 }
 
 const users = ref<User[]>([])
@@ -479,23 +490,57 @@ function formatDateTime(isoStr?: string | null): string {
         </div>
 
         <div class="telemetry-info-row">
-          <span>🏴‍☠️ Украдено монет:</span>
+          <span>Украдено монет:</span>
           <strong class="text-gold">{{ selectedUserTelemetry.coinsStolenByPlayer ?? 0 }}</strong>
         </div>
 
         <div class="telemetry-info-row">
-          <span>💸 Передано монет:</span>
+          <span>Передано монет:</span>
           <strong class="text-success">{{ selectedUserTelemetry.coinsTransferredByPlayer ?? 0 }}</strong>
         </div>
 
         <div class="telemetry-info-row">
-          <span>🛡️ В нього украли:</span>
+          <span>В нього украли:</span>
           <strong class="text-danger">{{ selectedUserTelemetry.coinsStolenFromPlayer ?? 0 }}</strong>
         </div>
 
         <div class="telemetry-info-row">
-          <span>🎯 Спроб крадіжок:</span>
+          <span>Спроб крадіжок:</span>
           <strong>{{ selectedUserTelemetry.totalStealAttemptsByPlayer ?? 0 }} (невдалих: {{ selectedUserTelemetry.failedStealAttemptsByPlayer ?? 0 }})</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>Зароблено монет:</span>
+          <strong class="text-gold">{{ selectedUserTelemetry.totalCoinsEarnedByUser ?? 0 }}</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>Зібрано предметів з бізнесів:</span>
+          <strong class="text-success">{{ selectedUserTelemetry.totalBusinessItemsYieldedByUser ?? 0 }}</strong>
+        </div>
+
+        <!-- Деталізація по окремих предметах юзера -->
+        <div v-if="selectedUserTelemetry.businessYieldBreakdownByUser && selectedUserTelemetry.businessYieldBreakdownByUser.length" class="user-yield-box">
+          <div v-for="b in selectedUserTelemetry.businessYieldBreakdownByUser" :key="b.itemName" class="user-yield-row">
+            <ItemIcon :item="b.itemName" size="18" />
+            <span class="breakdown-name">{{ b.itemName }}:</span>
+            <strong class="breakdown-val">{{ b.totalAmount }}</strong>
+          </div>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>Зібрано з дропів:</span>
+          <strong class="text-danger">{{ selectedUserTelemetry.totalStrawberriesFromDropsByUser ?? 0 }}</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>З Daily Rewards:</span>
+          <strong class="text-gold">{{ selectedUserTelemetry.totalStrawberriesFromDailyRewardsByUser ?? 0 }}</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>Отримано з переказів:</span>
+          <strong class="text-success">{{ selectedUserTelemetry.totalStrawberriesFromTransfersByUser ?? 0 }}</strong>
         </div>
       </div>
     </PixelModal>
@@ -503,3 +548,31 @@ function formatDateTime(isoStr?: string | null): string {
 </template>
 
 <style scoped src="./admin.css"></style>
+<style scoped>
+.user-yield-box {
+  margin: -4px 0 6px 12px;
+  padding: 4px 8px;
+  background: rgba(63, 46, 33, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid #2e7d32;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.user-yield-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.breakdown-name {
+  color: #5d4037;
+  flex: 1;
+}
+
+.breakdown-val {
+  color: #2e7d32;
+}
+</style>

@@ -91,7 +91,7 @@ onMounted(() => {
                 <div class="player-info">
                   <div class="player-name-wrapper">
                     <span class="player-name"><PixelText :text="formatPlayerName(player)" /></span>
-
+                    <span v-if="isMe(player)" class="me-tag">Ви</span>
                   </div>
                   <PremiumBadge v-if="player.premium" />
                 </div>
@@ -158,8 +158,9 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   min-height: 54px;
-  padding: 4px 6px;
+  padding: 6px 8px;
   transition: all 0.15s ease;
+  box-sizing: border-box;
 }
 
 .player-row + .player-row {
@@ -167,27 +168,10 @@ onMounted(() => {
 }
 
 .my-rank-row {
-  background: linear-gradient(90deg, rgba(217, 119, 6, 0.22), rgba(255, 248, 235, 0.5));
-
-  box-shadow: inset 0 0 0 2px #d97706;
-}
-
-.player-sub-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
-}
-
-.level-badge {
-  font-family: var(--font-pixel), sans-serif;
-  font-size: 11px;
-  font-weight: bold;
-  background-color: #5977a3;
-  color: #ffffff;
-  padding: 1px 6px;
-  border-radius: 4px;
-  border: 1px solid #2d4366;
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.28), rgba(255, 248, 235, 0.65));
+  border-radius: 6px;
+  border-left: 4px solid #d97706;
+  box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.4);
 }
 
 .me-tag {
@@ -196,9 +180,10 @@ onMounted(() => {
   font-weight: bold;
   background-color: #2e7d32;
   color: #ffffff;
-  padding: 1px 5px;
+  padding: 1px 6px;
   border-radius: 4px;
   border: 1px solid #1b5e20;
+  box-shadow: 1px 1px 0 #1b5e20;
   flex-shrink: 0;
 }
 
@@ -214,8 +199,8 @@ onMounted(() => {
 .player-rank.bronze { color: #b45309; }
 
 .player-avatar {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #5d4037;

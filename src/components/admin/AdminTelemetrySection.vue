@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
-import { CardPrimary, Card, ButtonText } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, ItemIcon } from '@/components/pixel'
 
 const { t } = useI18n()
 
@@ -12,6 +12,11 @@ interface AdminStats {
   totalMoney: number
   totalStrawberries: number
   totalBusinesses: number
+}
+
+interface ItemYield {
+  itemName: string
+  totalAmount: number
 }
 
 interface GlobalTelemetry {
@@ -36,6 +41,18 @@ interface GlobalTelemetry {
   totalCoinsStolenDiff?: number
   totalCoinsTransferred?: number
   totalCoinsTransferredDiff?: number
+
+  totalCoinsEarned?: number
+  totalCoinsEarnedDiff?: number
+  totalBusinessItemsYielded?: number
+  totalBusinessItemsYieldedDiff?: number
+  totalStrawberriesFromDrops?: number
+  totalStrawberriesFromDropsDiff?: number
+  totalStrawberriesFromDailyRewards?: number
+  totalStrawberriesFromDailyRewardsDiff?: number
+  totalStrawberriesFromTransfers?: number
+  totalStrawberriesFromTransfersDiff?: number
+  businessYieldBreakdown?: ItemYield[]
 }
 
 const stats = ref<AdminStats | null>(null)
@@ -251,6 +268,76 @@ onMounted(load)
                 {{ formatDiff(telemetry.totalCoinsTransferredDiff) }}
               </span>
             </div>
+
+            <!-- Ігрова економічна телеметрія -->
+            <div class="telemetry-item">
+              <span class="telemetry-label">Всього зароблено монет</span>
+              <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalCoinsEarned) }}</span>
+              <span
+                v-if="telemetry.totalCoinsEarnedDiff !== undefined"
+                class="diff-tag"
+                :class="diffClass(telemetry.totalCoinsEarnedDiff)"
+              >
+                {{ formatDiff(telemetry.totalCoinsEarnedDiff) }}
+              </span>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">Предметів з бізнесів</span>
+              <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalBusinessItemsYielded) }}</span>
+              <span
+                v-if="telemetry.totalBusinessItemsYieldedDiff !== undefined"
+                class="diff-tag"
+                :class="diffClass(telemetry.totalBusinessItemsYieldedDiff)"
+              >
+                {{ formatDiff(telemetry.totalBusinessItemsYieldedDiff) }}
+              </span>
+
+              <!-- Деталізація по предметах -->
+              <div v-if="telemetry.businessYieldBreakdown && telemetry.businessYieldBreakdown.length" class="yield-breakdown-box">
+                <div v-for="b in telemetry.businessYieldBreakdown" :key="b.itemName" class="yield-breakdown-row">
+                  <ItemIcon :item="b.itemName" size="18" />
+                  <span class="breakdown-name">{{ b.itemName }}:</span>
+                  <strong class="breakdown-val">{{ formatNumber(b.totalAmount) }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">Піднято з дропів бота</span>
+              <span class="telemetry-value text-danger">{{ formatNumber(telemetry.totalStrawberriesFromDrops) }}</span>
+              <span
+                v-if="telemetry.totalStrawberriesFromDropsDiff !== undefined"
+                class="diff-tag"
+                :class="diffClass(telemetry.totalStrawberriesFromDropsDiff)"
+              >
+                {{ formatDiff(telemetry.totalStrawberriesFromDropsDiff) }}
+              </span>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">З Daily Rewards</span>
+              <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalStrawberriesFromDailyRewards) }}</span>
+              <span
+                v-if="telemetry.totalStrawberriesFromDailyRewardsDiff !== undefined"
+                class="diff-tag"
+                :class="diffClass(telemetry.totalStrawberriesFromDailyRewardsDiff)"
+              >
+                {{ formatDiff(telemetry.totalStrawberriesFromDailyRewardsDiff) }}
+              </span>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">Отримано з переказів</span>
+              <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalStrawberriesFromTransfers) }}</span>
+              <span
+                v-if="telemetry.totalStrawberriesFromTransfersDiff !== undefined"
+                class="diff-tag"
+                :class="diffClass(telemetry.totalStrawberriesFromTransfersDiff)"
+              >
+                {{ formatDiff(telemetry.totalStrawberriesFromTransfersDiff) }}
+              </span>
+            </div>
           </div>
         </div>
       </Card>
@@ -277,5 +364,30 @@ onMounted(load)
 
 .diff-muted {
   color: #757575;
+}
+
+.yield-breakdown-box {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(63, 46, 33, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.yield-breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.breakdown-name {
+  color: #5d4037;
+  flex: 1;
+}
+
+.breakdown-val {
+  color: #2e7d32;
 }
 </style>
