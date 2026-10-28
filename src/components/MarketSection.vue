@@ -22,9 +22,25 @@ const buyingName = ref<string | null>(null)
 const userLevel = computed(() => userStore.user?.level || 1)
 const isPremiumUser = computed(() => !!userStore.user?.premium)
 
+const isAvailable = (biz: Business) => {
+  const reqLvl = biz.minLevel ?? 0
+  const reqPrem = !!biz.premiumOnly
+  if (userLevel.value < reqLvl) return false
+  if (reqPrem && !isPremiumUser.value) return false
+  return true
+}
+
 const sortedBusinessesForSale = computed(() => {
   const list = [...businessesForSale.value]
   return list.sort((a, b) => {
+    const availA = isAvailable(a)
+    const availB = isAvailable(b)
+
+    // Доступні спочатку, недоступні внизу
+    if (availA && !availB) return -1
+    if (!availA && availB) return 1
+
+    // Усередині кожної групи сортуємо за ціною від найдешевшого до найдорожчого
     const priceA = a.price ?? 0
     const priceB = b.price ?? 0
     if (priceA !== priceB) return priceA - priceB

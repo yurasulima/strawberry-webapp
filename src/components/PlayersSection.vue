@@ -172,6 +172,24 @@ onMounted(() => {
   box-shadow: inset 0 0 0 2px #d97706;
 }
 
+.player-sub-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.level-badge {
+  font-family: var(--font-pixel), sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  background-color: #5977a3;
+  color: #ffffff;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #2d4366;
+}
+
 .me-tag {
   font-family: var(--font-pixel), sans-serif;
   font-size: 10px;

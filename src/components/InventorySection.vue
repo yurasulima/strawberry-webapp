@@ -70,7 +70,7 @@ function getItemTitle(itemName?: string): string {
 }
 
 function getItemUnitPrice(itemName?: string): number {
-  if (selectedSlot.value && selectedSlot.value.item && selectedSlot.value.item.sellPrice !== undefined) {
+  if (selectedSlot.value?.item?.sellPrice !== undefined && selectedSlot.value?.item?.sellPrice !== null) {
     return selectedSlot.value.item.sellPrice
   }
   return 1
