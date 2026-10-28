@@ -91,7 +91,6 @@ onMounted(() => {
                 <div class="player-info">
                   <div class="player-name-wrapper">
                     <span class="player-name"><PixelText :text="formatPlayerName(player)" /></span>
-                    <span v-if="isMe(player)" class="me-tag">Ви</span>
                   </div>
                   <PremiumBadge v-if="player.premium" />
                 </div>

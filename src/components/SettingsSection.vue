@@ -3,6 +3,7 @@ import { ref, computed, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWebApp } from 'vue-tg'
 import { CardPrimary, Card, ButtonText, LeftButton, RightButton, SoundButton, MusicButton, SlideFade } from '@/components/pixel'
+import WikiSection from '@/components/WikiSection.vue'
 import { playClickSound, playPurchaseSound, isSoundEnabled, setSoundEnabled, isMusicEnabled, setMusicEnabled } from '@/services/sound'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
@@ -15,6 +16,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
+const isWikiOpen = ref(false)
 const soundState = ref(isSoundEnabled())
 const musicState = ref(isMusicEnabled())
 
@@ -81,6 +83,11 @@ function nextLang() {
   selectedLangCode.value = list[newIdx].code
 }
 
+function openWiki() {
+  playClickSound()
+  isWikiOpen.value = true
+}
+
 function saveSettings() {
   playPurchaseSound()
   locale.value = selectedLangCode.value
@@ -94,12 +101,21 @@ function saveSettings() {
 
 <template>
   <div class="settings-container">
-    <CardPrimary width="100%" height="auto" :padding="12">
+    <WikiSection v-if="isWikiOpen" @close="isWikiOpen = false" />
+
+    <CardPrimary v-else width="100%" height="auto" :padding="12">
       <h2 class="title">{{ t('settings.title') }}</h2>
 
       <SlideFade>
         <Card width="100%" height="auto" :padding="12" class="settings-card">
           <div class="settings-list">
+            <!-- Кнопка відкриття Вікі -->
+            <div class="setting-row wiki-row">
+              <ButtonText height="48" padding="8px 20px" width="100%" @click="openWiki">
+                📖 Вікі предметів / Довідник
+              </ButtonText>
+            </div>
+
             <!-- Перемикання мови стрілочками LeftButton / RightButton -->
             <div class="setting-row">
               <span class="setting-label">{{ t('settings.language_label') }}</span>
@@ -172,6 +188,10 @@ function saveSettings() {
   gap: 8px;
   min-height: 52px;
   width: 100%;
+}
+
+.wiki-row {
+  justify-content: center;
 }
 
 .setting-label {

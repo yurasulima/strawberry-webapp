@@ -49,6 +49,17 @@ h1, h2, h3, h4 {
   letter-spacing: -0.5px;
 }
 
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* Retro pixel box styling */
 .pixel-box {
   border: 3px solid #2d3748;

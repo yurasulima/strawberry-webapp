@@ -238,17 +238,23 @@ const sellAllStrawberries = async (e: MouseEvent) => {
         <button
             class="strawberry-button"
             :class="{ 'strawberry-button--disabled': isLimitReached }"
+            draggable="false"
+            oncontextmenu="return false;"
+            ondragstart="return false;"
+            @contextmenu.prevent
             @click="$emit('click')"
         >
           <img
               src="/items/strawberry.png"
               alt="Strawberry"
+              draggable="false"
               oncontextmenu="return false;"
+              ondragstart="return false;"
               class="strawberry-icon"
               :class="{ 'pop-animation': isClicking, 'disabled-icon': isLimitReached }"
           />
           <div v-if="isLimitReached" class="lock-overlay">
-            <img src="/ui/lock.png" alt="Locked" class="lock-icon-img" />
+            <img src="/ui/lock.png" alt="Locked" draggable="false" class="lock-icon-img" />
           </div>
         </button>
       </div>
@@ -461,8 +467,13 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   image-rendering: pixelated;
   transition: transform 0.1s ease-in-out, filter 0.3s ease;
   user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
   touch-action: manipulation;
 }
 

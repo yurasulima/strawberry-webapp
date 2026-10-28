@@ -219,9 +219,9 @@ function handleOpenDaily() {
   display: flex;
   flex-direction: row;
   gap: 4px;
-  margin-top: 36px;
+  margin-top: 2px;
   margin-left: 0;
-  align-self: flex-start;
+  align-self: flex-end;
 }
 
 .resource-card {
