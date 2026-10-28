@@ -17,7 +17,12 @@
       "demo_item": "Demo Item",
       "water": "Water",
       "blueberry": "Blueberry",
-      "strawberry_juice": "Strawberry Juice"
+      "strawberry_juice": "Strawberry Juice",
+      "cherries": "Cherries",
+      "jam_cherry": "Cherry Jam",
+      "blueberry_jam": "Blueberry Jam",
+      "blueberry_pie": "Blueberry Pie",
+      "strawberry_pie": "Strawberry Pie"
     }
   },
   "clicker": {
@@ -151,7 +156,14 @@
       "strawberry_farm": "Strawberry Farm",
       "bakery": "Bakery",
       "factory": "Factory",
-      "strawberry_juice_factory": "Strawberry Juice Factory"
+      "strawberry_juice_factory": "Strawberry Juice Factory",
+      "water_tower": "Water Tower",
+      "blueberry_grove": "Blueberry Grove",
+      "cherry_orchard": "Cherry Orchard",
+      "cherry_jam_factory": "Cherry Jam Factory",
+      "blueberry_jam_factory": "Blueberry Jam Factory",
+      "blueberry_pie_bakery": "Blueberry Pie Bakery",
+      "strawberry_pie_bakery": "Strawberry Pie Bakery"
     }
   },
   "profile": {

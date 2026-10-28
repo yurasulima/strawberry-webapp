@@ -19,6 +19,11 @@
       "water": "Вода",
       "blueberry": "Чорниця",
       "strawberry_juice": "Полуничний Сік",
+      "cherries": "Вишні",
+      "jam_cherry": "Вишневе Варення",
+      "blueberry_jam": "Чорничне Варення",
+      "blueberry_pie": "Чорничний Пиріг",
+      "strawberry_pie": "Полуничний Пиріг",
       "strawberry_jam": "Полуничне Варення",
       "chest_gardener": "Скриня Садівника",
       "chest_super": "Супер-Скриня",
@@ -157,7 +162,14 @@
       "strawberry_farm": "Полунична ферма",
       "strawberry_juice_factory": "Фабрика полуничного соку",
       "bakery": "Пекарня",
-      "factory": "Фабрика"
+      "factory": "Фабрика",
+      "water_tower": "Водонапірна вежа",
+      "blueberry_grove": "Чорничний гай",
+      "cherry_orchard": "Вишневий сад",
+      "cherry_jam_factory": "Вишнева варильня",
+      "blueberry_jam_factory": "Чорнична варильня",
+      "blueberry_pie_bakery": "Кондитерська чорничних пирогів",
+      "strawberry_pie_bakery": "Кондитерська полуничних пирогів"
     }
   },
   "profile": {

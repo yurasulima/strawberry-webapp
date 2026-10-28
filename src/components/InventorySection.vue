@@ -70,12 +70,9 @@ function getItemTitle(itemName?: string): string {
 }
 
 function getItemUnitPrice(itemName?: string): number {
-  if (!itemName) return 1
-  const clean = itemName.toLowerCase().trim()
-  if (clean === 'strawberry') return 1
-  if (clean === 'strawberry_juice') return 5
-  if (clean === 'blueberry') return 3
-  if (clean === 'water') return 2
+  if (selectedSlot.value && selectedSlot.value.item && selectedSlot.value.item.sellPrice !== undefined) {
+    return selectedSlot.value.item.sellPrice
+  }
   return 1
 }
 

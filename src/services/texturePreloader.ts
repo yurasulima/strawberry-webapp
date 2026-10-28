@@ -42,6 +42,7 @@ export const UI_TEXTURES = [
   '/ui/button_delete_pressed.png',
   '/items/money.png',
   '/items/strawberry.png',
+  '/items/water.png',
   '/items/blueberry.png',
   '/items/strawberry_juice.png',
   '/items/cherries.png',
