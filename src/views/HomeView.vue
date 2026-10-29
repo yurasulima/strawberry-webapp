@@ -24,6 +24,7 @@ import AdminUsersSection from '@/components/admin/AdminUsersSection.vue'
 import DailyRewardsModal from "@/components/DailyRewardsModal.vue"
 import WebLoginModal from "@/components/WebLoginModal.vue"
 import ProfileModal from "@/components/ProfileModal.vue"
+import AnnouncementModal, { type AnnouncementData } from "@/components/AnnouncementModal.vue"
 import {Image, PixelToastContainer} from "@/components/pixel"
 import api from "@/services/api.ts"
 
@@ -32,10 +33,36 @@ const isLoading = ref(true)
 const showDailyRewards = ref(false)
 const showWebLogin = ref(false)
 const showProfileModal = ref(false)
+const showAnnouncementModal = ref(false)
+const activeAnnouncement = ref<AnnouncementData | null>(null)
 const userStore = useUserStore()
 const authStore = useAuthStore()
 const toastStore = useToastStore()
 const { initDataUnsafe } = useWebApp()
+
+async function checkActiveAnnouncement() {
+  try {
+    const res = await api.get<AnnouncementData>('/notifications/active')
+    if (res.status === 200 && res.data && res.data.id) {
+      activeAnnouncement.value = res.data
+      showAnnouncementModal.value = true
+    }
+  } catch (err) {
+    // ігноруємо
+  }
+}
+
+async function handleCloseAnnouncement() {
+  const ann = activeAnnouncement.value
+  showAnnouncementModal.value = false
+  if (ann && ann.id) {
+    try {
+      await api.post(`/notifications/${ann.id}/read`)
+    } catch (err) {
+      console.warn('Error marking announcement as read:', err)
+    }
+  }
+}
 
 // 33% шанс, що павучок тримає цукерку при вході в гру
 const hasCandy = ref(false)
@@ -123,6 +150,7 @@ onMounted(async () => {
         if (userStore.canClaimDaily) {
           showDailyRewards.value = true
         }
+        checkActiveAnnouncement()
       }
     } catch (error) {
       console.error('Telegram WebApp auth error:', error)
@@ -135,8 +163,11 @@ onMounted(async () => {
       if (!res) {
         authStore.logout()
         showWebLogin.value = true
-      } else if (userStore.canClaimDaily) {
-        showDailyRewards.value = true
+      } else {
+        if (userStore.canClaimDaily) {
+          showDailyRewards.value = true
+        }
+        checkActiveAnnouncement()
       }
     } catch (e) {
       console.error('Token invalid or expired, showing web login:', e)
