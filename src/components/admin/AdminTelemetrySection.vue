@@ -52,6 +52,8 @@ interface GlobalTelemetry {
   totalStrawberriesFromDailyRewardsDiff?: number
   totalStrawberriesFromTransfers?: number
   totalStrawberriesFromTransfersDiff?: number
+  totalSpiderCandiesLooted?: number
+  totalSpiderCandiesLootedDiff?: number
   businessYieldBreakdown?: ItemYield[]
 }
 
@@ -94,6 +96,13 @@ function formatDiff(diff?: number): string {
 function diffClass(diff?: number): string {
   if (diff === undefined || diff === null || diff === 0) return 'diff-muted'
   return diff > 0 ? 'diff-success' : 'diff-danger'
+}
+
+function getCandyCount(tm: GlobalTelemetry | null): number {
+  if (!tm) return 0
+  if (tm.totalSpiderCandiesLooted !== undefined) return tm.totalSpiderCandiesLooted
+  const found = tm.businessYieldBreakdown?.find(b => b.itemName?.toLowerCase() === 'candy')
+  return found?.totalAmount ?? 0
 }
 
 watch(selectedDate, () => {
@@ -336,6 +345,18 @@ onMounted(load)
                 :class="diffClass(telemetry.totalStrawberriesFromTransfersDiff)"
               >
                 {{ formatDiff(telemetry.totalStrawberriesFromTransfersDiff) }}
+              </span>
+            </div>
+
+            <div class="telemetry-item">
+              <span class="telemetry-label">Залутано цукерок з павука 🕷️🍬</span>
+              <span class="telemetry-value text-gold">{{ formatNumber(getCandyCount(telemetry)) }}</span>
+              <span
+                v-if="telemetry.totalSpiderCandiesLootedDiff !== undefined"
+                class="diff-tag"
+                :class="diffClass(telemetry.totalSpiderCandiesLootedDiff)"
+              >
+                {{ formatDiff(telemetry.totalSpiderCandiesLootedDiff) }}
               </span>
             </div>
           </div>

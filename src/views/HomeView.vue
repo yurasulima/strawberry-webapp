@@ -92,7 +92,7 @@ async function collectCandy() {
   toastStore.showToast('Ви забрали цукерку у павучка!', 'success')
 
   try {
-    await api.post('/slots/take', { name: 'candy', count: 1 })
+    await api.post('/slots/take', { name: 'candy', count: 1, source: 'spider' })
   } catch (err) {
     console.warn('Error syncing candy with API:', err)
   }
