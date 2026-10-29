@@ -349,7 +349,7 @@ onMounted(load)
             </div>
 
             <div class="telemetry-item">
-              <span class="telemetry-label">Залутано цукерок з павука 🕷️🍬</span>
+              <span class="telemetry-label">Залутано цукерок</span>
               <span class="telemetry-value text-gold">{{ formatNumber(getCandyCount(telemetry)) }}</span>
               <span
                 v-if="telemetry.totalSpiderCandiesLootedDiff !== undefined"
