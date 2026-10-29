@@ -26,6 +26,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'openSettings'): void
   (e: 'openDailyRewards'): void
+  (e: 'openProfile'): void
 }>()
 
 const canClaimDaily = computed(() => userStore.canClaimDaily)
@@ -39,6 +40,11 @@ function handleOpenDaily() {
   playClickSound()
   emit('openDailyRewards')
 }
+
+function handleOpenProfile() {
+  playClickSound()
+  emit('openProfile')
+}
 </script>
 
 <template>
@@ -49,13 +55,14 @@ function handleOpenDaily() {
           height="100px"
           padding="14px"
           :image="props.avatar"
-          class="toolbar-avatar"
+          class="toolbar-avatar clickable-avatar"
+          @click="handleOpenProfile"
       />
       <CardPrimary width="100%" height="64px" :padding="0" class="toolbar-container">
         <!-- Right Side: User Nickname -->
         <div class="user-info-side">
           <div class="user-info-header">
-            <span class="user-name">
+            <span class="user-name clickable-nickname" @click="handleOpenProfile">
               <PixelText :text="`${props.firstName ?? ''} ${props.lastName ?? ''}`.trim()" />
             </span>
             <div class="toolbar-actions">
@@ -160,6 +167,19 @@ function handleOpenDaily() {
   word-break: break-word;
   text-align: center;
   flex-grow: 1;
+}
+
+.clickable-nickname {
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.clickable-nickname:hover {
+  opacity: 0.85;
+}
+
+.clickable-nickname:active {
+  transform: scale(0.97);
 }
 
 .clickable-avatar {

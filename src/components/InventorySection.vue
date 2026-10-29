@@ -277,7 +277,7 @@ onMounted(() => {
                 <div class="detail-info">
                   <span class="detail-title">{{ getItemTitle(selectedSlot.item.name) }}</span>
                   <span class="detail-owned">{{ t('inventory.owned', { count: selectedSlot.count }) }}</span>
-                  <span class="detail-price">Ціна: <strong>{{ getItemUnitPrice(selectedSlot.item.name) }}</strong></span>
+                  <span class="detail-price">Ціна: <strong>{{ getItemUnitPrice(selectedSlot.item.name) }}</strong> <ItemIcon item="money" size="18" style="vertical-align: middle; margin-left: 2px;" /></span>
                 </div>
               </div>
 
@@ -333,7 +333,7 @@ onMounted(() => {
                     :loading="isSelling"
                     @click="handleSell"
                   >
-                    {{ t('inventory.sell') }} {{ sellAmount }} шт. (+{{ totalCoinsEarned }})
+                    {{ t('inventory.sell') }} {{ sellAmount }} шт. (+{{ totalCoinsEarned }} <ItemIcon item="money" size="18" style="vertical-align: middle; margin-left: 2px;" />)
                   </ButtonText>
                 </div>
               </div>

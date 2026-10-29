@@ -239,6 +239,22 @@ async function saveResources() {
   }
 }
 
+const isRecalculating = ref(false)
+
+async function recalculateLevels() {
+  playClickSound()
+  isRecalculating.value = true
+  try {
+    const res = await api.post<{ message: string; count: number }>('/admin/recalculate-levels')
+    toastStore.showToast(res.data?.message || 'Рівні успішно перераховано!', 'success')
+    await fetchUsers()
+  } catch (err: any) {
+    toastStore.showToast(err.response?.data?.message || err.response?.data || t('business.operation_error'), 'error')
+  } finally {
+    isRecalculating.value = false
+  }
+}
+
 function getUserMoney(u: User): number {
   return u.slots?.find(s => s.item?.name === 'money')?.count ?? 0
 }
@@ -284,7 +300,12 @@ function formatDateTime(isoStr?: string | null): string {
 <template>
   <div class="admin-container">
     <CardPrimary width="100%" height="auto" :padding="8">
-      <h2 class="title">{{ t('admin.nav.users') }}</h2>
+      <div class="section-header">
+        <h2 class="title">{{ t('admin.nav.users') }}</h2>
+        <ButtonText padding="6px 12px" :loading="isRecalculating" @click="recalculateLevels">
+          ⚡ Перерахувати рівні
+        </ButtonText>
+      </div>
 
       <!-- Пошук користувачів -->
       <div class="search-box">

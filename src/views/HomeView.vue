@@ -20,60 +20,107 @@ import AdminBusinessesSection from '@/components/admin/AdminBusinessesSection.vu
 import AdminItemsSection from '@/components/admin/AdminItemsSection.vue'
 import AdminUsersSection from '@/components/admin/AdminUsersSection.vue'
 import DailyRewardsModal from "@/components/DailyRewardsModal.vue"
+import WebLoginModal from "@/components/WebLoginModal.vue"
+import ProfileModal from "@/components/ProfileModal.vue"
 import { PixelToastContainer } from "@/components/pixel"
 import api from "@/services/api.ts"
-import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const isLoading = ref(true)
 const showDailyRewards = ref(false)
+const showWebLogin = ref(false)
+const showProfileModal = ref(false)
 const userStore = useUserStore()
+const authStore = useAuthStore()
 const { initDataUnsafe } = useWebApp()
-const user = initDataUnsafe.user || { id: 1, first_name: "Тест", last_name: "Акк", username: "testAkk", language_code: null, photo_url: "https://api.dangerous.pp.ua/image/null.png" }
 
-if (user === undefined) {
-  const router = useRouter()
-  router.replace('/404')
-}
+const isRealTelegramWebApp = computed(() => {
+  if (typeof window === 'undefined') return false
+  const tg = (window as any).Telegram?.WebApp
+  return !!(tg && tg.initData && typeof tg.initData === 'string' && tg.initData.trim().length > 0)
+})
+
+const tgUser = computed(() => {
+  return isRealTelegramWebApp.value ? initDataUnsafe?.user : null
+})
+
+const user = computed(() => {
+  if (tgUser.value) {
+    return tgUser.value
+  }
+  return {
+    id: userStore.user?.telegramId || 1,
+    first_name: userStore.user?.firstName || "Гравець",
+    last_name: userStore.user?.lastName || "",
+    username: userStore.user?.username || "player",
+    language_code: userStore.user?.lang || null,
+    photo_url: userStore.user?.photoUrl || "https://api.dangerous.pp.ua/image/null.png"
+  }
+})
 
 const activeTab = ref<TabType>('clicker')
 const isAdminMode = computed(() => activeTab.value.startsWith('admin'))
 
 watch(activeTab, () => {
-  userStore.fetchUser()
+  if (authStore.token) {
+    userStore.fetchUser()
+  }
 })
 
-onMounted(async () => {
-  if (!user) {
-    console.log('User is null or undefined')
-    isLoading.value = false
-    return
+async function handleWebLoginSuccess() {
+  showWebLogin.value = false
+  await userStore.fetchUser()
+  if (userStore.canClaimDaily) {
+    showDailyRewards.value = true
   }
-  try {
-    const response = await api.post('/auth/telegram', {
-      telegram_id: user.id,
-      photo_url: user.photo_url,
-      last_name: user.last_name,
-      first_name: user.first_name,
-      username: user.username,
-      language_code: user.language_code,
-      inviter_telegram_id: initDataUnsafe.start_param,
-    })
-    if (user.language_code) {
-      localStorage.setItem('lang', user.language_code)
-    }
+}
 
-    if (response.status === 200) {
-      const auth = useAuthStore()
-      auth.login(response.data)
-      userStore.setUser(response.data)
-      if (userStore.canClaimDaily) {
+onMounted(async () => {
+  if (isRealTelegramWebApp.value && tgUser.value) {
+    try {
+      const response = await api.post('/auth/telegram', {
+        telegram_id: tgUser.value.id,
+        photo_url: tgUser.value.photo_url,
+        last_name: tgUser.value.last_name,
+        first_name: tgUser.value.first_name,
+        username: tgUser.value.username,
+        language_code: tgUser.value.language_code,
+        inviter_telegram_id: initDataUnsafe.start_param,
+      })
+      if (tgUser.value.language_code) {
+        localStorage.setItem('lang', tgUser.value.language_code)
+      }
+
+      if (response.status === 200) {
+        authStore.login(response.data)
+        userStore.setUser(response.data)
+        if (userStore.canClaimDaily) {
+          showDailyRewards.value = true
+        }
+      }
+    } catch (error) {
+      console.error('Telegram WebApp auth error:', error)
+    } finally {
+      isLoading.value = false
+    }
+  } else if (authStore.token) {
+    try {
+      const res = await userStore.fetchUser()
+      if (!res) {
+        authStore.logout()
+        showWebLogin.value = true
+      } else if (userStore.canClaimDaily) {
         showDailyRewards.value = true
       }
+    } catch (e) {
+      console.error('Token invalid or expired, showing web login:', e)
+      authStore.logout()
+      showWebLogin.value = true
+    } finally {
+      isLoading.value = false
     }
-  } catch (error) {
-    console.error('API call error:', error)
-  } finally {
+  } else {
+    showWebLogin.value = true
     isLoading.value = false
   }
 })
@@ -82,6 +129,9 @@ onMounted(async () => {
 <template>
   <div class="app-container">
     <PixelToastContainer />
+
+    <!-- Модальне вікно входу для вебу -->
+    <WebLoginModal v-if="showWebLogin" @success="handleWebLoginSuccess" />
 
     <!-- Показуємо splash, поки isLoading -->
     <div v-if="isLoading" class="splash-screen">
@@ -100,9 +150,11 @@ onMounted(async () => {
           :strawberry="userStore.strawberries"
           @openSettings="activeTab = activeTab === 'settings' ? 'clicker' : 'settings'"
           @openDailyRewards="showDailyRewards = true"
+          @openProfile="showProfileModal = true"
       />
 
       <DailyRewardsModal v-model="showDailyRewards" />
+      <ProfileModal v-model="showProfileModal" />
 
       <div class="main-content" :class="{ 'main-content--admin': isAdminMode }">
         <ClickerSection v-show="activeTab === 'clicker'" />
@@ -134,10 +186,9 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-
 .app-container {
-  background-image: url("/new_background.png"); /* без 'public/' */
-  background-size: cover; /* покриває весь контейнер */
+  background-image: url("/new_background.png");
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 
@@ -180,7 +231,6 @@ onMounted(async () => {
   padding-bottom: 110px;
 }
 .bott {
-
   z-index: 1;
 }
 .splash-screen {
@@ -196,6 +246,5 @@ onMounted(async () => {
 }
 
 .loader {
-  /* Можна тут зробити анімацію або просто текст */
 }
 </style>
