@@ -187,6 +187,7 @@ export const useUserStore = defineStore('user', () => {
     setRemainingClicks,
     addStrawberries,
     addMoney,
+    addItemToSlot,
     claimDailyReward
   }
 })

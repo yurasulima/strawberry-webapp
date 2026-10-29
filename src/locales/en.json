@@ -13,6 +13,7 @@
     "owned": "In inventory: {count}",
     "items": {
       "strawberry": "Strawberry",
+      "candy": "Candy",
       "money": "Coins",
       "demo_item": "Demo Item",
       "water": "Water",

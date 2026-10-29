@@ -103,6 +103,9 @@ if (typeof window !== 'undefined') {
   engine.loadSound('error', '/sfx/error-1.wav')
   engine.loadSound('popupOpen', '/sfx/popup-open.wav')
   engine.loadSound('popupClose', '/sfx/popup-close.wav')
+  engine.loadSound('pluck', '/sfx/click-bubble-1.wav')
+  engine.loadSound('itemGet', '/sfx/item-get.wav')
+  engine.loadSound('snap', '/sfx/error-2.wav')
 }
 
 export function playTabSound() {
@@ -139,4 +142,16 @@ export function playPopupOpenSound() {
 
 export function playPopupCloseSound() {
   engine.playSound('popupClose', 0.5)
+}
+
+export function playPluckSound() {
+  engine.playSound('pluck', 0.5)
+}
+
+export function playItemGetSound() {
+  engine.playSound('itemGet', 0.6)
+}
+
+export function playSnapSound() {
+  engine.playSound('snap', 0.6)
 }

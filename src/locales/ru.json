@@ -13,6 +13,7 @@
     "owned": "В наличии: {count}",
     "items": {
       "strawberry": "Клубника",
+      "candy": "Конфета",
       "money": "Монеты",
       "demo_item": "Демо Предмет",
       "water": "Вода",

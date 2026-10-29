@@ -13,6 +13,7 @@
     "owned": "У наявності: {count}",
     "items": {
       "strawberry": "Полуниця",
+      "candy": "Цукерка",
       "money": "Монети",
       "money_v2": "Монети V2",
       "demo_item": "Демо Предмет",
