@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import NinePatch from '../NinePatch.vue'
 
 defineProps({
@@ -16,7 +16,7 @@ defineProps({
   },
 })
 
-function cssSize(value) {
+function cssSize(value: string | number) {
   return typeof value === 'number' ? `${value}px` : value
 }
 
