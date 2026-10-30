@@ -586,6 +586,8 @@ onBeforeUnmount(() => {
       </div>
 
       <AdminNavigation
+
+
           v-if="isAdminMode"
           class="bott"
           :activeTab="activeTab"
