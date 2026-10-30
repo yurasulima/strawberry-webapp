@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<{
   src: '',
   alt: 'Pixel Image',
   fit: 'contain',
-  fallback: 'https://api.dangerous.pp.ua/image/null.png'
+  fallback: 'https://mcapi.memories-app.org/image/null.png'
 })
 
 const hasError = ref(false)

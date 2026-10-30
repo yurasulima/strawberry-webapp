@@ -82,7 +82,7 @@ const handleBeforeUnload = () => {
   if (pendingClicks > 0) {
     const body = JSON.stringify({ name: "strawberry", count: pendingClicks })
     const token = authStore.token
-    const baseUrl = api.defaults.baseURL || 'https://strawberryapi.dangerous.pp.ua'
+    const baseUrl = api.defaults.baseURL || 'https://sapi.memories-app.org'
 
     fetch(`${baseUrl}/slots/take`, {
       method: 'POST',

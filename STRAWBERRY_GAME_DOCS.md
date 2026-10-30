@@ -23,7 +23,7 @@
 |---|---|
 | Платформа | Telegram Mini App (веб, мобільний вертикальний UI) |
 | Фронтенд | Vue 3.5 + TypeScript + Vite 6 + Pinia + Vue Router + vue-i18n |
-| Бекенд | Зовнішній REST API (`https://strawberryapi.dangerous.pp.ua/`), схоже на Java/Spring (`java.time.Duration` у типах, `Bearer` JWT) |
+| Бекенд | Зовнішній REST API (`https://s.memories-app.org/`), схоже на Java/Spring (`java.time.Duration` у типах, `Bearer` JWT) |
 | Мови | 🇬🇧 English (за замовчуванням), 🇺🇦 Українська, 🇷🇺 Русский |
 | Стиль | Піксель-арт, власна 9-patch система рендерингу на canvas |
 | Звук | WebAudio API (SFX; музика — лише перемикач, не реалізована) |
@@ -116,7 +116,7 @@ Telegram WebApp ──initDataUnsafe──▶ HomeView
   Секції (Clicker / Inventory / Business / Market / Players / Admin …)
         │  axios + Bearer-токен (interceptor)
         ▼
-  REST API (strawberryapi.dangerous.pp.ua)
+  REST API (s.memories-app.org)
 ```
 
 **Принципи:**
@@ -190,7 +190,7 @@ Telegram WebApp ──initDataUnsafe──▶ HomeView
 
 ### 2.7 Сервіси
 
-- **`api.ts`** — axios, `baseURL = https://strawberryapi.dangerous.pp.ua/`, таймаут 10 с. Interceptor додає `Authorization: Bearer <token>`; при невалідному (не-ASCII) токені робить `logout()`.
+- **`api.ts`** — axios, `baseURL = https://s.memories-app.org/`, таймаут 10 с. Interceptor додає `Authorization: Bearer <token>`; при невалідному (не-ASCII) токені робить `logout()`.
 - **`sound.ts`** — `SoundEngine` на WebAudio: попереднє декодування буферів, `playSound(key, volume)`. Ключі: `tab`, `click`, `harvest` (`/click.mp3`, гучність 0.25), `purchase`, `coin`. Налаштування `sound_enabled` / `music_enabled` у `localStorage`. **Фонова музика не реалізована** — лише прапорець.
 - **`texturePreloader.ts`** — попереднє завантаження ~43 текстур UI у кеш `Map` при старті.
 

@@ -88,7 +88,7 @@ const user = computed(() => {
     last_name: userStore.user?.lastName || "",
     username: userStore.user?.username || "player",
     language_code: userStore.user?.lang || null,
-    photo_url: userStore.user?.photoUrl || "https://api.dangerous.pp.ua/image/null.png"
+    photo_url: userStore.user?.photoUrl || "https://mcapi.memories-app.org/image/null.png"
   }
 })
 
