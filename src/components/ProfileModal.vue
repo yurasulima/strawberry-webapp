@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { PixelModal, Card, PremiumBadge, PixelText, ButtonText } from '@/components/pixel'
+import { computed } from 'vue'
+import { PixelModal, Card, PremiumBadge, PixelText } from '@/components/pixel'
 import { useUserStore } from '@/stores/user'
-import { useToastStore } from '@/stores/toast'
-import { linkGoogleAccount, unlinkGoogleAccount, promptGoogleAuth } from '@/services/googleAuth'
-import { playClickSound, playPurchaseSound } from '@/services/sound'
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean
@@ -19,58 +16,10 @@ const emit = defineEmits<{
 
 const userStore = useUserStore()
 
-const toastStore = useToastStore()
-
 const user = computed(() => userStore.user)
 const level = computed(() => user.value?.level || 1)
 const currentXp = computed(() => user.value?.xp || 0)
 const xpToNext = computed(() => user.value?.xpToNextLevel || 650)
-const isLinkingGoogle = ref(false)
-
-const googleEmail = computed(() => user.value?.googleEmail || (user.value?.googleId ? 'Прив’язано' : null))
-
-async function handleLinkGoogleCredential(idToken: string) {
-  isLinkingGoogle.value = true
-  try {
-    const updatedUser = await linkGoogleAccount(idToken)
-    if (updatedUser) {
-      userStore.setUser(updatedUser)
-    } else {
-      await userStore.fetchUser()
-    }
-    playPurchaseSound()
-    toastStore.showToast('Google акаунт успішно прив’язано!', 'success')
-  } catch (err: any) {
-    const msg = err.response?.data?.message || 'Помилка при прив’язці Google акаунту'
-    toastStore.showToast(msg, 'error')
-  } finally {
-    isLinkingGoogle.value = false
-  }
-}
-
-function handleLinkGoogle() {
-  playClickSound()
-  promptGoogleAuth(handleLinkGoogleCredential)
-}
-
-async function handleUnlinkGoogle() {
-  playClickSound()
-  isLinkingGoogle.value = true
-  try {
-    const updatedUser = await unlinkGoogleAccount()
-    if (updatedUser) {
-      userStore.setUser(updatedUser)
-    } else {
-      await userStore.fetchUser()
-    }
-    toastStore.showToast('Google акаунт успішно відв’язано', 'info')
-  } catch (err: any) {
-    const msg = err.response?.data?.message || 'Помилка при відв’язці Google акаунту'
-    toastStore.showToast(msg, 'error')
-  } finally {
-    isLinkingGoogle.value = false
-  }
-}
 
 const progressPercent = computed(() => {
   if (!xpToNext.value || xpToNext.value <= 0) return 0
@@ -126,44 +75,6 @@ function handleClose() {
             <span class="xp-current">Поточний XP: <strong>{{ formatNumber(currentXp) }} XP</strong></span>
             <span class="xp-target">До наст. рівня: <strong>{{ formatNumber(xpToNext) }} XP</strong></span>
           </div>
-        </div>
-      </Card>
-
-      <!-- Прив'язка Google акаунта -->
-      <Card width="100%" height="auto" :padding="12" class="google-card">
-        <div class="google-box">
-          <div class="google-header">
-            <span class="google-title">🌐 Google акаунт</span>
-            <span class="google-status" :class="{ linked: !!googleEmail }">
-              {{ googleEmail ? 'Прив’язано' : 'Не прив’язано' }}
-            </span>
-          </div>
-
-          <p v-if="googleEmail" class="google-email-text">
-            {{ googleEmail }}
-          </p>
-
-          <ButtonText
-            v-if="!googleEmail"
-            height="44"
-            width="100%"
-            padding="6px 12px"
-            :loading="isLinkingGoogle"
-            @click="handleLinkGoogle"
-          >
-            🔗 Прив'язати Google акаунт
-          </ButtonText>
-
-          <ButtonText
-            v-else
-            height="40"
-            width="100%"
-            padding="6px 12px"
-            :loading="isLinkingGoogle"
-            @click="handleUnlinkGoogle"
-          >
-            🔓 Відв'язати Google
-          </ButtonText>
         </div>
       </Card>
     </div>
@@ -285,48 +196,5 @@ function handleClose() {
 
 .xp-current strong, .xp-target strong {
   color: #1d4ed8;
-}
-
-.google-card {
-  box-sizing: border-box;
-}
-
-.google-box {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.google-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.google-title {
-  font-size: 17px;
-  font-weight: bold;
-  color: #3f2e21;
-}
-
-.google-status {
-  font-size: 13px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background-color: #efebe9;
-  color: #795548;
-}
-
-.google-status.linked {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  font-weight: bold;
-}
-
-.google-email-text {
-  margin: 0;
-  font-size: 14px;
-  color: #5d4037;
-  word-break: break-all;
 }
 </style>
