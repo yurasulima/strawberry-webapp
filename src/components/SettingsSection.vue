@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useWebApp } from 'vue-tg'
 import { CardPrimary, Card, ButtonText, LeftButton, RightButton, SoundButton, MusicButton, SlideFade } from '@/components/pixel'
@@ -9,6 +10,7 @@ import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 
 const { locale, t } = useI18n()
+const router = useRouter()
 const userStore = useUserStore()
 const toastStore = useToastStore()
 
@@ -88,6 +90,16 @@ function openWiki() {
   isWikiOpen.value = true
 }
 
+function openPrivacy() {
+  playClickSound()
+  router.push('/privacy')
+}
+
+function openDeleteAccount() {
+  playClickSound()
+  router.push('/delete-account')
+}
+
 function saveSettings() {
   playPurchaseSound()
   locale.value = selectedLangCode.value
@@ -143,6 +155,13 @@ function saveSettings() {
               <ButtonText height="52" padding="10px 24px" @click="saveSettings">
                 {{ t('settings.save') }}
               </ButtonText>
+            </div>
+
+            <!-- Додаткові посилання для Play Market (Privacy & Account Deletion) -->
+            <div class="legal-links">
+              <span class="legal-link" @click="openPrivacy">🔒 Політика конфіденційності</span>
+              <span class="legal-separator">•</span>
+              <span class="legal-link delete-link" @click="openDeleteAccount">🗑 Видалення акаунту</span>
             </div>
           </div>
         </Card>
@@ -220,5 +239,38 @@ function saveSettings() {
   display: flex;
   justify-content: center;
   margin-top: 8px;
+}
+
+.legal-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #6d4c41;
+  flex-wrap: wrap;
+}
+
+.legal-link {
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.legal-link:hover {
+  color: #3f2e21;
+}
+
+.delete-link {
+  color: #c62828;
+}
+
+.delete-link:hover {
+  color: #b71c1c;
+}
+
+.legal-separator {
+  color: #a1887f;
 }
 </style>

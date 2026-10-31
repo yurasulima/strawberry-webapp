@@ -8,6 +8,8 @@ export interface User {
   lastOnlineAt?: string | null
   userId: number
   telegramId: number
+  googleId?: string | null
+  googleEmail?: string | null
   level: number
   xp?: number
   xpToNextLevel?: number

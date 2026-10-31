@@ -12,9 +12,24 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue')
     },
     {
+      path: '/game',
+      name: 'game',
+      component: () => import('../views/GameView.vue')
+    },
+    {
       path: '/pixel-ui',
       name: 'pixel-ui',
       component: () => import('../views/ShowPixelUiView.vue')
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('../views/PrivacyView.vue')
+    },
+    {
+      path: '/delete-account',
+      name: 'delete-account',
+      component: () => import('../views/DeleteAccountView.vue')
     },
     {
       path: '/:pathMatch(.*)*',

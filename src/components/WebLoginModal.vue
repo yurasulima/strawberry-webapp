@@ -5,6 +5,7 @@ import { playClickSound, playPurchaseSound } from '@/services/sound'
 import { useAuthStore } from '@/stores/auth'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
+import { loginWithGoogle, promptGoogleAuth } from '@/services/googleAuth'
 import api from '@/services/api'
 
 const emit = defineEmits<{
@@ -19,6 +20,7 @@ const authKey = ref('')
 const telegramLink = ref('')
 const isLoading = ref(false)
 const isChecking = ref(false)
+const isGoogleLoggingIn = ref(false)
 let pollTimer: ReturnType<typeof setInterval> | null = null
 
 function generateKey() {
@@ -30,8 +32,37 @@ function generateKey() {
 function openTelegramBot() {
   playClickSound()
   if (typeof window !== 'undefined') {
-    window.open(telegramLink.value, '_blank')
+    window.location.href = telegramLink.value
   }
+}
+
+async function handleGoogleCredential(idToken: string) {
+  isGoogleLoggingIn.value = true
+  try {
+    const data = await loginWithGoogle(idToken)
+    if (data && data.token) {
+      playPurchaseSound()
+      authStore.login(data.token)
+      if (data.userId) {
+        userStore.setUser(data)
+      } else {
+        await userStore.fetchUser()
+      }
+      toastStore.showToast('Успішний вхід через Google!', 'success')
+      stopPolling()
+      emit('success')
+    }
+  } catch (err: any) {
+    const msg = err.response?.data?.message || 'Помилка авторизації через Google'
+    toastStore.showToast(msg, 'error')
+  } finally {
+    isGoogleLoggingIn.value = false
+  }
+}
+
+function handleGoogleLoginClick() {
+  playClickSound()
+  promptGoogleAuth(handleGoogleCredential)
 }
 
 async function checkLoginStatus(silent = false) {
@@ -104,6 +135,16 @@ onUnmounted(() => {
             <div class="login-actions">
               <ButtonText height="50" width="100%" padding="8px 16px" @click="openTelegramBot">
                 💬 Відкрити Telegram бота
+              </ButtonText>
+
+              <ButtonText
+                height="48"
+                width="100%"
+                padding="8px 16px"
+                :loading="isGoogleLoggingIn"
+                @click="handleGoogleLoginClick"
+              >
+                🌐 Увійти через Google
               </ButtonText>
 
               <ButtonText
