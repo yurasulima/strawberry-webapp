@@ -83,11 +83,73 @@ export function isMusicEnabled(): boolean {
   return musicEnabled
 }
 
+/* ---------- Фонова музика (song_1.mp3) ---------- */
+
+let bgMusicAudio: HTMLAudioElement | null = null
+let bgMusicStarted = false
+
+function initBgMusic() {
+  if (typeof window === 'undefined' || bgMusicAudio) return
+  bgMusicAudio = new Audio('/music/song_1.mp3')
+  bgMusicAudio.loop = true
+  bgMusicAudio.volume = 0.35 // Приємна фонова гучність
+}
+
+export function startBgMusic() {
+  if (typeof window === 'undefined') return
+  initBgMusic()
+  if (!bgMusicAudio) return
+
+  if (musicEnabled) {
+    bgMusicAudio.play().then(() => {
+      bgMusicStarted = true
+    }).catch(() => {
+      bgMusicStarted = false
+    })
+  } else {
+    bgMusicAudio.pause()
+  }
+}
+
+export function stopBgMusic() {
+  if (bgMusicAudio) {
+    bgMusicAudio.pause()
+  }
+}
+
 export function setMusicEnabled(enabled: boolean) {
   musicEnabled = enabled
   if (typeof window !== 'undefined') {
     localStorage.setItem('music_enabled', enabled ? 'true' : 'false')
   }
+  if (bgMusicAudio) {
+    if (enabled) {
+      bgMusicAudio.play().catch(() => {})
+    } else {
+      bgMusicAudio.pause()
+    }
+  } else if (enabled) {
+    startBgMusic()
+  }
+}
+
+// Автоматично запускаємо музику або чекаємо першого жесту користувача (згідно з Autoplay Policy)
+if (typeof window !== 'undefined') {
+  const tryStartMusic = () => {
+    if (musicEnabled) {
+      startBgMusic()
+    }
+    if (bgMusicStarted) {
+      window.removeEventListener('pointerdown', tryStartMusic)
+      window.removeEventListener('click', tryStartMusic)
+      window.removeEventListener('touchend', tryStartMusic)
+    }
+  }
+
+  startBgMusic()
+  window.addEventListener('pointerdown', tryStartMusic, { passive: true })
+  window.addEventListener('click', tryStartMusic, { passive: true })
+  window.addEventListener('touchend', tryStartMusic, { passive: true })
 }
 
 const engine = new SoundEngine()

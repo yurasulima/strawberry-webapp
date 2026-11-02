@@ -19,6 +19,19 @@ const myBusinesses = computed<UserBusiness[]>(() => userStore.user?.businesses |
 const isLoading = computed(() => !userStore.user && userStore.isLoading)
 
 const collectingName = ref<string | null>(null)
+const isRefreshing = ref(false)
+
+async function refreshUser() {
+  playClickSound()
+  isRefreshing.value = true
+  try {
+    await userStore.fetchUser()
+  } catch (err) {
+    console.error('Error refreshing user:', err)
+  } finally {
+    isRefreshing.value = false
+  }
+}
 
 const timerMap = ref<Record<number, number>>({})
 let timerInterval: any = null
@@ -256,6 +269,11 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
             <Icon icon="pixelarticons:info-box" class="empty-icon" />
             <p class="empty-title">{{ t('business.empty_businesses') }}</p>
             <p class="empty-subtitle">{{ t('business.buy_first_in_shop') }}</p>
+            <div class="empty-action">
+              <ButtonText :loading="isRefreshing" @click="refreshUser">
+                {{ t('players.refresh') }}
+              </ButtonText>
+            </div>
           </div>
         </SlideFade>
 
@@ -285,6 +303,7 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
 
 <style scoped>
 .business-container {
+  padding: 16px;
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
@@ -380,6 +399,7 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
 .empty-icon { font-size: 32px; color: #5d4037; margin-bottom: 6px; }
 .empty-title { margin: 0 0 4px; font-size: 20px; }
 .empty-subtitle { margin: 0; font-size: 16px; color: #5d4037; }
+.empty-action { margin-top: 12px; display: flex; justify-content: center; }
 
 /* Летючі предмети до кнопки інвентарю */
 .flying-items-layer {

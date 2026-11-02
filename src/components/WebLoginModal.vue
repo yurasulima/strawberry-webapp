@@ -30,7 +30,7 @@ function generateKey() {
 function openTelegramBot() {
   playClickSound()
   if (typeof window !== 'undefined') {
-    window.location.href = telegramLink.value
+    window.open(telegramLink.value, '_blank')
   }
 }
 

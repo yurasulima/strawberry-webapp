@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import api from '@/services/api.ts'
 import { useI18n } from 'vue-i18n'
 import { Card, PixelText } from '@/components/pixel'
 import type { InvitedUser } from "@/types/InvitedUser.ts";
+import { useAuthStore } from "@/stores/auth.ts";
 
 const { t } = useI18n()
+const authStore = useAuthStore()
 
 interface Invite {
   id: number
@@ -16,15 +18,20 @@ interface Invite {
 const invites = ref<Invite[]>([])
 const isLoading = ref(true)
 
-onMounted(async () => {
+async function fetchInvites() {
+  isLoading.value = true
   try {
     const response = await api.get('/users/me/invites')
-    invites.value = response.data
+    invites.value = response.data || []
   } catch (err) {
     console.error('Failed to fetch invites:', err)
   } finally {
     isLoading.value = false
   }
+}
+
+onMounted(() => {
+  fetchInvites()
 })
 </script>
 

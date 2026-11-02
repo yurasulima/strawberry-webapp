@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, computed, onMounted} from 'vue'
+import {ref, computed, onMounted, watch} from 'vue'
 import {useI18n} from 'vue-i18n'
 import api from "@/services/api.ts"
 import type {Business} from "@/types/Business.ts"
@@ -7,12 +7,14 @@ import {Icon} from '@iconify/vue'
 import {CardPrimary, Card, ButtonText, ItemIcon, SlideFade} from '@/components/pixel'
 import {playClickSound, playPurchaseSound} from "@/services/sound"
 import {useUserStore} from "@/stores/user.ts"
+import {useAuthStore} from "@/stores/auth.ts"
 import {useToastStore} from "@/stores/toast.ts"
 import {formatBizName as formatBizNameUtil, translateError as translateErrorUtil} from '@/utils/business'
 
 const props = defineProps<{ user?: any }>()
 const {t, te} = useI18n()
 const userStore = useUserStore()
+const authStore = useAuthStore()
 const toastStore = useToastStore()
 
 const businessesForSale = ref<Business[]>([])
@@ -109,6 +111,15 @@ async function loadData() {
   }
 }
 
+watch(
+  () => authStore.token,
+  (newToken) => {
+    if (newToken) {
+      loadData()
+    }
+  }
+)
+
 onMounted(() => {
   loadData()
 })
@@ -134,7 +145,7 @@ async function directBuy(biz: Business) {
 
 <template>
   <div class="market-container">
-    <CardPrimary width="100%" height="auto" :padding="12">
+    <Card width="100%" height="auto" :padding="6">
       <h2 class="title">{{ t('business.market_title') }}</h2>
 
       <!-- Стан завантаження -->
@@ -145,8 +156,8 @@ async function directBuy(biz: Business) {
       <template v-else>
         <!-- Список доступних бізнесів у єдиній картці -->
         <SlideFade>
-          <Card v-if="sortedBusinessesForSale.length" width="100%" height="auto" :padding="6">
-            <ul class="biz-list">
+
+            <ul v-if="sortedBusinessesForSale.length" class="biz-list">
 
               <li v-for="biz in sortedBusinessesForSale" :key="biz.id" class="biz-column">
 
@@ -187,22 +198,27 @@ async function directBuy(biz: Business) {
                 </div>
               </li>
             </ul>
-          </Card>
 
           <!-- Порожній стан -->
           <div v-else class="empty-state">
             <Icon icon="pixelarticons:info-box" class="empty-icon"/>
             <p class="empty-title">{{ t('business.empty_market') }}</p>
+            <div class="empty-action">
+              <ButtonText :loading="isLoading" @click="loadData">
+                {{ t('players.refresh') }}
+              </ButtonText>
+            </div>
           </div>
         </SlideFade>
       </template>
-    </CardPrimary>
+    </Card>
   </div>
 </template>
 
 <style scoped>
 .market-container {
   width: 100%;
+  padding: 16px;
   max-width: 420px;
   margin: 0 auto;
   box-sizing: border-box;
@@ -218,6 +234,7 @@ async function directBuy(biz: Business) {
   font-family: inherit;
   font-size: 22px;
   font-weight: normal;
+  border-bottom: 2px solid rgba(63, 46, 33, 0.18);
 }
 
 .loading-state {
@@ -238,15 +255,15 @@ async function directBuy(biz: Business) {
   display: flex;
   flex-direction: column;
   min-height: 64px;
-  padding: 4px 6px;
 }
 
 .biz-row {
   display: flex;
   align-items: center;
   gap: 8px;
+
+  padding: 0 6px;
   min-height: 64px;
-  padding: 4px 6px;
 }
 
 .biz-column + .biz-column {
@@ -305,5 +322,11 @@ async function directBuy(biz: Business) {
 .empty-title {
   margin: 0 0 4px;
   font-size: 20px;
+}
+
+.empty-action {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
 }
 </style>

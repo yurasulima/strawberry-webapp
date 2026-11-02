@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, watch} from 'vue'
 import {useI18n} from 'vue-i18n'
 import api from '@/services/api'
 import type {Item} from '@/types/Item'
 import {CardPrimary, Card, ItemIcon, ButtonText, SlideFade} from '@/components/pixel'
 import {playClickSound} from '@/services/sound'
+import {useAuthStore} from '@/stores/auth'
 
 const {t, te} = useI18n()
+const authStore = useAuthStore()
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -56,6 +58,15 @@ function handleClose() {
   playClickSound()
   emit('close')
 }
+
+watch(
+  () => authStore.token,
+  (newToken) => {
+    if (newToken) {
+      fetchWiki()
+    }
+  }
+)
 
 onMounted(fetchWiki)
 </script>

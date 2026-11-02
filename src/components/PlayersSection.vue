@@ -51,7 +51,7 @@ onMounted(() => {
 
 <template>
   <div class="players-container">
-    <CardPrimary width="100%" height="auto" :padding="12">
+    <CardPrimary width="100%" height="auto" :padding="8">
       <div class="players-header">
         <h2 class="title">{{ t('players.title') }}</h2>
         <ButtonText
@@ -69,13 +69,14 @@ onMounted(() => {
 
       <template v-else>
         <SlideFade>
-          <Card v-if="players.length" width="100%" height="auto" :padding="6">
-            <ul class="players-list">
+            <ul v-if="players.length"class="players-list">
+
+
               <li
                 v-for="(player, index) in players"
                 :key="player.userId || index"
                 class="player-row"
-                :class="{ 'my-rank-row': isMe(player) }"
+
               >
                 <span class="player-rank" :class="{ 'gold': index === 0, 'silver': index === 1, 'bronze': index === 2 }">
                   #{{ index + 1 }}
@@ -86,13 +87,20 @@ onMounted(() => {
                     alt=""
                     class="player-avatar"
                     draggable="false"
-                />
+                >
+
 
                 <div class="player-info">
                   <div class="player-name-wrapper">
-                    <span class="player-name"><PixelText :text="formatPlayerName(player)" /></span>
+                    <span class="player-name" :class="{ 'player-name-me': isMe(player) }"    ><PixelText :text="formatPlayerName(player)" /></span>
+
                   </div>
-                  <PremiumBadge v-if="player.premium" />
+
+                  <div class="player-name-wrapper">
+
+                    <span class="level-val">LVL: {{ player.level }}</span>
+                    <PremiumBadge v-if="player.premium" />
+                  </div>
                 </div>
 
                 <div class="player-score">
@@ -100,8 +108,9 @@ onMounted(() => {
                   <strong class="score-val">{{ getMoneyCount(player) }}</strong>
                 </div>
               </li>
+
+
             </ul>
-          </Card>
 
           <div v-else class="empty-state">
             <Icon icon="pixelarticons:info-box" class="empty-icon" />
@@ -116,6 +125,7 @@ onMounted(() => {
 <style scoped>
 .players-container {
   width: 100%;
+  padding: 8px;
   max-width: 420px;
   margin: 0 auto;
   box-sizing: border-box;
@@ -131,7 +141,24 @@ onMounted(() => {
   justify-content: space-between;
   margin-bottom: 10px;
 }
-
+.level-val {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  width: fit-content;
+  font-weight: bold;
+  background-color: #4c9174;
+  border: 1px solid #1b5e20;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 0 #1b5e20;
+  user-select: none;
+  line-height: 1;
+}
 .title {
   margin: 0;
   font-family: inherit;
@@ -166,28 +193,12 @@ onMounted(() => {
   border-top: 2px solid rgba(63, 46, 33, 0.18);
 }
 
-.my-rank-row {
-  background: linear-gradient(90deg, rgba(217, 119, 6, 0.28), rgba(255, 248, 235, 0.65));
-  border-radius: 6px;
-  border-left: 4px solid #d97706;
-  box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.4);
-}
 
-.me-tag {
-  font-family: var(--font-pixel), sans-serif;
-  font-size: 10px;
-  font-weight: bold;
-  background-color: #2e7d32;
-  color: #ffffff;
-  padding: 1px 6px;
-  border-radius: 4px;
-  border: 1px solid #1b5e20;
-  box-shadow: 1px 1px 0 #1b5e20;
-  flex-shrink: 0;
-}
+
+
 
 .player-rank {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   min-width: 32px;
   color: #5d4037;
@@ -198,9 +209,8 @@ onMounted(() => {
 .player-rank.bronze { color: #b45309; }
 
 .player-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
   border: 2px solid #5d4037;
   flex-shrink: 0;
@@ -223,6 +233,14 @@ onMounted(() => {
 .player-name {
   font-size: 20px;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-name-me {
+  font-size: 20px;
+  overflow: hidden;
+  color: #21559c;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

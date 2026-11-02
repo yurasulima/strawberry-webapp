@@ -71,11 +71,16 @@ const tugCount = ref(0) // Лічильник дьоргань павутинк�
 const isRealTelegramWebApp = computed(() => {
   if (typeof window === 'undefined') return false
   const tg = (window as any).Telegram?.WebApp
-  return !!(tg && tg.initData && typeof tg.initData === 'string' && tg.initData.trim().length > 0)
+  if (!tg) return false
+  const hasInitData = typeof tg.initData === 'string' && tg.initData.trim().length > 0
+  const hasUser = !!(tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id)
+  return hasInitData || hasUser
 })
 
 const tgUser = computed(() => {
-  return isRealTelegramWebApp.value ? initDataUnsafe?.user : null
+  if (typeof window === 'undefined') return null
+  const tg = (window as any).Telegram?.WebApp
+  return tg?.initDataUnsafe?.user || initDataUnsafe?.user || null
 })
 
 const user = computed(() => {
@@ -129,19 +134,20 @@ onMounted(async () => {
   // 33% шанс роз розіграшу цукерки при вході гравця в гру
   hasCandy.value = Math.random() < 0.33
 
-  if (isRealTelegramWebApp.value && tgUser.value) {
+  const currentTgUser = tgUser.value
+  if (isRealTelegramWebApp.value && currentTgUser && currentTgUser.id) {
     try {
       const response = await api.post('/auth/telegram', {
-        telegram_id: tgUser.value.id,
-        photo_url: tgUser.value.photo_url,
-        last_name: tgUser.value.last_name,
-        first_name: tgUser.value.first_name,
-        username: tgUser.value.username,
-        language_code: tgUser.value.language_code,
-        inviter_telegram_id: initDataUnsafe.start_param,
+        telegram_id: currentTgUser.id,
+        photo_url: currentTgUser.photo_url || '',
+        last_name: currentTgUser.last_name || '',
+        first_name: currentTgUser.first_name || 'Гравець',
+        username: currentTgUser.username || '',
+        language_code: currentTgUser.language_code || 'uk',
+        inviter_telegram_id: initDataUnsafe?.start_param || null,
       })
-      if (tgUser.value.language_code) {
-        localStorage.setItem('lang', tgUser.value.language_code)
+      if (currentTgUser.language_code) {
+        localStorage.setItem('lang', currentTgUser.language_code)
       }
 
       if (response.status === 200) {
@@ -154,6 +160,9 @@ onMounted(async () => {
       }
     } catch (error) {
       console.error('Telegram WebApp auth error:', error)
+      if (authStore.token) {
+        await userStore.fetchUser().catch(() => {})
+      }
     } finally {
       isLoading.value = false
     }
@@ -217,9 +226,12 @@ let idleTime = 0
 // drag
 let dragging = false
 let dragPointerId = -1
+let startDragAngle = 0
+let startDragYOff = 0
 let lastDragAngle = 0
 let lastDragYOff = 0
 let lastDragT = 0
+let maxDragStretch = 0 // Максимальна дистанція відтягування під час одного жесту drag
 
 function clamp(v: number, a: number, b: number) {
   return Math.max(a, Math.min(b, v))
@@ -412,6 +424,9 @@ function onSpiderDown(e: PointerEvent) {
   const { a, y } = pointerPos(e)
   angle = a
   yOff = y
+  startDragAngle = a
+  startDragYOff = y
+  maxDragStretch = 0
   lastDragAngle = a
   lastDragYOff = y
   lastDragT = performance.now()
@@ -424,6 +439,13 @@ function onSpiderMove(e: PointerEvent) {
 
   const now = performance.now()
   const { a, y } = pointerPos(e)
+
+  const dy = y - startDragYOff
+  const da = (a - startDragAngle) * 150
+  const dist = Math.hypot(dy, da)
+  if (dist > maxDragStretch) {
+    maxDragStretch = dist
+  }
 
   const dt = (now - lastDragT) / 1000
   if (dt > 0) {
@@ -444,11 +466,17 @@ function onSpiderUp(e: PointerEvent) {
   dragging = false
   if (isBroken.value) return
 
-  const pulledDist = Math.max(Math.abs(yOff), Math.abs(lastDragYOff))
+  const PULL_THRESHOLD = 22      // Мін. дистанція протягування пальцем для зарахування 1 дьоргання
+  const STRONG_PULL_LIMIT = 90  // Дистанція сильного відтягування, що одразу рве павутинку
 
-  // Рахуємо дьоргання при відчутному натягу (> 12px)
-  if (pulledDist > 12) {
+  if (maxDragStretch >= STRONG_PULL_LIMIT) {
+    snapWeb()
+    return
+  }
+
+  if (maxDragStretch >= PULL_THRESHOLD) {
     tugCount.value++
+    playPluckSound()
 
     // На 5-й раз павутинка рветься!
     if (tugCount.value >= 5) {
@@ -462,12 +490,11 @@ function onSpiderUp(e: PointerEvent) {
     angVel *= 0.2
     yVel *= 0.2
   } else {
-    if (pulledDist > 5) {
+    if (maxDragStretch > 5) {
       // Фізика: сила пружного відскоку прямо пропорційна величині відтягування (yOff)
       yVel += clamp(-yOff * 5.0, -480, 480)
     }
   }
-  playPluckSound()
 }
 
 function onFirstGesture() {
@@ -502,7 +529,11 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="app-container">
-    <div class="card__web-wrap">
+    <div
+        v-show="!isAdminMode"
+        class="card__web-wrap"
+        :class="{ 'card__web-wrap--bg': activeTab !== 'clicker' }"
+    >
       <Image src="/ui/web.png" size="200" class="card__web" alt="Web" />
       <div ref="spiderPivot" class="card__spider-pivot">
         <div ref="spiderEl" class="card__spider-assembly">
@@ -542,7 +573,7 @@ onBeforeUnmount(() => {
     </div>
     <PixelToastContainer />
 
-    <!-- Модальне вікно входу для вебу -->
+    <!-- Модальне вікно входу для вебу (показується як оверлей при необхідності) -->
     <WebLoginModal v-if="showWebLogin" @success="handleWebLoginSuccess" />
 
     <!-- Показуємо splash, поки isLoading -->
@@ -550,7 +581,7 @@ onBeforeUnmount(() => {
       <div class="loader">{{ t('loading') }}</div>
     </div>
 
-    <!-- Основний контент показуємо, якщо не завантажуємо -->
+    <!-- Основний контент показуємо, якщо завантаження завершено -->
     <template v-else>
       <Toolbar
           v-if="!isAdminMode"
@@ -615,7 +646,7 @@ onBeforeUnmount(() => {
   min-height: 100vh;
   color: #EAEFEF;
   font-family: "Pixel", "Segoe UI", sans-serif;
-  padding: 16px;
+
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
@@ -629,6 +660,14 @@ onBeforeUnmount(() => {
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.card__web-wrap--bg {
+  z-index: 0;
+}
+
+.card__web-wrap--bg * {
+  pointer-events: none !important;
 }
 
 .card__web {
@@ -774,6 +813,7 @@ onBeforeUnmount(() => {
   width: 100%;
   padding-bottom: 70px;
 }
+
 .main-content--admin {
   justify-content: flex-start;
   padding-top: 8px;

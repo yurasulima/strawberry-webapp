@@ -107,6 +107,8 @@ function handleOpenProfile() {
   display: flex;
   flex-direction: column;
   width: 100%;
+
+  padding: 16px;
   max-width: 420px;
   margin-bottom: 12px;
   z-index: 10;

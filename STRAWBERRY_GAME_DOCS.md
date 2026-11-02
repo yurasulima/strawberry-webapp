@@ -1,47 +1,45 @@
 # 🍓 Strawberry Game — резюме та повна документація
 
-> Документ складено на основі аналізу вихідного коду архіву `strawberry.zip` (156 файлів, ~7 300 рядків TS/Vue). Бекенд у архіві **відсутній** — опис API реконструйовано з викликів на клієнті.
+> Документ складено на основі аналізу вихідного коду проєкту **Strawberry Game** (Vue 3 / TypeScript / Vite). Бекенд доступний за адресою REST API (`https://sapi.memories-app.org/`).
 
 ---
 
 ## Частина 1. Резюме
 
 ### Що це
-**Strawberry Game** — це **Telegram Mini App** (WebApp), клікер-ідл гра в піксельному стилі з економікою «полуниці → монети → бізнеси».
+**Strawberry Game** — це **Telegram Mini App** (WebApp) та веб-гра, клікер-ідл гра в піксельному стилі з економікою «полуниці → монети → бізнеси → виробництво складних предметів», системою рівнів (XP) та 2D міні-грою.
 
 ### Ігровий цикл
-1. Гравець **клікає по полуниці** → отримує полуниці (ліміт **200 кліків на 6 годин**).
-2. Полуниці **продає** в інвентарі → отримує **монети**.
-3. На монети **купує бізнеси** (магазин), які пасивно **генерують ресурс** за таймером.
-4. Бізнеси **збирає** (collect) → дохід росте.
-5. Щодня заходить за **нагородою** (календар на 30 днів зі стріком).
-6. Змагається в **рейтингу гравців** (за монетами), запрошує друзів через реферальні посилання.
+1. Гравець **клікає по полуниці** → отримує полуниці (базовий ліміт **200 кліків на 6 годин**, розширюється на **+100 кліків за кожен рівень**).
+2. Полуниці та вироблені ресурси **продає** в інвентарі → отримує **монети**.
+3. На монети **купує бізнеси** (магазин), які пасивно **генерують ресурси** (соки, варення, пироги, воду) за таймером.
+4. Бізнеси **збирає** (collect) → дохід і досвід (XP) ростуть.
+5. Заробляє **досвід (XP)** за купівлю бізнесів, збір врожаю та активність → **підвищує рівень**, відкриває нові бізнеси та збільшує ліміти клікеру.
+6. Щодня заходить за **нагородою** (календар на 30 днів зі стріком).
+7. Грає в **2D міні-гру** (`/game`) з дослідженням карти та збором предметів.
+8. Взаємодіє з **павучком на павутинці** (фізичний маятник) → розгойдує та дьоргає павутинку, щоб забрати цукерку.
+9. Змагається в **рейтингу гравців** (за монетами), запрошує друзів через реферальні посилання.
 
 ### Ключові характеристики
 
 | Параметр | Значення |
 |---|---|
-| Платформа | Telegram Mini App (веб, мобільний вертикальний UI) |
+| Платформа | Telegram Mini App (веб, мобільний вертикальний UI) + Web / Mobile Browser |
 | Фронтенд | Vue 3.5 + TypeScript + Vite 6 + Pinia + Vue Router + vue-i18n |
-| Бекенд | Зовнішній REST API (`https://s.memories-app.org/`), схоже на Java/Spring (`java.time.Duration` у типах, `Bearer` JWT) |
-| Мови | 🇬🇧 English (за замовчуванням), 🇺🇦 Українська, 🇷🇺 Русский |
-| Стиль | Піксель-арт, власна 9-patch система рендерингу на canvas |
-| Звук | WebAudio API (SFX; музика — лише перемикач, не реалізована) |
-| Адмінка | Вбудована, видима лише для `admin: true` |
-| Стан | Прототип / активна розробка (є заглушки та недороблені місця) |
+| 2D Гра | Власний 2D Canvas Engine (`src/game/`): TileMap, Player, Pickups, Camera, Collisions |
+| Бекенд | REST API (`https://sapi.memories-app.org/`), Bearer JWT авторизація |
+| Мови | 🇬🇧 English, 🇺🇦 Українська, 🇷🇺 Русский |
+| Стиль | Піксель-арт, власна 9-patch система рендерингу на Canvas + анімації частинок |
+| Звук | WebAudio API (`/sfx/*.wav` — 40+ звукових ефектів: кліки, монетки, збір, успіх, обрив нитки) |
+| Адмінка | Модульна адмін-панель (Користувачі, Бізнеси, Предмети, Чати/Сповіщення, Телеметрія) |
+| Стан | Активна розробка / Релізна готовність |
 
 ### Сильні сторони
-- Чітка структура: сторінка → секції → UI-кіт → сервіси → стори.
-- Оптимістичні кліки з пакетною відправкою (батчинг кожні 2 с) — економить мережу.
-- Власний піксельний UI-кіт (NinePatch, кнопки, модалки, тости, прелоадер текстур).
-- Повна локалізація, інтегрована адмін-панель з телеметрією.
-
-### Головні ризики (коротко)
-- ⚠️ **Відсутні ассети** `/honeywood/*` (звуки, текстури панелей) та `default-avatar.png`, `money_v2.png`, `/strawberry.png` → 404 і **немає жодного звуку** (SFX грузяться з `/honeywood/sounds/`, у архіві є лише `click.mp3`).
-- ⚠️ `navigator.sendBeacon("/api/slots/take")` — хибний URL (без домену API й без токена).
-- ⚠️ Жорстко зашиті `baseURL`, шлях до WebStorm у `vite.config.ts`, ліміт `200`.
-- ⚠️ Роутер-гард авторизації повністю закоментований; безпека цілком на бекенді.
-- ⚠️ Авторизація довіряє `initDataUnsafe` (див. розділ «Безпека»).
+- Багатий ігровий процес: клікер, пасивні бізнеси, виробничі ланцюжки (соки, варення, пироги), система рівнів та XP, 2D міні-гра.
+- Фізика інтерактивних елементів (маятник павучка з резинкою Гука, підтримка гіроскопа/нахилу пристрою).
+- Оптимістичні кліки з пакетною відправкою (батчинг кожні 2 с) та анімаціями польоту частинок (полунички, монетки, предмети) до елементів тулбара.
+- Власний піксельний UI-кіт (`NinePatch`, кнопки, модалки, тости, прелоадер текстур).
+- Повна локалізація (EN, UK, RU), інтегрована веб-авторизація (Google Auth) та розширена модульна адмінка.
 
 ---
 
@@ -57,8 +55,9 @@
 | Стан | Pinia 3 + `pinia-plugin-persistedstate` |
 | Роутинг | Vue Router 4 (history mode) |
 | i18n | vue-i18n 11 (legacy: false) |
-| HTTP | Axios 1.x |
+| HTTP | Axios 1.x (BaseURL: `https://sapi.memories-app.org/`) |
 | Telegram | `vue-tg` + `telegram-web-app.js` |
+| Веб-авторизація | Google Auth Service (`@/services/googleAuth.ts`) |
 | Іконки | `@iconify/vue` + `pixelarticons` |
 | Прапори | `pixel-flags` (+ CDN jsDelivr / flagcdn) |
 | Шрифти | Crumbline, Monocraft (локально), Press Start 2P, VT323 (Google Fonts) |
@@ -69,230 +68,214 @@
 npm install
 npm run dev          # dev-сервер (автовідкриття браузера)
 npm run build        # type-check + production build
-npm run type-check   # лише vue-tsc
-npm run preview      # перегляд збірки
+npm run type-check   # перевірка типів vue-tsc
+npm run preview      # перегляд продакшн збірки
 ```
 
-> Для повноцінної роботи гра має відкриватися **всередині Telegram**. Поза Telegram `initDataUnsafe.user` порожній і підставляється **тестовий користувач** (`id: 1`, «Тест Акк»).
-> У `vite.config.ts` зашитий Windows-шлях до WebStorm (`D:\apps\ide\WebStorm\...`) — на інших машинах змініть/приберіть.
-> Для локального бекенду в `src/services/api.ts` є закоментований `http://localhost:9090/`.
+> Для роботи в Telegram гра відкривається через Telegram WebApp SDK. Поза Telegram підтримується веб-вхід (`WebLoginModal.vue` / Google Auth) або тестовий акаунт.
 
 ### 2.3 Структура проєкту
 
 ```
 strawberry/
 ├── index.html                # Підключає Telegram SDK, шрифти, favicons
-├── vite.config.ts            # alias "@" → src, автооткриття, WebStorm
+├── vite.config.ts            # alias "@" → src
 ├── public/
-│   ├── ui/                   # 43 піксельні текстури (кнопки, картки, 9-patch *.9.png)
-│   ├── favicons/, favicon.ico
-│   ├── click.mp3             # звук збору полуниці
-│   └── new_background.png    # фон головного екрану
+│   ├── sfx/                  # 40+ SFX аудіофайлів (.wav)
+│   ├── items/                # Іконки предметів (strawberry, money, water, blueberry, jam, pie…)
+│   ├── ui/                   # Піксельні текстури (кнопки, картки, 9-patch *.9.png, spider, web)
+│   └── new_background.png    # Фон головного екрану
 └── src/
-    ├── main.ts               # Ініціалізація: pinia(+persist), router, i18n, vue-tg
-    ├── App.vue               # ExpandedViewport + вимкнені вертикальні свайпи
-    ├── router/index.ts       # / , /pixel-ui , 404
-    ├── views/                # HomeView, ShowPixelUiView, NotFoundView
-    ├── components/           # Секції гри (див. 2.5)
-    │   ├── pixel/            # Піксельний UI-кіт (30 компонентів)
-    │   └── ui/               # Альтернативний «App*» UI-кіт (Honeywood-стиль)
-    ├── stores/               # auth, user, toast
-    ├── services/             # api, sound, texturePreloader
-    ├── types/                # User, Slot, Item, Business, UserBusiness, DailyReward, InvitedUser
-    ├── locales/              # en.json, uk.json, ru.json (по 219 рядків)
-    └── assets/               # main.css, base.css, шрифти
+    ├── main.ts               # Ініціалізація Pinia, Router, i18n, VueTelegramPlugin
+    ├── App.vue               # Головний контейнер
+    ├── router/index.ts       # Маршрути: / , /game , /pixel-ui , /privacy , /delete-account
+    ├── views/                # HomeView, GameView, ShowPixelUiView, PrivacyView, DeleteAccountView
+    ├── game/                 # 2D Ігровий рушій (Game, TileMap, Player, Pickup, Camera, Collision)
+    ├── components/           # Секції гри
+    │   ├── admin/            # Модульна адмінка (AdminUsers, AdminBusinesses, AdminItems, AdminChats, AdminTelemetry)
+    │   ├── pixel/            # Піксельний UI-кіт (30+ компонентів)
+    │   └── ...               # ClickerSection, InventorySection, BussinesSection, MarketSection, PlayersSection, WikiSection, DailyRewardsModal, WebLoginModal, ProfileModal, AnnouncementModal
+    ├── stores/               # auth, user, toast, game
+    ├── services/             # api, sound, googleAuth, texturePreloader
+    ├── utils/                # business.ts
+    ├── types/                # User, Business, Slot, Item, UserBusiness, DailyReward, InvitedUser
+    └── locales/              # en.json, uk.json, ru.json
 ```
 
 ### 2.4 Архітектура та потік даних
 
 ```
-Telegram WebApp ──initDataUnsafe──▶ HomeView
-                                      │ POST /auth/telegram
+Telegram WebApp / Google Auth ──▶ HomeView
+                                      │ POST /auth/telegram (або Google Auth)
                                       ▼
                               auth.login(token) + user.setUser(data)
                                       │
-        ┌──────────── Pinia (user store) ◀──── GET /users/me (оновлення при зміні вкладки)
+        ┌──────────── Pinia (user store) ◀──── GET /users/me
         │
-  Секції (Clicker / Inventory / Business / Market / Players / Admin …)
+  Секції (Clicker / Inventory / Business / Shop / Top / Wiki / Admin …)
         │  axios + Bearer-токен (interceptor)
         ▼
-  REST API (s.memories-app.org)
+  REST API (sapi.memories-app.org)
 ```
-
-**Принципи:**
-- **Єдине джерело правди** — `userStore.user` (слоти, бізнеси, ліміти, стрік). Після кожної дії секції викликають `fetchUser()`.
-- **Оптимістичні оновлення** лише для кліків (локально `+1` полуниця, `−1` ліміт).
-- **Вкладки** — не роути, а `v-show` в `HomeView` (усі секції змонтовані одночасно; при зміні вкладки робиться `fetchUser()`).
 
 ### 2.5 Екрани та функції
 
-Нижня навігація (`BottomNavigation`): **Game · Inventory · Business · Shop · Top** (+ **Admin** для адмінів). Налаштування відкриваються кнопкою в тулбарі; вкладки `profile` і `debug` існують у коді, але в навігації **немає** кнопок для них.
+Нижня навігація (`BottomNavigation`): **Game · Inventory · Business · Shop · Top** (+ **Admin** для адміністраторів).
 
 #### 🎮 Clicker (`ClickerSection`) — головний екран
-- Велика полуниця; кожен клік: звук, анімація «pop», частинка `+1`, локально `+1` полуниця.
-- **Ліміт: 200 кліків / 6 год.** (`remainingDailyClicks`, `nextClickResetTime` з сервера). Якщо ліміт вичерпано — полуниця блокується (замок), клік показує toast, внизу картка з таймером `HH:MM:SS` до скидання. Якщо сервер не дав час — fallback на найближче кратне 6 годин.
-- **Батчинг:** кліки копляться в `pendingClicks` і кожні **2 с** відправляються `POST /slots/take {name:'strawberry', count}`. При помилці лічильник скидається і стан перезавантажується з сервера.
-- Кнопка «Sell All» **закоментована** (продаж — в Інвентарі).
+- Велика полуниця; кожен клік: звук збору (`click-wood-1.wav`), анімація натискання, анімована частинка з ефектом польоту в тулбар до лічильника полуниць.
+- **Динамічний ліміт кліків:** залежить від рівня гравця за формулою:
+  $$\text{MaxDailyClicks}(L) = 200 + (L - 1) \times 100$$
+  *(1 рівень — 200, 2 рівень — 300, 5 рівень — 600, 10 рівень — 1100)*.
+- При вичерпанні ліміту показується картка із зворотним відліком до скидання (6-годинні інтервали).
+- **Батчинг:** кліки відправляються пачками кожні 2 секунди через `POST /slots/take {name: 'strawberry', count}`.
+
+#### 🕷️ Фізика Павучка (`HomeView.vue`)
+- На верхній павутині висить павучок на павутинці.
+- Реалізовано фізичний маятник з пружною ниткою (резинка Гука), реакцією на нахил пристрою (гіроскоп / DeviceOrientation) та затисканням пальцем.
+- 33% шанс, що павучок тримає цукерку (`candy`).
+- Дьоргання нитки 5 разів або сильне відтягування викликає **обрив нитки** (`snap` SFX), павучок відлітає вгору, а гравець отримує цукерку в інвентар (`POST /slots/take {name: 'candy', source: 'spider'}`).
 
 #### 🎒 Inventory (`InventorySection`)
 - Сітка 3 колонки зі слотами `іконка · ×кількість · назва`.
-- Вибір слоту → панель продажу: швидкі кнопки `1 / 10 / 100 / Sell All`, слайдер, лічильник `N / total`.
-- Якщо кількість ≥ усього запасу → `POST /items/sell-all`, інакше `POST /items/sell {name, amount}`. **Монети (`money`, `money_v2`) продавати не можна.**
-- Іконки: `strawberry`, `money`, `money_v2`, `strawberry_jam`, `*chest*` (спільна іконка магазину), інше — полуниця.
+- При виборі предмета відкривається розсувна панель продажу з кнопками швидкостей (`-100, -10, -1, +1, +10, +100`).
+- Продаж супроводжується анімацією польоту золотих монет до тулбару та звуком `coin.wav`.
 
 #### 🏭 Business (`BussinesSection`) — мої бізнеси
-- Список, відсортований за сумарним доходом ↓ → ціна ↓ → базовий дохід ↓ → id ↓.
-- Дохід = `yieldCount × count`. Показує накопичене (`accumulatedYield`) і тег **MAX (7d)** — накопичення обмежене 7 днями.
-- Таймер до збору: бере `nextCollectInSeconds`, інакше рахує `usedAt + yieldInterval.seconds`. Тікає локально раз на секунду.
-- `POST /business/collect {name}`; помилки «wait / collecting exception» мапляться на повідомлення про ліміт.
+- Список куплених бізнесів, відсортований за сумарним доходом.
+- Показує накопичений ресурс (`accumulatedYield`) та позначку **MAX (7d)**.
+- Локальний таймер зворотного відліку до наступного збору.
+- При зборі створюються летючі анімовані предмети до кнопки інвентарю.
 
 #### 🛒 Shop (`MarketSection`)
-- `GET /business` → список бізнесів до купівлі, сортування за ціною ↑ → доходом ↑ → id.
-- `POST /business/buy {name}`; помилки «not enough money», «not found» локалізуються.
-- Назви бізнесів: `garden_bed`, `garden_business` (+ історичні помилки написання `bussines/bussiness`), `strawberry_farm`, `bakery`, `factory`. Нормалізація опечаток є в `formatBizName`.
+- Список бізнесів для купівлі з вимогами щодо рівнів (`minLevel`) та Premium-статусу.
+- Динамічне зростання ціни купівлі для кожної наступної копії:
+  $$\text{Price}(N) = \text{BasePrice} \times 1.15^N$$
 
-#### 🏆 Top (`PlayersSection`)
-- `GET /users` → рейтинг; порядок — **як віддає сервер** (клієнтського сортування немає), топ-3 підсвічені золотом/сріблом/бронзою. Показує аватар, ім'я (з піксельними прапорами), Premium-бейдж, кількість монет.
+#### 🕹️ 2D Міні-гра (`GameView.vue` + `src/game/`)
+- Доступна за маршрутом `/game`.
+- Повноцінний 2D-рушій на HTML5 Canvas: тайлова карта (`TileMap`), управління персонажем (`Player`), підбираємі предмети (`Pickup`), камери, обробка колізій.
 
-#### 👤 Profile (`ProfileSection`) — не підключена до навігації
-- Аватар, ім'я, Premium/Banned, біо, кількість полуниць, сітка інвентарю, список запрошених (`GET /users/me/invites`).
-
-#### ⚙️ Settings (`SettingsSection`)
-- Мова (стрілки ◀ ▶), перемикачі звуку й музики, «Save» (зберігає в `localStorage`, закриває екран).
-- Для українських користувачів (за Telegram/профілем/браузером) **російська прихована** зі списку.
+#### 📖 Вікі предметів (`WikiSection.vue`)
+- Інтерактивна довідка за всіма предметами гри з їх описом, іконками, цінами купівлі та продажу.
 
 #### 🎁 Daily Rewards (`DailyRewardsModal`)
-- Календар на **30 днів**, стрік 1–30. Показує вікно з 6 найближчих днів (`streak … streak+5`), прогрес-бар, стан «отримано / поточний / заблоковано», «віхи» на днях **7, 14, 21, 28, 30**.
-- `GET /users/daily-rewards` при відкритті; `POST /users/daily-rewards/claim {day}` для отримання.
-- Модалка автоматично відкривається при вході, якщо `canClaimDaily`. На іконці 🎁 в тулбарі — червона крапка.
-- **Нагороди** (локалізовані описи): 50–300 полуниць, монети (300–750 на звичайні дні; віхи +2000 / +3500 / +5000 / +7500 / +15 000), скрині (Gardener's, Super, Mega, Hyper, Royal), варення, бусти кліків (+100…+250, x2/x3 на 30 хв), Business Boost, «Legendary Trophy» на день 30.
-- ⚠️ UI відображає лише `strawberries` і `coins` з відповіді API; предметні нагороди (скрині, варення, бусти) у карточках не показуються — їх опис є тільки в локалізації.
+- Календар на **30 днів** зі стріком. Нагороди: полуниці, монети, скрині, варення, бусти.
 
-#### 🛡️ Admin (`AdminSection`) — тільки `user.admin === true`
-- Статистика: гравці, забанені, сумарні монети/полуниці/бізнеси.
-- Глобальна **телеметрія кліків**: усього, сьогодні, середнє на кліка/на батч.
-- Пошук гравців (ім'я або Telegram ID), 6 способів сортування.
-- Дії над гравцем: **Ban/Unban, Reset 6h limit, Edit resources, Telemetry, Toggle admin, Toggle premium (PRO)**.
-- Модалка ресурсів: монети, полуниці, рівень; режим «встановити точно» / «додати до поточного».
-- ⚠️ Деякі тексти адмінки зашиті українською (`Ніколи`, `Онлайн`, `хв тому`).
-
-#### 🧰 Debug / Showcase
-- `DebugSection` (вкладка `debug`, недоступна з навігації) — JSON Telegram-юзера, `start_param`, лінк на `/pixel-ui`.
-- `/pixel-ui` (`ShowPixelUiView`, ~590 рядків) — вітрина піксельного UI-кіту, демо-екрани.
-
-### 2.6 Стейт-менеджмент (Pinia)
-
-| Store | Призначення | Персист |
-|---|---|---|
-| `auth` | `token`, `roles`; `login()` приймає рядок або `{token}`, **відкидає токен із не-ASCII символами**; `logout()`, `hasRole()` | ✅ |
-| `user` | `user`, `isLoading`, `dailyRewardsStatus`; computed: `money`, `strawberries`, `remainingDailyClicks` (дефолт 200), `nextClickResetTime`, `dailyStreak` (дефолт 1), `canClaimDaily`; дії: `fetchUser`, `setUser`, `decrementRemainingClicks`, `setRemainingClicks`, `addStrawberries`, `addMoney`, `addItemToSlot`, `fetchDailyRewards`, `claimDailyReward` | ❌ |
-| `toast` | Черга тостів `success / error / info`, автозакриття 3 с | ❌ |
-
-### 2.7 Сервіси
-
-- **`api.ts`** — axios, `baseURL = https://s.memories-app.org/`, таймаут 10 с. Interceptor додає `Authorization: Bearer <token>`; при невалідному (не-ASCII) токені робить `logout()`.
-- **`sound.ts`** — `SoundEngine` на WebAudio: попереднє декодування буферів, `playSound(key, volume)`. Ключі: `tab`, `click`, `harvest` (`/click.mp3`, гучність 0.25), `purchase`, `coin`. Налаштування `sound_enabled` / `music_enabled` у `localStorage`. **Фонова музика не реалізована** — лише прапорець.
-- **`texturePreloader.ts`** — попереднє завантаження ~43 текстур UI у кеш `Map` при старті.
-
-### 2.8 Піксельний UI-кіт (`components/pixel`)
-
-| Група | Компоненти |
-|---|---|
-| Контейнери | `Card`, `CardPrimary`, `Selected`, `AvatarBorder`, `Message`, `PixelModal` (Teleport, Esc/клік по фону) |
-| Кнопки | `PixelButton`, `ButtonText`, `GameButton`, `ShopButton`, `InventoryButton`, `BusinessButton`, `TopButton`, `AdminButton`, `SettingsButton`, `CloseButton`, `OkButton`, `HelpButton`, `Left/RightButton`, `Sound/MusicButton` (+ дублі `ButtonSound/ButtonMusic`) |
-| Інше | `Switch`, `Loading` (спрайт-анімація 37 кадрів), `Lock`, `Image`, `PremiumBadge`, `PixelText` (заміна emoji-прапорів на піксельні SVG), `PixelToastContainer` |
-
-**`NinePatch.vue`** — серце стилю: читає Android-стиль `*.9.png` (чорні 1px-лінії зверху/зліва задають зони розтягування), малює на `<canvas>` з урахуванням `devicePixelRatio`, `imageSmoothing=false`, перемальовується через `ResizeObserver`. Масштаб піксеня за замовчуванням ×2.
-
-Окремо існує **`components/ui`** (`AppCard`, `AppText`, `AppScreen`, кнопки, `AppTextField`, `AppDropdown`) — старіший «Honeywood»-кіт, що спирається на `border-image` з відсутньої папки `/honeywood/`. Використовується лише в `ProfileSection` і `InvitedUserList`.
-
-### 2.9 Типи даних
-
-```ts
-User { userId, telegramId, firstName, lastName, username?, photoUrl?, bio, lang,
-       premium, banned, admin?, createAt, lastOnlineAt?,
-       dailyStrawberryClicks?, remainingDailyClicks?, nextClickResetTime?,
-       dailyStreak?, lastClaimedDailyAt?, canClaimDaily?,
-       slots: Slot[], businesses: UserBusiness[], invites: InvitedUser[] }
-Slot { id, item: {id, name}, count }
-UserBusiness { id, count, usedAt, nextCollectAt?, nextCollectInSeconds?, canCollect?,
-               accumulatedYield?, maxAccumulatedYield?,
-               business: { id, name, yieldCount, yieldInterval: {seconds,nano,…}, item } }
-Business { id, name, yieldCount, yieldInterval: string, item: string, price? }
-DailyRewardStatus { streak, canClaim, days: DailyRewardDay[] }
-DailyRewardDay { day, week, icon, rewardKey, title, strawberries, coins,
-                 milestone, claimed, current, locked }
-InvitedUser { id, telegramId, firstName, lastName, photoUrl }
-```
-
-**Валюти й предмети** — це «слоти» з `item.name`: `money` (монети), `strawberry`, `money_v2`, `strawberry_jam`, `chest_gardener|super|mega|royal`.
-
-### 2.10 Довідник REST API (з клієнтського коду)
-
-| Метод | Шлях | Тіло / параметри | Використання |
-|---|---|---|---|
-| POST | `/auth/telegram` | `telegram_id, photo_url, first_name, last_name, username, language_code, inviter_telegram_id (start_param)` | Вхід/реєстрація, повертає токен і користувача |
-| GET | `/users/me` | — | Поточний користувач |
-| GET | `/users` | — | Рейтинг гравців |
-| GET | `/users/me/invites` | — | Запрошені друзі |
-| GET | `/users/daily-rewards` | — | Статус календаря |
-| POST | `/users/daily-rewards/claim` | `{day}` | Отримати нагороду |
-| GET | `/slots/count` | `?name=strawberry` | Кількість предмета |
-| POST | `/slots/take` | `{name, count}` | Батч кліків; відповідь: `count, remainingDailyClicks, nextClickResetTime` |
-| POST | `/items/sell` | `{name, amount}` | Продаж частини; відповідь: `coinsEarned` |
-| POST | `/items/sell-all` | `{name}` | Продаж усього |
-| GET | `/business` | — | Магазин бізнесів |
-| POST | `/business/buy` | `{name}` | Купівля |
-| POST | `/business/collect` | `{name}` | Збір доходу |
-| GET | `/admin/stats` | — | Статистика |
-| GET | `/admin/telemetry` | — | Глобальна телеметрія |
-| GET | `/admin/telemetry/user/{id}` | — | Телеметрія гравця |
-| GET | `/admin/users` | `?search=` | Список гравців |
-| POST | `/admin/users/{id}/ban` | — | Бан/розбан |
-| POST | `/admin/users/{id}/toggle-admin` | — | Адмін-права |
-| POST | `/admin/users/{id}/toggle-premium` | — | Premium |
-| POST | `/admin/users/{id}/reset-limit` | — | Скинути ліміт кліків |
-| POST | `/admin/users/{id}/resources` | `{money, strawberries, level, addMode}` | Редагування ресурсів |
-
-### 2.11 Реферальна система
-Формат посилання в коді не генерується (імовірно `t.me/<bot>?startapp=<telegram_id>`, бо `start_param` трактується як Telegram ID запрошувача): `start_param` передається як `inviter_telegram_id` при авторизації. Запрошені відображаються у профілі.
-
-### 2.12 Локалізація
-Три файли з однаковою структурою (219 рядків): `loading`, `inventory`, `clicker`, `admin`, `business`, `profile`, `items`, `players`, `settings`, `toolbar`, `modal`, `bottomNav`, `invite_list`, `not_found`, `daily_rewards`. Мова: `localStorage.lang` → інакше `en`; при вході перезаписується `language_code` з Telegram. Fallback — `en`.
-
-### 2.13 Ассети
-
-`public/ui` (43 файли): кнопки з парами normal/pressed, 9-patch (`card`, `primary_card`, `border`, `message`, `selected`, `button_text`), іконки `strawberry`, `money`, `lock`, `finger`, спрайт `loading.png`, перемикачі. Також `new_background.png` (~1 МБ) і `click.mp3`.
-
-### 2.14 Виявлені проблеми та рекомендації
-
-**Критичні / функціональні**
-1. **Відсутні файли**: `/honeywood/sounds/*.ogg` (усі SFX крім `click.mp3`), `/honeywood/ui/*` (текстури `AppCard` і `main.css`), `/default-avatar.png`, `/ui/money_v2.png`, `/strawberry.png`, `/honeywood/icons/*`. Наслідок: 404, не працюють звуки `tab/click/purchase/coin`, зламані аватари за замовчуванням.
-2. **`sendBeacon("/api/slots/take", …)`** шле на власний домен, а не на API, без `Authorization` і з неправильним Content-Type → невідправлені кліки при закритті втрачаються. Також `JSON.stringify` без `Blob` дає `text/plain`.
-3. **`setInterval(flushClicks, 2000)`** створюється в `onMounted` без очищення в `onUnmounted`; `beforeunload`-слухач також не знімається.
-4. Після помилки `flushClicks` обнуляє `pendingClicks` — кліки втрачаються без повтору.
-5. `HomeView`: перевірка `user === undefined` ніколи не спрацьовує (є fallback-юзер), тож 404-редірект мертвий.
-6. `ClickerSection`: при `isLimitReached` кліки блокуються на клієнті, але константа `200` захардкоджена в трьох місцях — треба брати з API.
-7. Вкладки `profile` і `debug` недосяжні з UI.
-8. `BusinessCard.vue` — порожній файл-заглушка. `DailyRewardsModal` не показує предметні нагороди.
-
-**Безпека**
-- `initDataUnsafe` не підписаний — клієнт передає `telegram_id` у відкритому вигляді. Бекенд **має** валідувати `initData` (HMAC за токеном бота) і не довіряти `telegram_id` з тіла, інакше можна видати себе за будь-кого (включно з адміном).
-- Токен зберігається в `localStorage` (persist) — типово для Mini App, але вразливий до XSS.
-- Усі адмін-перевірки мають бути на сервері; `isAdmin` на клієнті лише ховає кнопку.
-- Dev-середовище: приватний шлях до IDE у `vite.config.ts`, `.env.local` містить лише `LAUNCH_EDITOR` (секретів немає).
-
-**Якість коду**
-- Дубльований код: `formatBizName` і `translateError` скопійовані між `BussinesSection` та `MarketSection` → винести в утиліту.
-- Два паралельних UI-кіти (`pixel` + `ui`), дублі експортів (`Loading`/`PixelLoading`, `ButtonSound`/`SoundButton`).
-- Назви з помилками: `BussinesSection`, `garden_bussines`, `DailyRewardsModal` «Reward Calendar».
-- Мішані мови в коментарях/текстах (укр/англ), частина рядків зашита поза i18n (`Готово:`, `MAX (7d)`, адмінка).
-- Логіка авторизації роутера закоментована; `README.md` — шаблонний («feature-tracker»), назва пакета `strawberry_game`.
-- Додати `.env` для `baseURL`, перенести магічні числа в конфіг, додати тести й обробку `401`.
-
-### 2.15 Ідеї для розвитку
-Фонова музика (прапорець уже є), анімація зростання полуниць, досягнення/рівні (в адмінці вже є поле `level`), події «Business Boost» і бусти кліків з календаря нагород, скрині з лутом, сезонні рейтинги, push-нагадування про збір бізнесів і нагороду.
+#### 🛡️ Модульна Адмін-панель (`src/components/admin/`)
+- **`AdminUsersSection`**: пошук гравців, бани/розбани, скидання 6-годинного ліміту, зміна рівнів ($L$) та XP, редагування ресурсів.
+- **`AdminBusinessesSection`**: перегляд та редагування конфігурацій бізнесів.
+- **`AdminItemsSection`**: керування предметами та цінами.
+- **`AdminChatsSection`**: оголошення та системні сповіщення.
+- **`AdminTelemetrySection`**: глобальна аналітика та статистика кліків.
 
 ---
 
-*Документ згенеровано автоматично за статичним аналізом коду; поведінка бекенду та значення економіки (ціни, дохід бізнесів) у клієнті відсутні і не включені.*
+### 2.6 Система рівнів та досвіду (XP)
+
+Механіка детально описана у `LEVEL_SYSTEM_DOCS.md`.
+
+#### Формула необхідного XP для переходу $L \rightarrow L+1$:
+$$\text{XP}_{\text{needed}}(L) = 100 \times L + 50 \times L^2$$
+
+| Рівень ($L$) | Потрібно XP | Поріг для наступного |
+| :---: | :---: | :---: |
+| **1** | **150 XP** | Lvl 2 |
+| **2** | **400 XP** | Lvl 3 |
+| **3** | **750 XP** | Lvl 4 |
+| **5** | **1 750 XP** | Lvl 6 |
+| **10** | **6 000 XP** | Lvl 11 |
+
+#### Джерела нарахування XP:
+1. **Купівля бізнесів**: $\text{XP} = \max\left(10, \left\lfloor \frac{\text{DynamicPrice}}{100} \right\rfloor \right)$.
+2. **Збір прибутку**: $\text{XP} = \text{IntervalsPassed} \times \text{BusinessCount} \times 2$.
+3. **Продаж предметів / Клікер**: додає досвід пропорційно до обсягу дій.
+
+---
+
+### 2.7 Економічний баланс предметів та бізнесів
+
+Деталізовано у `balance.md`.
+
+#### Каталог предметів (`items`)
+- `strawberry` (Полуниця) — продається за **1 💰**
+- `money` (Монети) — базова валюта
+- `water` (Вода) — ресурс
+- `blueberry` (Чорниця) — продається за **2 💰**
+- `strawberry_juice` (Полуничний сік) — продається за **5 💰**
+- `cherries` (Вишні) — продаються за **5 💰**
+- `jam_cherry` (Вишневе варення) — продається за **20 💰**
+- `blueberry_jam` (Чорничне варення) — продається за **30 💰**
+- `blueberry_pie` (Чорничний пиріг) — продається за **80 💰**
+- `strawberry_pie` (Полуничний пиріг) — продається за **120 💰**
+- `candy` (Цукерка) — вибивається з павучка
+
+#### Основні бізнеси та вимоги рівнів
+
+| Бізнес (`name`) | Назва | Предмет | Мін. рівень (`minLevel`) |
+| :--- | :--- | :---: | :---: |
+| `garden_business` | Сад | `strawberry` | **Lvl 1** |
+| `garden_bed` | Грядка | `strawberry` | **Lvl 1** |
+| `strawberry_farm` | Полунична ферма | `strawberry` | **Lvl 1** |
+| `strawberry_juice_factory` | Сокова фабрика | `strawberry_juice` | **Lvl 2** |
+| `factory` | Фабрика | `strawberry` | **Lvl 2** |
+| `water_tower` | Водонапірна вежа | `water` | **Lvl 2** |
+| `blueberry_grove` | Чорничний гай | `blueberry` | **Lvl 3** |
+| `cherry_orchard` | Вишневий сад | `cherries` | **Lvl 5** |
+| `cherry_jam_factory` | Вишнева варильня | `jam_cherry` | **Lvl 5** |
+| `blueberry_jam_factory` | Чорнична варильня | `blueberry_jam` | **Lvl 8** |
+| `blueberry_pie_bakery` | Чорнична кондитерська | `blueberry_pie` | **Lvl 10** |
+| `strawberry_pie_bakery` | Полунична кондитерська | `strawberry_pie` | **Lvl 12** |
+
+---
+
+### 2.8 Звукова система (`SoundEngine`)
+
+Замість відсутніх фонових звуків реалізовано повний пакунок SFX на WebAudio API (`/sfx/*.wav`):
+- `tab` — перемикання вкладок (`tab-switch-1.wav`)
+- `click` — натискання кнопок (`click-wood-1.wav`)
+- `harvest` — клікер полуниці (`/click.mp3`)
+- `purchase` — купівля в магазині (`confirm-1.wav`)
+- `coin` — отримання монет/продаж (`coin.wav`)
+- `success` / `error` — сповіщення тостів
+- `popupOpen` / `popupClose` — модальні вікна
+- `pluck` — дьоргання нитки павутини (`click-bubble-1.wav`)
+- `snap` — обрив павутинки (`error-2.wav`)
+- `itemGet` — забрання цукерки (`item-get.wav`)
+
+---
+
+### 2.9 Довідник REST API
+
+| Метод | Шлях | Призначення |
+|---|---|---|
+| POST | `/auth/telegram` | Авторизація через Telegram WebApp |
+| GET | `/users/me` | Дані поточного користувача |
+| GET | `/users` | Топ гравців |
+| GET | `/users/daily-rewards` | Стан календаря щоденних нагород |
+| POST | `/users/daily-rewards/claim` | Отримати щоденну нагороду |
+| GET | `/slots/count` | Кількість предметів за назвою |
+| POST | `/slots/take` | Батч кліків або вибивання цукерки з павука |
+| POST | `/items/sell` | Продаж вказаної кількості предмета |
+| POST | `/items/sell-all` | Продаж усіх предметів вибраного типу |
+| GET | `/items` | Список усіх предметів для Вікі |
+| GET | `/business` | Каталог бізнесів у магазині |
+| POST | `/business/buy` | Купівля бізнесу |
+| POST | `/business/collect` | Збір накопичених ресурсів |
+| GET | `/notifications/active` | Перевірка активного оголошення |
+| POST | `/admin/users/{id}/resources` | Зміна ресурсів, рівнів та XP користувача |
+
+---
+
+### 2.10 Вирішені та актуальні питання
+
+**Вирішені проблеми:**
+1. ✅ **SFX ассети**: Завантажено повноцінний комплект з 40+ SFX аудіофайлів у `/public/sfx/`.
+2. ✅ **Динамічний ліміт кліків**: Хардкод 200 замінено на розрахунок за рівнем гравця ($200 + (L-1) \times 100$).
+3. ✅ **URL API**: Оновлено на актуальний `https://sapi.memories-app.org/`.
+4. ✅ **Модульність адмінки**: Адмін-панель розбита на 5 структурованих підкомпонентів.
+5. ✅ **Веб-авторизація та Документи**: Додано підтримку входу через Google (`WebLoginModal`), а також сторінки приватності (`/privacy`) та видалення акаунту (`/delete-account`).
+
+---
+
+*Документ оновлено відповідно до поточного стану проєкту.*

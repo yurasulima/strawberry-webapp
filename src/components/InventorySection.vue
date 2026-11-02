@@ -18,7 +18,10 @@ interface FlyingCoin {
   startY: number
   dx: number
   dy: number
+  arcX: number
+  arcY: number
   delay: number
+  val: number
 }
 
 const selectedSlotId = ref<number | null>(null)
@@ -46,13 +49,20 @@ watch(slots, (newSlots) => {
   }
 })
 
-watch(selectedSlot, (slot) => {
-  if (slot) {
-    sellAmount.value = Math.min(1, slot.count)
-  } else {
-    sellAmount.value = 1
-  }
+// Скидаємо кількість в 1 тільки коли користувач обрав ІНШИЙ предмет
+watch(selectedSlotId, () => {
+  sellAmount.value = 1
 })
+
+// Якщо дані оновились з сервера - лише підрізаємо значення, а не скидаємо
+watch(
+    () => selectedSlot.value?.count,
+    (count) => {
+      if (count === undefined) return
+      if (sellAmount.value > count) sellAmount.value = count
+      if (sellAmount.value < 1) sellAmount.value = 1
+    }
+)
 
 function isMoney(itemName?: string): boolean {
   if (!itemName) return false
@@ -113,9 +123,19 @@ function setPreset(percent: number) {
 }
 
 function setMaxAmount() {
-  playClickSound()
   if (!selectedSlot.value) return
+  playClickSound()
   sellAmount.value = selectedSlot.value.count
+}
+
+function calculateCoinCount(coins: number): number {
+  if (coins <= 0) return 0
+  if (coins === 1) return 1
+  if (coins <= 5) return coins
+  if (coins <= 20) return 5 + Math.floor((coins - 5) / 3)
+  if (coins <= 100) return 10 + Math.floor((coins - 20) / 16)
+  if (coins <= 500) return 15 + Math.floor((coins - 100) / 80)
+  return 20 + Math.min(10, Math.floor((coins - 500) / 500))
 }
 
 function spawnFlyingCoins(coinsEarned: number, e?: MouseEvent) {
@@ -146,13 +166,22 @@ function spawnFlyingCoins(coinsEarned: number, e?: MouseEvent) {
     dy = (targetRect.top + targetRect.height / 2) - startY
   }
 
-  const coinCount = Math.max(0, Math.min(coinsEarned, 8))
+  const coinCount = calculateCoinCount(coinsEarned)
+  if (coinCount <= 0) return
+
+  const baseVal = Math.floor(coinsEarned / coinCount)
+  const remainder = coinsEarned % coinCount
 
   for (let i = 0; i < coinCount; i++) {
     const id = coinParticleId++
-    const offsetX = (Math.random() - 0.5) * 36
-    const offsetY = (Math.random() - 0.5) * 18
-    const delay = i * 55
+    // Широкий вибуховий розкид точок появи навколо кнопки продажу
+    const offsetX = (Math.random() - 0.5) * 110
+    const offsetY = (Math.random() - 0.5) * 50
+    // Рандомні вигини дуги польоту для кожної монетки
+    const arcX = (Math.random() - 0.5) * 60
+    const arcY = (Math.random() - 0.5) * 35
+    const delay = i * 38
+    const val = baseVal + (i < remainder ? 1 : 0)
 
     flyingCoins.value.push({
       id,
@@ -160,7 +189,10 @@ function spawnFlyingCoins(coinsEarned: number, e?: MouseEvent) {
       startY: startY + offsetY,
       dx: dx - offsetX,
       dy: dy - offsetY,
-      delay
+      arcX,
+      arcY,
+      delay,
+      val
     })
 
     setTimeout(() => {
@@ -200,8 +232,8 @@ async function handleSell(e?: MouseEvent) {
     spawnFlyingCoins(coinsEarned, e)
 
     toastStore.showToast(
-      t('inventory.sell_success', { count: countToSell, coins: coinsEarned }),
-      'success'
+        t('inventory.sell_success', { count: countToSell, coins: coinsEarned }),
+        'success'
     )
 
     selectedSlotId.value = null
@@ -235,20 +267,20 @@ onMounted(() => {
       </Card>
 
       <template v-else>
-        <!-- Сітка предметів інвентарю z квадратних div -->
+        <!-- Сітка предметів інвентарю з квадратних div -->
         <Card width="100%" height="auto" :padding="10" class="inventory-card">
           <div class="slots-grid">
             <div
-              v-for="s in slots"
-              :key="s.id"
-              class="slot-wrapper"
-              @click="selectSlot(s)"
+                v-for="s in slots"
+                :key="s.id"
+                class="slot-wrapper"
+                @click="selectSlot(s)"
             >
               <Selected
-                :active="selectedSlotId === s.id"
-                padding="3"
-                width="100%"
-                height="100%"
+                  :active="selectedSlotId === s.id"
+                  padding="3"
+                  width="100%"
+                  height="100%"
               >
                 <div class="slot-square">
                   <ItemIcon :item="s.item.name" size="44" class="slot-img" />
@@ -263,11 +295,11 @@ onMounted(() => {
         <!-- Анімована картка продажу для обраного предмета -->
         <SlideFade>
           <Card
-            v-if="selectedSlot && !isMoney(selectedSlot.item.name)"
-            width="100%"
-            height="auto"
-            :padding="12"
-            class="detail-card"
+              v-if="selectedSlot && !isMoney(selectedSlot.item.name)"
+              width="100%"
+              height="auto"
+              :padding="12"
+              class="detail-card"
           >
             <div class="detail-content">
               <div class="detail-header">
@@ -284,45 +316,51 @@ onMounted(() => {
               <!-- Зручні контроли кількості для продажу -->
               <div class="sell-controls">
 
-                <!-- Покрокові кнопки та поля інпуту -->
+                <!-- Покрокові кнопки + кнопка ALL посередині -->
                 <div class="stepper-row">
                   <div class="step-group">
                     <button
-                      v-if="selectedSlot.count >= 100"
-                      type="button"
-                      class="step-btn"
-                      @click="adjustAmount(-100)"
+                        v-if="selectedSlot.count >= 100"
+                        type="button"
+                        class="step-btn"
+                        @click="adjustAmount(-100)"
                     >-100</button>
                     <button
-                      v-if="selectedSlot.count >= 10"
-                      type="button"
-                      class="step-btn"
-                      @click="adjustAmount(-10)"
+                        v-if="selectedSlot.count >= 10"
+                        type="button"
+                        class="step-btn"
+                        @click="adjustAmount(-10)"
                     >-10</button>
                     <button
-                      type="button"
-                      class="step-btn"
-                      @click="adjustAmount(-1)"
+                        type="button"
+                        class="step-btn"
+                        @click="adjustAmount(-1)"
                     >-1</button>
                   </div>
 
+                  <button
+                      type="button"
+                      class="step-btn"
+                      @click="setMaxAmount"
+                  >ВСЕ</button>
+
                   <div class="step-group">
                     <button
-                      type="button"
-                      class="step-btn"
-                      @click="adjustAmount(1)"
+                        type="button"
+                        class="step-btn"
+                        @click="adjustAmount(1)"
                     >+1</button>
                     <button
-                      v-if="selectedSlot.count >= 10"
-                      type="button"
-                      class="step-btn"
-                      @click="adjustAmount(10)"
+                        v-if="selectedSlot.count >= 10"
+                        type="button"
+                        class="step-btn"
+                        @click="adjustAmount(10)"
                     >+10</button>
                     <button
-                      v-if="selectedSlot.count >= 100"
-                      type="button"
-                      class="step-btn"
-                      @click="adjustAmount(100)"
+                        v-if="selectedSlot.count >= 100"
+                        type="button"
+                        class="step-btn"
+                        @click="adjustAmount(100)"
                     >+100</button>
                   </div>
                 </div>
@@ -330,8 +368,8 @@ onMounted(() => {
                 <!-- Кнопка Продати -->
                 <div class="sell-action">
                   <ButtonText
-                    :loading="isSelling"
-                    @click="handleSell"
+                      :loading="isSelling"
+                      @click="handleSell"
                   >
                     {{ t('inventory.sell') }} {{ sellAmount }} шт. (+{{ totalCoinsEarned }} <ItemIcon item="money" size="18" style="vertical-align: middle; margin-left: 2px;" />)
                   </ButtonText>
@@ -345,18 +383,21 @@ onMounted(() => {
         <Teleport to="body">
           <div class="flying-coins-layer">
             <div
-              v-for="c in flyingCoins"
-              :key="c.id"
-              class="flying-coin"
-              :style="{
+                v-for="c in flyingCoins"
+                :key="c.id"
+                class="flying-coin"
+                :style="{
                 left: `${c.startX}px`,
                 top: `${c.startY}px`,
                 '--dx': `${c.dx}px`,
                 '--dy': `${c.dy}px`,
+                '--arc-x': `${c.arcX}px`,
+                '--arc-y': `${c.arcY}px`,
                 '--delay': `${c.delay}ms`
               }"
             >
               <img src="/items/money.png" class="coin-img" alt="" />
+              <span class="coin-val">+{{ c.val }}</span>
             </div>
           </div>
         </Teleport>
@@ -367,6 +408,8 @@ onMounted(() => {
 
 <style scoped>
 .inventory-container {
+
+  padding: 16px;
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
@@ -571,7 +614,7 @@ onMounted(() => {
   color: #3f2e21;
 }
 
-/* Новий рядок з покроковими кнопками та інпутом */
+/* Рядок з покроковими кнопками та кнопкою ALL посередині */
 .stepper-row {
   display: flex;
   align-items: center;
@@ -668,6 +711,7 @@ onMounted(() => {
   border-color: #2e7d32;
 }
 
+/* Кнопка ALL */
 .max-btn {
   background-color: #d97706;
   color: #fff;
@@ -676,6 +720,10 @@ onMounted(() => {
 
 .max-btn:hover {
   background-color: #b45309;
+}
+
+.max-btn:active {
+  background-color: #92400e;
 }
 
 .sell-action {
@@ -697,7 +745,7 @@ onMounted(() => {
   position: fixed;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 3px;
   user-select: none;
   pointer-events: none;
   animation: fly-coin 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
@@ -707,25 +755,38 @@ onMounted(() => {
 }
 
 .coin-img {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   image-rendering: pixelated;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.coin-val {
+  font-family: 'Crumbline', sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffca28;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  white-space: nowrap;
 }
 
 @keyframes fly-coin {
   0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.2) rotate(0deg);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
   }
-  50% {
+  18% {
     opacity: 1;
-    transform: translate(calc(var(--dx) * 0.55), calc(var(--dy) * 0.55 - 25px)) scale(1.2) rotate(180deg);
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+  55% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.55 + var(--arc-x)), calc(var(--dy) * 0.55 - 30px + var(--arc-y))) scale(1.2);
   }
   100% {
     opacity: 0.1;
-    transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(360deg);
+    transform: translate(var(--dx), var(--dy)) scale(0.6);
   }
 }
 </style>

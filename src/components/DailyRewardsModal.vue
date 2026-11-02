@@ -23,11 +23,48 @@ const toastStore = useToastStore()
 
 const isClaiming = ref(false)
 
-const currentStreak = computed(() =>
-    Math.min(30, Math.max(1, userStore.dailyStreak || 1))
-)
+const canClaim = computed(() => !!userStore.canClaimDaily)
 
-const canClaim = computed(() => userStore.canClaimDaily)
+const todayDayNumber = computed(() => {
+  const apiDays = userStore.dailyRewardsStatus?.days
+  if (Array.isArray(apiDays) && apiDays.length > 0) {
+    const currentApiDay = apiDays.find((d: any) => d.current)
+    if (currentApiDay) {
+      return Number(currentApiDay.day)
+    }
+
+    const claimedDays = apiDays.filter((d: any) => d.claimed).map((d: any) => Number(d.day))
+    if (claimedDays.length > 0) {
+      const maxClaimed = Math.max(...claimedDays)
+      return canClaim.value ? Math.min(30, maxClaimed + 1) : maxClaimed
+    }
+  }
+
+  const rawStreak = userStore.dailyStreak || 1
+  return Math.min(30, Math.max(1, rawStreak))
+})
+
+const lastClaimedDay = computed(() => {
+  const apiDays = userStore.dailyRewardsStatus?.days
+  if (Array.isArray(apiDays) && apiDays.length > 0) {
+    const claimedDays = apiDays.filter((d: any) => d.claimed).map((d: any) => Number(d.day))
+    if (claimedDays.length > 0) {
+      return Math.max(...claimedDays)
+    }
+  }
+  if (canClaim.value) {
+    return Math.max(0, todayDayNumber.value - 1)
+  }
+  return todayDayNumber.value
+})
+
+const currentStreak = computed(() => {
+  return todayDayNumber.value
+})
+
+const startWindowDay = computed(() => {
+  return Math.min(25, Math.max(1, todayDayNumber.value))
+})
 
 interface RewardConfig {
   day: number
@@ -58,7 +95,7 @@ const rewardConfigs: RewardConfig[] = Array.from(
 )
 
 const visibleDays = computed<RewardDay[]>(() => {
-  const startDay = currentStreak.value
+  const startDay = startWindowDay.value
   const endDay = Math.min(30, startDay + 5)
   const apiDays = userStore.dailyRewardsStatus?.days
 
@@ -66,25 +103,16 @@ const visibleDays = computed<RewardDay[]>(() => {
       .filter(({ day }) => day >= startDay && day <= endDay)
       .map((config) => {
         const apiDay = Array.isArray(apiDays)
-            ? apiDays.find((item: any) => item.day === config.day)
+            ? apiDays.find((item: any) => Number(item.day) === config.day)
             : undefined
 
-        const isClaimed = apiDay
-            ? (apiDay.claimed ??
-                (config.day < startDay ||
-                    (config.day === startDay && !canClaim.value)))
-            : config.day < startDay ||
-            (config.day === startDay && !canClaim.value)
+        const isClaimed = apiDay && typeof apiDay.claimed === 'boolean'
+            ? apiDay.claimed
+            : config.day <= lastClaimedDay.value
 
-        const isCurrent = apiDay
-            ? (apiDay.current ??
-                (config.day === startDay && canClaim.value))
-            : config.day === startDay && canClaim.value
+        const isCurrent = canClaim.value && config.day === todayDayNumber.value
 
-        const isLocked = apiDay
-            ? (apiDay.locked ??
-                config.day > startDay)
-            : config.day > startDay
+        const isLocked = !isClaimed && !isCurrent
 
         return {
           ...config,
@@ -99,6 +127,13 @@ const visibleDays = computed<RewardDay[]>(() => {
           isLocked,
         }
       })
+})
+
+const activeDayReward = computed(() => {
+  if (canClaim.value && todayDayNumber.value) {
+    return visibleDays.value.find(d => d.day === todayDayNumber.value) || visibleDays.value[0]
+  }
+  return null
 })
 
 const progress = computed(() =>
@@ -132,8 +167,8 @@ function rewardParts(day?: RewardDay) {
 }
 
 async function handleClaim(dayToClaim?: number) {
-  const targetDay = dayToClaim ?? currentStreak.value
-  if (!canClaim.value || isClaiming.value) return
+  const targetDay = dayToClaim ?? todayDayNumber.value
+  if (!canClaim.value || isClaiming.value || !targetDay) return
 
   playClickSound()
   isClaiming.value = true
@@ -253,8 +288,8 @@ async function handleClaim(dayToClaim?: number) {
       <!-- Info panel without separate button -->
       <div class="claim-panel">
         <div class="claim-copy">
-          <div v-if="canClaim && visibleDays[0]" class="claim-reward-values" :aria-label="rewardDescription(visibleDays[0])">
-            <span v-for="reward in rewardParts(visibleDays[0])" :key="reward.icon" class="reward-value">
+          <div v-if="canClaim && activeDayReward" class="claim-reward-values" :aria-label="rewardDescription(activeDayReward)">
+            <span v-for="reward in rewardParts(activeDayReward)" :key="reward.icon" class="reward-value">
               <ItemIcon :item="reward.icon" size="20" class="reward-value-icon" />
               <span>+{{ reward.amount }}</span>
             </span>
