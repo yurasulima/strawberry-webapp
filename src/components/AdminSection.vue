@@ -384,7 +384,7 @@ function formatDateTime(isoStr?: string | null): string {
             :placeholder="t('admin.user_search_placeholder')"
             @keyup.enter="handleSearch"
         />
-        <ButtonText padding="0 14px" @click="handleSearch">
+        <ButtonText  @click="handleSearch">
           <Icon icon="pixelarticons:search" />
         </ButtonText>
       </div>
@@ -530,7 +530,7 @@ function formatDateTime(isoStr?: string | null): string {
 
         <div class="modal-actions">
           <ButtonText
-              padding="0 20px"
+
               :loading="isSavingResources"
               @click="saveResources"
           >
@@ -587,7 +587,7 @@ function formatDateTime(isoStr?: string | null): string {
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   color: #3f2e21;
 }
 
@@ -692,7 +692,7 @@ function formatDateTime(isoStr?: string | null): string {
   border: 2px solid #5d4037;
   border-radius: 6px;
   padding: 6px 10px;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 15px;
   color: #3f2e21;
   outline: none;
@@ -705,7 +705,7 @@ function formatDateTime(isoStr?: string | null): string {
   border: 2px solid #5d4037;
   border-radius: 6px;
   padding: 8px 12px;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 16px;
   color: #3f2e21;
   outline: none;
@@ -840,7 +840,7 @@ function formatDateTime(isoStr?: string | null): string {
   flex-direction: column;
   gap: 12px;
   padding: 10px 0;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
 }
 
 .user-telemetry-title {

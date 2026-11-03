@@ -87,7 +87,7 @@ function handleClose() {
   flex-direction: column;
   gap: 12px;
   color: #3f2e21;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 16px;
 }
 

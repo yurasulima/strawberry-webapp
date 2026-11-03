@@ -217,7 +217,7 @@ const Y_DAMPING = 5.5      // затухання коливань нитки
 const TILT_GAIN = 1.0      // вплив нахилу
 const MAX_TILT = 0.9       // макс. кут нахилу, рад (~52°)
 const SHAKE_GAIN = 0.35    // реакція на різкі рухи телефону
-const MAX_ANGLE = 1.45     // фізичний ліміт відхилення (~83°)
+const MAX_ANGLE = 2.45     // фізичний ліміт відхилення (~83°)
 
 let rafId = 0
 let lastT = 0
@@ -467,12 +467,8 @@ function onSpiderUp(e: PointerEvent) {
   if (isBroken.value) return
 
   const PULL_THRESHOLD = 22      // Мін. дистанція протягування пальцем для зарахування 1 дьоргання
-  const STRONG_PULL_LIMIT = 90  // Дистанція сильного відтягування, що одразу рве павутинку
 
-  if (maxDragStretch >= STRONG_PULL_LIMIT) {
-    snapWeb()
-    return
-  }
+
 
   if (maxDragStretch >= PULL_THRESHOLD) {
     tugCount.value++
@@ -600,7 +596,7 @@ onBeforeUnmount(() => {
       <ProfileModal v-model="showProfileModal" />
 
       <div class="main-content" :class="{ 'main-content--admin': isAdminMode }">
-        <ClickerSection v-show="activeTab === 'clicker'" />
+        <ClickerSection v-show="activeTab === 'clicker'" @openDailyRewards="showDailyRewards = true" />
         <InventorySection v-show="activeTab === 'inventory'" />
         <BussinesSection v-show="activeTab === 'business'" :user="user" />
         <MarketSection v-show="activeTab === 'shop'" :user="user" />
@@ -632,11 +628,6 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .app-container {
-  background-image: url("/new_background.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -648,7 +639,7 @@ onBeforeUnmount(() => {
   font-family: "Pixel", "Segoe UI", sans-serif;
 
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -796,11 +787,16 @@ onBeforeUnmount(() => {
 
 .app-container::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
+  background-image: url("/new_background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   backdrop-filter: blur(1px);
   background-color: rgba(0, 0, 0, 0.3);
   z-index: 0;
+  pointer-events: none;
 }
 
 .main-content {

@@ -181,7 +181,7 @@ onMounted(load)
     <CardPrimary width="100%" height="auto" :padding="8">
       <div class="section-header">
         <h2 class="title">{{ t('admin.nav.businesses') }}</h2>
-        <ButtonText padding="6px 14px" @click="openCreate">+ {{ t('admin.create') }}</ButtonText>
+        <ButtonText  @click="openCreate">+ {{ t('admin.create') }}</ButtonText>
       </div>
 
       <div v-if="isLoading" class="loading-state">{{ t('invite_list.loading') }}</div>
@@ -250,7 +250,7 @@ onMounted(load)
           <Switch v-model="form.premiumOnly" />
         </div>
         <div class="modal-actions">
-          <ButtonText padding="0 20px" :loading="isSaving" :disabled="!isFormValid" @click="save">
+          <ButtonText  :loading="isSaving" :disabled="!isFormValid" @click="save">
             {{ t('admin.save') }}
           </ButtonText>
         </div>
@@ -267,7 +267,7 @@ onMounted(load)
       <div class="modal-body">
         <span>{{ t('admin.confirm_delete', { name: businessToDelete ? displayName(businessToDelete.name) : '' }) }}</span>
         <div class="modal-actions">
-          <ButtonText padding="0 20px" :loading="deletingId !== null" @click="confirmDelete">
+          <ButtonText  :loading="deletingId !== null" @click="confirmDelete">
             {{ t('admin.delete') }}
           </ButtonText>
         </div>

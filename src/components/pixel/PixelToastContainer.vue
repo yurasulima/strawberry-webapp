@@ -49,7 +49,7 @@ const toastStore = useToastStore()
 }
 
 .toast-content {
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 18px;
   line-height: 1.2;
   text-align: center;

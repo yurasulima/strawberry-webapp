@@ -76,7 +76,7 @@ onMounted(fetchWiki)
     <CardPrimary width="100%" height="auto" :padding="12">
       <div class="wiki-header">
         <h2 class="title">📖 Вікі Предметів</h2>
-        <ButtonText padding="4px 12px" height="36" @click="handleClose">
+        <ButtonText  @click="handleClose">
           {{ t('admin.nav.back') }}
         </ButtonText>
       </div>
@@ -105,11 +105,8 @@ onMounted(fetchWiki)
                 <p class="wiki-item-desc">{{ getItemDescription(item.name) }}</p>
 
                 <div class="wiki-price-tags">
-                  <span class="price-tag sell">Продаж: <strong>+{{ item.sellPrice ?? 1 }}  </strong><ItemIcon
-                      item="money" size="16"/></span>
-                  <span v-if="item.buyPrice && item.buyPrice > 0"
-                        class="price-tag buy">Купівля: <strong>{{ item.buyPrice }} </strong><ItemIcon item="money"
-                                                                                                      size="16"/></span>
+                  <span class="price-tag sell">Продаж: <strong>+{{ item.sellPrice ?? 1 }}</strong><ItemIcon item="money" size="16"/></span>
+                  <span v-if="item.buyPrice && item.buyPrice > 0" class="price-tag buy">Купівля: <strong>{{ item.buyPrice }}</strong><ItemIcon item="money" size="16"/></span>
                 </div>
               </div>
             </div>
@@ -126,7 +123,7 @@ onMounted(fetchWiki)
   max-width: 420px;
   margin: 0 auto;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 18px;
   line-height: 1.1;
   color: #3f2e21;
@@ -164,9 +161,7 @@ onMounted(fetchWiki)
   align-items: flex-start;
   gap: 10px;
   padding: 8px;
-  background-color: rgba(63, 46, 33, 0.05);
-  border-radius: 6px;
-  border: 1px solid rgba(63, 46, 33, 0.15);
+  border-bottom: 1px solid #eee;
 }
 
 .wiki-icon-wrap {
@@ -215,11 +210,15 @@ onMounted(fetchWiki)
 }
 
 .price-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid #5d4037;
   background: #fff8eb;
+  line-height: 1;
 }
 
 .price-tag.sell strong {

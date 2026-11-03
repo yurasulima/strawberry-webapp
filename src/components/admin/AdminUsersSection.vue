@@ -302,8 +302,8 @@ function formatDateTime(isoStr?: string | null): string {
     <CardPrimary width="100%" height="auto" :padding="8">
       <div class="section-header">
         <h2 class="title">{{ t('admin.nav.users') }}</h2>
-        <ButtonText padding="6px 12px" :loading="isRecalculating" @click="recalculateLevels">
-          ⚡ Перерахувати рівні
+        <ButtonText  :loading="isRecalculating" @click="recalculateLevels">
+         Перерахувати рівні
         </ButtonText>
       </div>
 
@@ -316,7 +316,7 @@ function formatDateTime(isoStr?: string | null): string {
             :placeholder="t('admin.user_search_placeholder')"
             @keyup.enter="handleSearch"
         />
-        <ButtonText padding="0 14px" @click="handleSearch">
+        <ButtonText  @click="handleSearch">
           <Icon icon="pixelarticons:search" />
         </ButtonText>
       </div>
@@ -462,7 +462,7 @@ function formatDateTime(isoStr?: string | null): string {
 
         <div class="modal-actions">
           <ButtonText
-              padding="0 20px"
+
               :loading="isSavingResources"
               @click="saveResources"
           >

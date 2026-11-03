@@ -55,7 +55,7 @@ onMounted(() => {
       <div class="players-header">
         <h2 class="title">{{ t('players.title') }}</h2>
         <ButtonText
-            padding="6px 14px"
+
             :loading="loading"
             @click="fetchPlayers"
         >
@@ -129,7 +129,7 @@ onMounted(() => {
   max-width: 420px;
   margin: 0 auto;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 18px;
   line-height: 1.1;
   color: #3f2e21;

@@ -2,7 +2,7 @@
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   color: #3f2e21;
 }
 
@@ -21,13 +21,8 @@
 }
 
 .stat-card {
-  background: #fff8eb;
-  border: 2px solid #5d4037;
-  border-radius: 6px;
-  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 3px 0 #3e2723;
 }
 
 .stat-label {
@@ -84,7 +79,7 @@
   border: 2px solid #5d4037;
   border-radius: 6px;
   padding: 4px 8px;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 14px;
   color: #3f2e21;
   outline: none;
@@ -143,7 +138,7 @@
   border: 2px solid #5d4037;
   border-radius: 6px;
   padding: 6px 10px;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 15px;
   color: #3f2e21;
   outline: none;
@@ -156,7 +151,7 @@
   border: 2px solid #5d4037;
   border-radius: 6px;
   padding: 8px 12px;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 16px;
   color: #3f2e21;
   outline: none;
@@ -291,7 +286,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 10px 0;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
 }
 
 .user-telemetry-title {

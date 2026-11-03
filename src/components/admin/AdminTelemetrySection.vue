@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import { CardPrimary, Card, ButtonText, ItemIcon } from '@/components/pixel'
+import FlatCard from "@/components/pixel/FlatCard.vue"
 
 const { t } = useI18n()
 
@@ -117,33 +118,47 @@ onMounted(load)
     <CardPrimary width="100%" height="auto" :padding="8">
       <div class="section-header">
         <h2 class="title">{{ t('admin.nav.telemetry') }}</h2>
-        <ButtonText padding="6px 14px" :loading="isLoading" @click="load">
+        <ButtonText :loading="isLoading" @click="load">
           {{ t('players.refresh') }}
         </ButtonText>
       </div>
 
       <h3 class="telemetry-header">{{ t('admin.stats_title') }}</h3>
       <div v-if="stats" class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-label">{{ t('admin.total_users') }}</span>
-          <span class="stat-value">{{ formatNumber(stats.totalUsers) }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">{{ t('admin.banned_users') }}</span>
-          <span class="stat-value text-danger">{{ formatNumber(stats.bannedUsers) }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">{{ t('admin.total_money') }}</span>
-          <span class="stat-value text-gold">{{ formatNumber(stats.totalMoney) }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">{{ t('admin.total_strawberries') }}</span>
-          <span class="stat-value text-success">{{ formatNumber(stats.totalStrawberries) }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">{{ t('admin.total_businesses') }}</span>
-          <span class="stat-value">{{ formatNumber(stats.totalBusinesses) }}</span>
-        </div>
+        <FlatCard width="100%" height="auto" padding="8px 10px">
+          <div class="stat-card">
+            <span class="stat-label">{{ t('admin.total_users') }}</span>
+            <span class="stat-value">{{ formatNumber(stats.totalUsers) }}</span>
+          </div>
+        </FlatCard>
+
+        <FlatCard width="100%" height="auto" padding="8px 10px">
+          <div class="stat-card">
+            <span class="stat-label">{{ t('admin.banned_users') }}</span>
+            <span class="stat-value text-danger">{{ formatNumber(stats.bannedUsers) }}</span>
+          </div>
+        </FlatCard>
+
+        <FlatCard width="100%" height="auto" padding="8px 10px">
+          <div class="stat-card">
+            <span class="stat-label">{{ t('admin.total_money') }}</span>
+            <span class="stat-value text-gold">{{ formatNumber(stats.totalMoney) }}</span>
+          </div>
+        </FlatCard>
+
+        <FlatCard width="100%" height="auto" padding="8px 10px">
+          <div class="stat-card">
+            <span class="stat-label">{{ t('admin.total_strawberries') }}</span>
+            <span class="stat-value text-success">{{ formatNumber(stats.totalStrawberries) }}</span>
+          </div>
+        </FlatCard>
+
+        <FlatCard width="100%" height="auto" padding="8px 10px">
+          <div class="stat-card">
+            <span class="stat-label">{{ t('admin.total_businesses') }}</span>
+            <span class="stat-value">{{ formatNumber(stats.totalBusinesses) }}</span>
+          </div>
+        </FlatCard>
       </div>
       <div v-else-if="!isLoading" class="empty-state">{{ t('admin.no_data') }}</div>
 
@@ -157,208 +172,237 @@ onMounted(load)
             </div>
           </div>
           <div class="telemetry-grid">
-            <div class="telemetry-item">
-              <span class="telemetry-label">{{ t('admin.total_clicks_all_time') }}</span>
-              <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalClicksAllTime) }}</span>
-              <span
-                v-if="telemetry.totalClicksAllTimeDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalClicksAllTimeDiff)"
-              >
-                {{ formatDiff(telemetry.totalClicksAllTimeDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">{{ t('admin.total_clicks_all_time') }}</span>
+                <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalClicksAllTime) }}</span>
+                <span
+                  v-if="telemetry.totalClicksAllTimeDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalClicksAllTimeDiff)"
+                >
+                  {{ formatDiff(telemetry.totalClicksAllTimeDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">{{ t('admin.clicks_today') }}</span>
-              <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalClicksToday) }}</span>
-              <span
-                v-if="telemetry.totalClicksTodayDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalClicksTodayDiff)"
-              >
-                {{ formatDiff(telemetry.totalClicksTodayDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">{{ t('admin.clicks_today') }}</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalClicksToday) }}</span>
+                <span
+                  v-if="telemetry.totalClicksTodayDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalClicksTodayDiff)"
+                >
+                  {{ formatDiff(telemetry.totalClicksTodayDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">{{ t('admin.unique_clickers') }}</span>
-              <span class="telemetry-value">{{ formatNumber(telemetry.uniqueClickersCount) }}</span>
-              <span
-                v-if="telemetry.uniqueClickersCountDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.uniqueClickersCountDiff)"
-              >
-                {{ formatDiff(telemetry.uniqueClickersCountDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">{{ t('admin.unique_clickers') }}</span>
+                <span class="telemetry-value">{{ formatNumber(telemetry.uniqueClickersCount) }}</span>
+                <span
+                  v-if="telemetry.uniqueClickersCountDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.uniqueClickersCountDiff)"
+                >
+                  {{ formatDiff(telemetry.uniqueClickersCountDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">{{ t('admin.total_batches') }}</span>
-              <span class="telemetry-value">{{ formatNumber(telemetry.totalClickBatches) }}</span>
-              <span
-                v-if="telemetry.totalClickBatchesDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalClickBatchesDiff)"
-              >
-                {{ formatDiff(telemetry.totalClickBatchesDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">{{ t('admin.total_batches') }}</span>
+                <span class="telemetry-value">{{ formatNumber(telemetry.totalClickBatches) }}</span>
+                <span
+                  v-if="telemetry.totalClickBatchesDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalClickBatchesDiff)"
+                >
+                  {{ formatDiff(telemetry.totalClickBatchesDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">{{ t('admin.avg_per_user') }}</span>
-              <span class="telemetry-value">{{ telemetry.avgClicksPerClicker }}</span>
-              <span
-                v-if="telemetry.avgClicksPerClickerDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.avgClicksPerClickerDiff)"
-              >
-                {{ formatDiff(telemetry.avgClicksPerClickerDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">{{ t('admin.avg_per_user') }}</span>
+                <span class="telemetry-value">{{ telemetry.avgClicksPerClicker }}</span>
+                <span
+                  v-if="telemetry.avgClicksPerClickerDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.avgClicksPerClickerDiff)"
+                >
+                  {{ formatDiff(telemetry.avgClicksPerClickerDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">{{ t('admin.avg_per_batch') }}</span>
-              <span class="telemetry-value">{{ telemetry.avgClicksPerBatch }}</span>
-              <span
-                v-if="telemetry.avgClicksPerBatchDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.avgClicksPerBatchDiff)"
-              >
-                {{ formatDiff(telemetry.avgClicksPerBatchDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">{{ t('admin.avg_per_batch') }}</span>
+                <span class="telemetry-value">{{ telemetry.avgClicksPerBatch }}</span>
+                <span
+                  v-if="telemetry.avgClicksPerBatchDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.avgClicksPerBatchDiff)"
+                >
+                  {{ formatDiff(telemetry.avgClicksPerBatchDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <!-- Телеметрія крадіжок та переказів -->
-            <div class="telemetry-item">
-              <span class="telemetry-label">Спроб крадіжок</span>
-              <span class="telemetry-value">{{ formatNumber(telemetry.totalStealAttempts) }}</span>
-              <span
-                v-if="telemetry.totalStealAttemptsDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalStealAttemptsDiff)"
-              >
-                {{ formatDiff(telemetry.totalStealAttemptsDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Спроб крадіжок</span>
+                <span class="telemetry-value">{{ formatNumber(telemetry.totalStealAttempts) }}</span>
+                <span
+                  v-if="telemetry.totalStealAttemptsDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalStealAttemptsDiff)"
+                >
+                  {{ formatDiff(telemetry.totalStealAttemptsDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">Неуспішних крадіжок</span>
-              <span class="telemetry-value text-danger">{{ formatNumber(telemetry.failedStealAttempts) }}</span>
-              <span
-                v-if="telemetry.failedStealAttemptsDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.failedStealAttemptsDiff)"
-              >
-                {{ formatDiff(telemetry.failedStealAttemptsDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Неуспішних крадіжок</span>
+                <span class="telemetry-value text-danger">{{ formatNumber(telemetry.failedStealAttempts) }}</span>
+                <span
+                  v-if="telemetry.failedStealAttemptsDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.failedStealAttemptsDiff)"
+                >
+                  {{ formatDiff(telemetry.failedStealAttemptsDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">Украдено монет</span>
-              <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalCoinsStolen) }}</span>
-              <span
-                v-if="telemetry.totalCoinsStolenDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalCoinsStolenDiff)"
-              >
-                {{ formatDiff(telemetry.totalCoinsStolenDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Украдено монет</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalCoinsStolen) }}</span>
+                <span
+                  v-if="telemetry.totalCoinsStolenDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalCoinsStolenDiff)"
+                >
+                  {{ formatDiff(telemetry.totalCoinsStolenDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">Передано монет</span>
-              <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalCoinsTransferred) }}</span>
-              <span
-                v-if="telemetry.totalCoinsTransferredDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalCoinsTransferredDiff)"
-              >
-                {{ formatDiff(telemetry.totalCoinsTransferredDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Передано монет</span>
+                <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalCoinsTransferred) }}</span>
+                <span
+                  v-if="telemetry.totalCoinsTransferredDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalCoinsTransferredDiff)"
+                >
+                  {{ formatDiff(telemetry.totalCoinsTransferredDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <!-- Ігрова економічна телеметрія -->
-            <div class="telemetry-item">
-              <span class="telemetry-label">Всього зароблено монет</span>
-              <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalCoinsEarned) }}</span>
-              <span
-                v-if="telemetry.totalCoinsEarnedDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalCoinsEarnedDiff)"
-              >
-                {{ formatDiff(telemetry.totalCoinsEarnedDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Всього зароблено монет</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalCoinsEarned) }}</span>
+                <span
+                  v-if="telemetry.totalCoinsEarnedDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalCoinsEarnedDiff)"
+                >
+                  {{ formatDiff(telemetry.totalCoinsEarnedDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">Предметів з бізнесів</span>
-              <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalBusinessItemsYielded) }}</span>
-              <span
-                v-if="telemetry.totalBusinessItemsYieldedDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalBusinessItemsYieldedDiff)"
-              >
-                {{ formatDiff(telemetry.totalBusinessItemsYieldedDiff) }}
-              </span>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Предметів з бізнесів</span>
+                <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalBusinessItemsYielded) }}</span>
+                <span
+                  v-if="telemetry.totalBusinessItemsYieldedDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalBusinessItemsYieldedDiff)"
+                >
+                  {{ formatDiff(telemetry.totalBusinessItemsYieldedDiff) }}
+                </span>
 
-              <!-- Деталізація по предметах -->
-              <div v-if="telemetry.businessYieldBreakdown && telemetry.businessYieldBreakdown.length" class="yield-breakdown-box">
-                <div v-for="b in telemetry.businessYieldBreakdown" :key="b.itemName" class="yield-breakdown-row">
-                  <ItemIcon :item="b.itemName" size="18" />
-                  <span class="breakdown-name">{{ b.itemName }}:</span>
-                  <strong class="breakdown-val">{{ formatNumber(b.totalAmount) }}</strong>
+                <div v-if="telemetry.businessYieldBreakdown && telemetry.businessYieldBreakdown.length" class="yield-breakdown-box">
+                  <div v-for="b in telemetry.businessYieldBreakdown" :key="b.itemName" class="yield-breakdown-row">
+                    <ItemIcon :item="b.itemName" size="18" />
+                    <span class="breakdown-name">{{ b.itemName }}:</span>
+                    <strong class="breakdown-val">{{ formatNumber(b.totalAmount) }}</strong>
+                  </div>
                 </div>
               </div>
-            </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">Піднято з дропів бота</span>
-              <span class="telemetry-value text-danger">{{ formatNumber(telemetry.totalStrawberriesFromDrops) }}</span>
-              <span
-                v-if="telemetry.totalStrawberriesFromDropsDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalStrawberriesFromDropsDiff)"
-              >
-                {{ formatDiff(telemetry.totalStrawberriesFromDropsDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Піднято з дропів бота</span>
+                <span class="telemetry-value text-danger">{{ formatNumber(telemetry.totalStrawberriesFromDrops) }}</span>
+                <span
+                  v-if="telemetry.totalStrawberriesFromDropsDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalStrawberriesFromDropsDiff)"
+                >
+                  {{ formatDiff(telemetry.totalStrawberriesFromDropsDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">З Daily Rewards</span>
-              <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalStrawberriesFromDailyRewards) }}</span>
-              <span
-                v-if="telemetry.totalStrawberriesFromDailyRewardsDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalStrawberriesFromDailyRewardsDiff)"
-              >
-                {{ formatDiff(telemetry.totalStrawberriesFromDailyRewardsDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">З Daily Rewards</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalStrawberriesFromDailyRewards) }}</span>
+                <span
+                  v-if="telemetry.totalStrawberriesFromDailyRewardsDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalStrawberriesFromDailyRewardsDiff)"
+                >
+                  {{ formatDiff(telemetry.totalStrawberriesFromDailyRewardsDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">Отримано з переказів</span>
-              <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalStrawberriesFromTransfers) }}</span>
-              <span
-                v-if="telemetry.totalStrawberriesFromTransfersDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalStrawberriesFromTransfersDiff)"
-              >
-                {{ formatDiff(telemetry.totalStrawberriesFromTransfersDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Отримано з переказів</span>
+                <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalStrawberriesFromTransfers) }}</span>
+                <span
+                  v-if="telemetry.totalStrawberriesFromTransfersDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalStrawberriesFromTransfersDiff)"
+                >
+                  {{ formatDiff(telemetry.totalStrawberriesFromTransfersDiff) }}
+                </span>
+              </div>
+            </FlatCard>
 
-            <div class="telemetry-item">
-              <span class="telemetry-label">Залутано цукерок</span>
-              <span class="telemetry-value text-gold">{{ formatNumber(getCandyCount(telemetry)) }}</span>
-              <span
-                v-if="telemetry.totalSpiderCandiesLootedDiff !== undefined"
-                class="diff-tag"
-                :class="diffClass(telemetry.totalSpiderCandiesLootedDiff)"
-              >
-                {{ formatDiff(telemetry.totalSpiderCandiesLootedDiff) }}
-              </span>
-            </div>
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Залутано цукерок</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(getCandyCount(telemetry)) }}</span>
+                <span
+                  v-if="telemetry.totalSpiderCandiesLootedDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalSpiderCandiesLootedDiff)"
+                >
+                  {{ formatDiff(telemetry.totalSpiderCandiesLootedDiff) }}
+                </span>
+              </div>
+            </FlatCard>
           </div>
         </div>
       </Card>

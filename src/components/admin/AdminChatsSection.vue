@@ -94,7 +94,7 @@ onMounted(loadChats)
     <CardPrimary width="100%" height="auto" :padding="8">
       <div class="section-header">
         <h2 class="title">{{ t('admin.chats_title') }}</h2>
-        <ButtonText padding="6px 14px" :loading="isLoading" @click="loadChats">
+        <ButtonText  :loading="isLoading" @click="loadChats">
           {{ t('players.refresh') }}
         </ButtonText>
       </div>

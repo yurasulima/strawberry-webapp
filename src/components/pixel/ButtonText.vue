@@ -40,7 +40,7 @@ const emit = defineEmits<{
 
 <style scoped>
 .text-button {
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 16px;
   line-height: 1;
 }

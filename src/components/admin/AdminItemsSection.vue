@@ -225,7 +225,7 @@ onMounted(load)
     <CardPrimary width="100%" height="auto" :padding="8">
       <div class="section-header">
         <h2 class="title">{{ t('admin.nav.items') }}</h2>
-        <ButtonText padding="6px 14px" @click="openCreate">+ {{ t('admin.create') }}</ButtonText>
+        <ButtonText  @click="openCreate">+ {{ t('admin.create') }}</ButtonText>
       </div>
 
       <div v-if="isLoading" class="loading-state">{{ t('invite_list.loading') }}</div>
@@ -283,7 +283,7 @@ onMounted(load)
           <input v-model.number="newBuyPrice" type="number" min="0" class="pixel-input"/>
         </div>
         <div class="modal-actions">
-          <ButtonText padding="0 20px" :loading="isCreating" :disabled="!isNameValid" @click="createItem">
+          <ButtonText  :loading="isCreating" :disabled="!isNameValid" @click="createItem">
             {{ t('admin.save') }}
           </ButtonText>
         </div>
@@ -306,7 +306,7 @@ onMounted(load)
         </div>
 
         <div class="modal-actions">
-          <ButtonText padding="0 20px" :loading="isSavingEdit" @click="saveEdit">
+          <ButtonText  :loading="isSavingEdit" @click="saveEdit">
             {{ t('admin.save') }}
           </ButtonText>
         </div>
@@ -318,7 +318,7 @@ onMounted(load)
       <div class="modal-body">
         <span>{{ t('admin.confirm_delete', {name: itemToDelete ? itemTitle(itemToDelete.name) : ''}) }}</span>
         <div class="modal-actions">
-          <ButtonText padding="0 20px" :loading="deletingId !== null" @click="confirmDelete">
+          <ButtonText  :loading="deletingId !== null" @click="confirmDelete">
             {{ t('admin.delete') }}
           </ButtonText>
         </div>
@@ -341,7 +341,7 @@ onMounted(load)
               :placeholder="t('admin.user_search_placeholder')"
               @keyup.enter="searchUsers"
           />
-          <ButtonText padding="0 14px" :loading="isSearching" @click="searchUsers">OK</ButtonText>
+          <ButtonText  :loading="isSearching" @click="searchUsers">OK</ButtonText>
         </div>
 
         <ul v-if="foundUsers.length" class="user-pick-list">
@@ -364,7 +364,7 @@ onMounted(load)
         </div>
 
         <div class="modal-actions">
-          <ButtonText padding="0 20px" :loading="isGiving" :disabled="!canGive" @click="give">
+          <ButtonText  :loading="isGiving" :disabled="!canGive" @click="give">
             {{ t('admin.give') }}
           </ButtonText>
         </div>

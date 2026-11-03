@@ -2,16 +2,27 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import api from "@/services/api.ts"
 import { useI18n } from 'vue-i18n'
-import { playHarvestSound, playCoinSound } from '@/services/sound'
+import { playHarvestSound, playCoinSound, playClickSound } from '@/services/sound'
 import { ButtonText, Card } from '@/components/pixel'
 import { useUserStore } from "@/stores/user.ts"
 import { useAuthStore } from "@/stores/auth.ts"
 import { useToastStore } from "@/stores/toast.ts"
+import GiftButton from "./pixel/GiftButton.vue"
 
 const { t } = useI18n()
 const userStore = useUserStore()
 const authStore = useAuthStore()
 const toastStore = useToastStore()
+
+const emit = defineEmits<{
+  (e: 'click'): void
+  (e: 'openDailyRewards'): void
+}>()
+
+function handleOpenDaily() {
+  playClickSound()
+  emit('openDailyRewards')
+}
 
 interface FlyingParticle {
   id: number
@@ -145,12 +156,7 @@ const flushClicks = async () => {
   }
 }
 
-const handleClick = (e?: MouseEvent) => {
-  if (isLimitReached.value) {
-    toastStore.showToast(t('clicker.limit_reached_toast', { time: formattedResetTime.value }), 'error')
-    return
-  }
-
+const registerClick = (clientX?: number, clientY?: number) => {
   playHarvestSound()
 
   userStore.decrementRemainingClicks(1)
@@ -161,13 +167,10 @@ const handleClick = (e?: MouseEvent) => {
     flushClicks()
   }
 
-  let startX = 0
-  let startY = 0
+  let startX = clientX ?? 0
+  let startY = clientY ?? 0
 
-  if (e && e.clientX && e.clientY) {
-    startX = e.clientX
-    startY = e.clientY
-  } else {
+  if (!clientX || !clientY) {
     const button = document.querySelector('.strawberry-button') as HTMLElement
     if (button) {
       const rect = button.getBoundingClientRect()
@@ -207,6 +210,28 @@ const handleClick = (e?: MouseEvent) => {
   setTimeout(() => (isClicking.value = false), 150)
 }
 
+const handleTouchStart = (e: TouchEvent) => {
+  e.preventDefault()
+  if (isLimitReached.value) {
+    toastStore.showToast(t('clicker.limit_reached_toast', { time: formattedResetTime.value }), 'error')
+    return
+  }
+
+  const touches = e.changedTouches
+  for (let i = 0; i < touches.length; i++) {
+    const touch = touches[i]
+    registerClick(touch.clientX, touch.clientY)
+  }
+}
+
+const handleClick = (e?: MouseEvent) => {
+  if (isLimitReached.value) {
+    toastStore.showToast(t('clicker.limit_reached_toast', { time: formattedResetTime.value }), 'error')
+    return
+  }
+  registerClick(e?.clientX, e?.clientY)
+}
+
 const sellAllStrawberries = async (e: MouseEvent) => {
   e.stopPropagation()
   isSelling.value = true
@@ -230,11 +255,24 @@ const sellAllStrawberries = async (e: MouseEvent) => {
 
 <template>
   <div class="clicker-container">
+    <!-- Ліва колонка кнопок (Clash Royale Style) -->
+    <div class="side-actions side-actions--left">
+    </div>
+
+    <!-- Права колонка кнопок (Clash Royale Style) -->
+    <div class="side-actions side-actions--right">
+      <GiftButton
+          size="64"
+          @click="handleOpenDaily"
+      />
+    </div>
+
     <div class="clicker-section">
-
-
-
-      <div class="click-area" @click="handleClick">
+      <div
+          class="click-area"
+          @touchstart.prevent.stop="handleTouchStart"
+          @click="handleClick"
+      >
         <button
             class="strawberry-button"
             :class="{ 'strawberry-button--disabled': isLimitReached }"
@@ -242,7 +280,6 @@ const sellAllStrawberries = async (e: MouseEvent) => {
             oncontextmenu="return false;"
             ondragstart="return false;"
             @contextmenu.prevent
-            @click="$emit('click')"
         >
           <img
               src="/items/strawberry.png"
@@ -279,19 +316,8 @@ const sellAllStrawberries = async (e: MouseEvent) => {
         </div>
       </Teleport>
 
-<!--      <ButtonText-->
-<!--          height="64"-->
-<!--          padding="12px 20px"-->
-<!--          :loading="isSelling"-->
-<!--          :disabled="count <= 0 && pendingClicks === 0"-->
-<!--          @click="sellAllStrawberries"-->
-<!--      >-->
-<!--        {{ t('clicker.sell_all') }}-->
-<!--      </ButtonText>-->
-
-
       <Card v-if="isLimitReached" width="100%" height="auto" :padding="10" class="limit-card-wrapper">
-        <div   class="limit-status-box">
+        <div class="limit-status-box">
           <div class="limit-alert-banner">
             <img src="/ui/lock.png" alt="Lock" class="limit-alert-icon" />
             <div class="limit-alert-text">
@@ -301,26 +327,53 @@ const sellAllStrawberries = async (e: MouseEvent) => {
           </div>
         </div>
       </Card>
-
     </div>
   </div>
 </template>
 
 <style scoped>
 .clicker-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   width: 100%;
+  flex-grow: 1;
+  max-width: 420px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Колонки кнопок по боках екрана (як у Clash Royale) */
+.side-actions {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+.side-actions--left {
+  left: 6px;
+}
+
+.side-actions--right {
+  right: 16px;
 }
 
 .clicker-section {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   width: 100%;
   max-width: 320px;
+  margin: auto 0;
 }
 
 /* Limit Status Box inside Card */
@@ -333,7 +386,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel), sans-serif;
   color: #3f2e21;
 }
 
@@ -352,7 +405,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
 .limit-badge-max {
   background-color: #c62828;
   color: #ffffff;
-  font-family: var(--font-pixel);
+  font-family: var(--font-pixel), sans-serif;
   font-size: 10px;
   font-weight: bold;
   padding: 2px 6px;
@@ -434,6 +487,10 @@ const sellAllStrawberries = async (e: MouseEvent) => {
 .click-area {
   position: relative;
   display: inline-block;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .strawberry-button {
@@ -448,6 +505,10 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   justify-content: center;
   align-items: center;
   position: relative;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .strawberry-button:active:not(.strawberry-button--disabled) {
@@ -512,7 +573,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   display: flex;
   align-items: center;
   gap: 2px;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel), sans-serif;
   font-size: 22px;
   font-weight: bold;
   color: #ff6b6b;

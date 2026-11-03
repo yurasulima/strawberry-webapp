@@ -135,7 +135,7 @@ onUnmounted(() => {
   justify-content: center;
   padding: 16px;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   color: #3f2e21;
 }
 

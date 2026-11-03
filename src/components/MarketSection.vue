@@ -222,13 +222,14 @@ async function directBuy(biz: Business) {
   max-width: 420px;
   margin: 0 auto;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 18px;
   line-height: 1.1;
   color: #3f2e21;
 }
 
 .title {
+  padding: 2px;
   margin: 0 0 10px;
   text-align: center;
   font-family: inherit;
@@ -279,7 +280,8 @@ async function directBuy(biz: Business) {
 }
 
 .biz-name {
-  font-size: 20px;
+  padding-left: 4px;
+  font-size:  px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -123,7 +123,7 @@ function saveSettings() {
           <div class="settings-list">
             <!-- Кнопка відкриття Вікі -->
             <div class="setting-row wiki-row">
-              <ButtonText height="48" padding="8px 20px" width="100%" @click="openWiki">
+              <ButtonText   width="100%" @click="openWiki">
                 📖 Вікі предметів / Довідник
               </ButtonText>
             </div>
@@ -152,7 +152,7 @@ function saveSettings() {
 
             <!-- Кнопка Зберегти -->
             <div class="settings-actions">
-              <ButtonText height="52" padding="10px 24px" @click="saveSettings">
+              <ButtonText  @click="saveSettings">
                 {{ t('settings.save') }}
               </ButtonText>
             </div>
@@ -176,7 +176,7 @@ function saveSettings() {
   max-width: 420px;
   margin: 0 auto;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 18px;
   line-height: 1.1;
   color: #3f2e21;

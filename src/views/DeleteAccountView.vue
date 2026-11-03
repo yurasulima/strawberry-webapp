@@ -134,10 +134,10 @@ async function handleDeleteAccount() {
             Ваш акаунт, ігровий рівень, монети та всі предмети будуть знищені назавжди. Цю дію неможливо скасувати!
           </p>
           <div class="confirm-actions">
-            <ButtonText height="44" width="100%" padding="8px 16px" @click="handleDeleteAccount">
+            <ButtonText  padding="8px 16px" @click="handleDeleteAccount">
               ⚠️ Так, видалити назавжди
             </ButtonText>
-            <ButtonText height="44" width="100%" padding="8px 16px" @click="closeConfirmModal">
+            <ButtonText  padding="8px 16px" @click="closeConfirmModal">
               Скасувати
             </ButtonText>
           </div>
@@ -153,7 +153,7 @@ async function handleDeleteAccount() {
   margin: 0 auto;
   padding: 20px 14px;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   color: #3f2e21;
 }
 

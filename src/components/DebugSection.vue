@@ -49,7 +49,7 @@ const start_param = initDataUnsafe.start_param
   max-width: 420px;
   margin: 10px auto;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   color: #3f2e21;
 }
 

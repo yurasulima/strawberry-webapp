@@ -10,7 +10,6 @@ import {
 } from '@/components/pixel'
 import { playClickSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user'
-import GiftButton from "@/components/pixel/GiftButton.vue";
 
 const userStore = useUserStore()
 
@@ -58,28 +57,20 @@ function handleOpenProfile() {
           class="toolbar-avatar clickable-avatar"
           @click="handleOpenProfile"
       />
-      <CardPrimary width="100%" height="64px" :padding="0" class="toolbar-container">
-        <!-- Right Side: User Nickname -->
+      <CardPrimary width="100%" height="52px" :padding="0" class="toolbar-container">
+
         <div class="user-info-side">
           <div class="user-info-header">
             <span class="user-name clickable-nickname" @click="handleOpenProfile">
               <PixelText :text="`${props.firstName ?? ''} ${props.lastName ?? ''}`.trim()" />
             </span>
-            <div class="toolbar-actions">
-
-              <GiftButton
-                  size="64"
-                  @click="handleOpenDaily"
-              />
-
-              <SettingsButton
-                  size="64"
-                  @click="handleOpenSettings"
-              />
-            </div>
           </div>
         </div>
       </CardPrimary>
+      <SettingsButton
+          size="64"
+          @click="handleOpenSettings"
+      />
     </div>
 
     <!-- Resource Cards underneath avatar on the left -->
@@ -135,7 +126,6 @@ function handleOpenProfile() {
   position: relative;
   display: flex;
   width: 100%;
-  height: 64px;
   box-sizing: border-box;
   z-index: 1;
 }
@@ -161,8 +151,10 @@ function handleOpenProfile() {
 }
 
 .user-name {
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 18px;
+  margin-right: 10px;
+  margin-left: 10px;
   font-weight: bold;
   color: #1a1008;
   line-height: 1.2;
@@ -242,7 +234,7 @@ function handleOpenProfile() {
   flex-direction: row;
   gap: 4px;
   margin-top: 2px;
-  margin-left: 0;
+  margin-right: 8px;
   align-self: flex-end;
 }
 
@@ -276,7 +268,7 @@ function handleOpenProfile() {
 }
 
 .res-amount {
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   font-size: 18px;
   font-weight: bold;
   color: #494643;

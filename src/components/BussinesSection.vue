@@ -4,11 +4,13 @@ import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { UserBusiness } from '@/types/UserBusiness.ts'
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, SlideFade, ItemIcon } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, SlideFade, ItemIcon, PixelModal } from '@/components/pixel'
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user.ts'
 import { useToastStore } from '@/stores/toast.ts'
 import { formatBizName as formatBizNameUtil, translateError as translateErrorUtil } from '@/utils/business'
+import InfoButton from "@/components/pixel/InfoButton.vue"
+import FlatCard from "@/components/pixel/FlatCard.vue";
 
 const props = defineProps<{ user?: any }>()
 const { t, te } = useI18n()
@@ -18,6 +20,7 @@ const toastStore = useToastStore()
 const myBusinesses = computed<UserBusiness[]>(() => userStore.user?.businesses || [])
 const isLoading = computed(() => !userStore.user && userStore.isLoading)
 
+const showGuideModal = ref(false)
 const collectingName = ref<string | null>(null)
 const isRefreshing = ref(false)
 
@@ -53,6 +56,16 @@ function translateError(err: any): string {
 
 const countOf = (biz: UserBusiness) => biz.count || 1
 const yieldOf = (biz: UserBusiness) => (biz.business?.yieldCount || 10) * countOf(biz)
+
+function getBizItemName(biz: UserBusiness): string {
+  if (biz.business?.item && typeof biz.business.item === 'object' && (biz.business.item as any).name) {
+    return (biz.business.item as any).name
+  }
+  if (typeof (biz.business as any)?.item === 'string') {
+    return (biz.business as any).item
+  }
+  return 'strawberry'
+}
 
 const sortedMyBusinesses = computed(() => {
   const list = [...myBusinesses.value]
@@ -231,7 +244,11 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
 <template>
   <div class="business-container">
     <CardPrimary width="100%" height="auto" :padding="12">
-      <h2 class="title">{{ t('business.title') }}</h2>
+
+      <div class="title-row">
+        <h2 class="title">{{ t('business.title') }}</h2>
+        <InfoButton @click="showGuideModal = true" />
+      </div>
 
       <div v-if="isLoading" class="loading-state">
         <span>{{ t('invite_list.loading') }}</span>
@@ -247,14 +264,21 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
                   <span class="biz-name">
                     {{ formatBizName(biz.business?.name) }}
                     <span v-if="biz.accumulatedYield && biz.maxAccumulatedYield && biz.accumulatedYield >= biz.maxAccumulatedYield" class="tag-max">MAX (7d)</span>
+                    <span>[{{ countOf(biz) }} {{ t('business.count_pcs') }}]</span>
                   </span>
-                  <span class="biz-meta">
-                    {{ countOf(biz) }} {{ t('business.count_pcs') }} · <strong class="yield-val">+{{ yieldOf(biz) }}</strong>
-                    <span v-if="biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz)" class="acc-val"> (Готово: +{{ biz.accumulatedYield }})</span>
-                  </span>
+
+                  <div class="biz-meta">
+                    <strong class="yield-val">
+                      Прибуток: {{ yieldOf(biz) }}
+                      <ItemIcon :item="getBizItemName(biz)" size="16" />
+                    </strong>
+                  </div>
                 </div>
 
                 <ButtonText
+                    width="110px"
+                    padding="0 4px"
+                    class="biz-collect-btn"
                     :disabled="timerMap[biz.id] > 0"
                     :loading="collectingName === biz.business?.name"
                     @click="directCollect(biz, $event)"
@@ -296,6 +320,17 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
             </div>
           </div>
         </Teleport>
+
+        <!-- Модальне вікно з гайдом по бізнесах -->
+        <PixelModal v-model="showGuideModal" title="Гайд по бізнесах">
+          <div class="biz-guide-content">
+            <p class="guide-intro">Тут буде інформація про роботу бізнесів.</p>
+            <FlatCard height="100%" width="100%" >
+              <p>Текст гайду скоро буде тут.</p>
+            </FlatCard>
+
+          </div>
+        </PixelModal>
       </template>
     </CardPrimary>
   </div>
@@ -308,15 +343,23 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
   max-width: 420px;
   margin: 0 auto;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel), sans-serif;
   font-size: 18px;
   line-height: 1.1;
   color: #3f2e21;
 }
 
+.title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
 .title {
-  margin: 0 0 10px;
-  text-align: center;
+  margin: 0;
+  text-align: left;
   font-family: inherit;
   font-size: 22px;
   font-weight: normal;
@@ -339,9 +382,10 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
 .biz-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   min-height: 64px;
-  padding: 4px 6px;
+  padding: 6px 4px;
 }
 
 .biz-row + .biz-row {
@@ -353,18 +397,25 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  justify-content: center;
 }
 
 .biz-name {
-  font-size: 20px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 17px;
+  line-height: 1.15;
+  color: #3f2e21;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.biz-collect-btn {
+  flex-shrink: 0;
+  width: 110px;
 }
 
 .tag-max {
-  font-family: var(--font-pixel);
+  font-family: var(--font-pixel), sans-serif;
   font-size: 9px;
   background-color: #d97706;
   color: #fff;
@@ -375,13 +426,20 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
 }
 
 .biz-meta {
-  font-size: 16px;
+  font-size: 15px;
   color: #5d4037;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
 }
 
 .acc-val {
   color: #2e7d32;
   font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .biz-timer {
@@ -392,6 +450,9 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
 .yield-val {
   font-weight: normal;
   color: #2e7d32;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 /* Порожній стан */
@@ -400,6 +461,30 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
 .empty-title { margin: 0 0 4px; font-size: 20px; }
 .empty-subtitle { margin: 0; font-size: 16px; color: #5d4037; }
 .empty-action { margin-top: 12px; display: flex; justify-content: center; }
+
+/* Гайд модалка */
+.biz-guide-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-pixel), sans-serif;
+  font-size: 15px;
+  color: #3f2e21;
+}
+
+.guide-intro {
+  margin: 0;
+  line-height: 1.3;
+}
+
+.guide-placeholder-card {
+  background: #fff8eb;
+  border: 2px dashed #5d4037;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+  color: #7c624d;
+}
 
 /* Летючі предмети до кнопки інвентарю */
 .flying-items-layer {

@@ -66,7 +66,7 @@ function goDeleteAccount() {
                 Ви маєте повне право у будь-який момент вимагати видалення вашого облікового запису та всіх пов'язаних ігрових даних.
               </p>
               <div class="action-box">
-                <ButtonText height="44" width="100%" padding="8px 16px" @click="goDeleteAccount">
+                <ButtonText  padding="8px 16px" @click="goDeleteAccount">
                   🗑 Перейти до видалення акаунту
                 </ButtonText>
               </div>
@@ -99,7 +99,7 @@ function goDeleteAccount() {
   margin: 0 auto;
   padding: 20px 14px;
   box-sizing: border-box;
-  font-family: 'Crumbline', sans-serif;
+  font-family: var(--font-pixel);
   color: #3f2e21;
 }
 
