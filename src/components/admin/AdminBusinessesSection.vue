@@ -27,6 +27,7 @@ interface AdminBusiness {
   item: string
   minLevel?: number
   premiumOnly?: boolean
+  waterable?: boolean
 }
 
 const businesses = ref<AdminBusiness[]>([])
@@ -45,6 +46,7 @@ const form = ref({
   item: 'strawberry',
   minLevel: 1 as number | null,
   premiumOnly: false,
+  waterable: false,
 })
 
 // Підтвердження видалення
@@ -103,7 +105,7 @@ async function load() {
 function openCreate() {
   playClickSound()
   editingId.value = null
-  form.value = { name: '', price: 100, yieldCount: 10, yieldIntervalSeconds: 3600, item: 'strawberry', minLevel: 1, premiumOnly: false }
+  form.value = { name: '', price: 100, yieldCount: 10, yieldIntervalSeconds: 3600, item: 'strawberry', minLevel: 1, premiumOnly: false, waterable: false }
   isFormOpen.value = true
 }
 
@@ -118,6 +120,7 @@ function openEdit(b: AdminBusiness) {
     item: b.item,
     minLevel: b.minLevel ?? 0,
     premiumOnly: !!b.premiumOnly,
+    waterable: !!b.waterable,
   }
   isFormOpen.value = true
 }
@@ -133,6 +136,7 @@ async function save() {
     item: form.value.item.trim(),
     minLevel: form.value.minLevel ?? 0,
     premiumOnly: form.value.premiumOnly,
+    waterable: form.value.waterable,
   }
   try {
     if (editingId.value === null) {
@@ -193,6 +197,7 @@ onMounted(load)
               <span class="entity-name">
                 <ItemIcon :item="b.item" size="24" style="vertical-align: middle; margin-right: 6px;" />
                 {{ displayName(b.name) }}
+                <span v-if="b.waterable" style="margin-left: 4px;" title="Поливається">💧</span>
               </span>
               <span class="entity-meta">
                 {{ t('business.price', { price: b.price }) }}  <br>
@@ -248,6 +253,10 @@ onMounted(load)
         <div class="mode-switch-row">
           <label>Тільки Premium</label>
           <Switch v-model="form.premiumOnly" />
+        </div>
+        <div class="mode-switch-row">
+          <label>Можна поливати (💧)</label>
+          <Switch v-model="form.waterable" />
         </div>
         <div class="modal-actions">
           <ButtonText  :loading="isSaving" :disabled="!isFormValid" @click="save">

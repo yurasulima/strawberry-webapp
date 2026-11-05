@@ -22,7 +22,18 @@ const isLoading = computed(() => !userStore.user && userStore.isLoading)
 
 const showGuideModal = ref(false)
 const collectingName = ref<string | null>(null)
+const wateringName = ref<string | null>(null)
 const isRefreshing = ref(false)
+
+const waterCount = computed(() => {
+  const slots = userStore.user?.slots || []
+  const slot = slots.find(s => s.item?.name?.toLowerCase() === 'water')
+  return slot?.count || 0
+})
+
+function isWaterableBiz(userBiz: UserBusiness): boolean {
+  return Boolean((userBiz.business as any)?.waterable)
+}
 
 async function refreshUser() {
   playClickSound()
@@ -239,6 +250,30 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
     collectingName.value = null
   }
 }
+
+async function directWater(userBiz: UserBusiness) {
+  const rawName = userBiz.business?.name || ''
+  if (waterCount.value < 20) {
+    toastStore.showToast(t('business.not_enough_water'), 'error')
+    return
+  }
+  if (timerMap.value[userBiz.id] <= 0) {
+    return
+  }
+
+  playClickSound()
+  wateringName.value = rawName
+
+  try {
+    await api.post('/business/water', { name: rawName })
+    toastStore.showToast(t('business.watered_success', { name: formatBizName(rawName) }), 'success')
+    await userStore.fetchUser()
+  } catch (err: any) {
+    toastStore.showToast(translateError(err), 'error')
+  } finally {
+    wateringName.value = null
+  }
+}
 </script>
 
 <template>
@@ -275,16 +310,30 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
                   </div>
                 </div>
 
-                <ButtonText
-                    width="110px"
+                <div class="biz-actions">
+                  <ButtonText
+                    v-if="isWaterableBiz(biz) && timerMap[biz.id] > 0"
+                    width="42px"
+                    padding="0 2px"
+                    class="biz-water-btn"
+                    :disabled="waterCount < 20 || wateringName === biz.business?.name"
+                    :loading="wateringName === biz.business?.name"
+                    @click="directWater(biz)"
+                  >
+                    💧
+                  </ButtonText>
+
+                  <ButtonText
+                    width="100px"
                     padding="0 4px"
                     class="biz-collect-btn"
                     :disabled="timerMap[biz.id] > 0"
                     :loading="collectingName === biz.business?.name"
                     @click="directCollect(biz, $event)"
-                >
-                  {{ timerMap[biz.id] > 1 ? formatRemainingTime(timerMap[biz.id]) : (biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz) ? `+${biz.accumulatedYield}` : t('business.collect')) }}
-                </ButtonText>
+                  >
+                    {{ timerMap[biz.id] > 1 ? formatRemainingTime(timerMap[biz.id]) : (biz.accumulatedYield && biz.accumulatedYield > yieldOf(biz) ? `+${biz.accumulatedYield}` : t('business.collect')) }}
+                  </ButtonText>
+                </div>
               </li>
             </ul>
           </Card>
@@ -324,11 +373,11 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
         <!-- Модальне вікно з гайдом по бізнесах -->
         <PixelModal v-model="showGuideModal" title="Гайд по бізнесах">
           <div class="biz-guide-content">
-            <p class="guide-intro">Тут буде інформація про роботу бізнесів.</p>
-            <FlatCard height="100%" width="100%" >
-              <p>Текст гайду скоро буде тут.</p>
+            <FlatCard height="100%" width="100%">
+              <p>🌾 <strong>Рослинні бізнеси:</strong> Грядки, сади, ферми, гаї можна поливати!</p>
+              <p>💧 <strong>Полив:</strong> Коштує <strong>20 💧 Води</strong> і зменшує час до наступного збору на <strong>2 години</strong>.</p>
+              <p>🏭 <strong>Промислові будівлі:</strong> Фабрики та варильні збираються за графіком і не потребують поливу.</p>
             </FlatCard>
-
           </div>
         </PixelModal>
       </template>
@@ -409,9 +458,21 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
   overflow-wrap: break-word;
 }
 
+.biz-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.biz-water-btn {
+  flex-shrink: 0;
+  width: 42px;
+}
+
 .biz-collect-btn {
   flex-shrink: 0;
-  width: 110px;
+  width: 100px;
 }
 
 .tag-max {
