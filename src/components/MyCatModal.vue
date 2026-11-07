@@ -36,7 +36,11 @@ watch(() => props.modelValue, (open) => {
   }
 })
 
-watch(myCat, syncCatData, { immediate: true })
+// Не перезаписуємо поле, поки модалка відкрита: оновлення профілю (новий об'єкт cat зі стору)
+// інакше стирало б те, що гравець вже встиг ввести
+watch(myCat, () => {
+  if (!props.modelValue) syncCatData()
+}, { immediate: true })
 
 async function saveCat() {
   if (!userStore.user || !myCat.value) return
@@ -74,10 +78,10 @@ function handleClose() {
 
 <template>
   <PixelModal
-    :model-value="modelValue"
-    title="Мій Котик"
-    :width="340"
-    @update:model-value="emit('update:modelValue', $event)"
+      :model-value="modelValue"
+      title="Мій Котик"
+      :width="340"
+      @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="my-cat-modal-content">
       <div v-if="!myCat" class="no-cat-state">
@@ -102,12 +106,12 @@ function handleClose() {
         <div class="field-group">
           <label class="field-label">Встановіть ім'я для котика:</label>
           <input
-            v-model="catName"
-            type="text"
-            class="pixel-name-input"
-            placeholder="Введіть ім'я..."
-            maxlength="24"
-            @keyup.enter="saveCat"
+              v-model="catName"
+              type="text"
+              class="pixel-name-input"
+              placeholder="Введіть ім'я..."
+              maxlength="24"
+              @keyup.enter="saveCat"
           />
         </div>
       </template>
@@ -175,9 +179,6 @@ function handleClose() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.06);
-  border-radius: 8px;
-  border: 2px dashed rgba(63, 46, 33, 0.3);
 }
 
 .cat-stats-badge {
