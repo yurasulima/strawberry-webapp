@@ -1,6 +1,7 @@
 import type {Slot} from "@/types/Slot.ts";
 import type {InvitedUser} from "@/types/InvitedUser.ts";
 import type {UserBusiness} from "@/types/UserBusiness.ts";
+import type {UserCat} from "@/types/UserCat.ts";
 
 export interface User {
   photoUrl?: string | null
@@ -28,6 +29,7 @@ export interface User {
   dailyStreak?: number
   lastClaimedDailyAt?: string | null
   canClaimDaily?: boolean
+  cat?: UserCat | null
   slots: Slot[]
   businesses: UserBusiness[]
   invites: InvitedUser[]

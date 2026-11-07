@@ -35,6 +35,7 @@ interface UserTelemetry {
   totalStrawberriesFromDropsByUser?: number
   totalStrawberriesFromDailyRewardsByUser?: number
   totalStrawberriesFromTransfersByUser?: number
+  totalCatPetsByUser?: number
   businessYieldBreakdownByUser?: ItemYield[]
 }
 
@@ -562,6 +563,11 @@ function formatDateTime(isoStr?: string | null): string {
         <div class="telemetry-info-row">
           <span>Отримано з переказів:</span>
           <strong class="text-success">{{ selectedUserTelemetry.totalStrawberriesFromTransfersByUser ?? 0 }}</strong>
+        </div>
+
+        <div class="telemetry-info-row">
+          <span>🐾 Погладжувань котика:</span>
+          <strong class="text-gold">{{ selectedUserTelemetry.totalCatPetsByUser ?? 0 }}</strong>
         </div>
       </div>
     </PixelModal>

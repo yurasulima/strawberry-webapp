@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import { CardPrimary, Card, ButtonText, ItemIcon } from '@/components/pixel'
 import FlatCard from "@/components/pixel/FlatCard.vue"
 
 const { t } = useI18n()
+const router = useRouter()
 
 interface AdminStats {
   totalUsers: number
@@ -55,9 +57,19 @@ interface GlobalTelemetry {
   totalStrawberriesFromTransfersDiff?: number
   totalSpiderCandiesLooted?: number
   totalSpiderCandiesLootedDiff?: number
+  totalCatPets?: number
+  totalCatPetsDiff?: number
   businessYieldBreakdown?: ItemYield[]
 }
 
+interface CatPetStat {
+  userId: number
+  telegramId: number
+  userName: string
+  pets: number
+}
+
+const catPets = ref<CatPetStat[]>([])
 const stats = ref<AdminStats | null>(null)
 const telemetry = ref<GlobalTelemetry | null>(null)
 const isLoading = ref(true)
@@ -67,9 +79,12 @@ const selectedDate = ref<string>(new Date().toISOString().split('T')[0])
 async function load() {
   isLoading.value = true
   try {
-    const [s, tm] = await Promise.allSettled([
+    const [s, tm, cp] = await Promise.allSettled([
       api.get<AdminStats>('/admin/stats'),
       api.get<GlobalTelemetry>('/admin/telemetry', {
+        params: { date: selectedDate.value }
+      }),
+      api.get<CatPetStat[]>('/admin/telemetry/cat-pets', {
         params: { date: selectedDate.value }
       }),
     ])
@@ -77,6 +92,8 @@ async function load() {
     else console.error('Error fetching admin stats:', s.reason)
     if (tm.status === 'fulfilled') telemetry.value = tm.value.data
     else console.error('Error fetching telemetry:', tm.reason)
+    if (cp.status === 'fulfilled') catPets.value = cp.value.data
+    else console.error('Error fetching cat pets:', cp.reason)
   } finally {
     isLoading.value = false
   }
@@ -118,9 +135,12 @@ onMounted(load)
     <CardPrimary width="100%" height="auto" :padding="8">
       <div class="section-header">
         <h2 class="title">{{ t('admin.nav.telemetry') }}</h2>
-        <ButtonText :loading="isLoading" @click="load">
-          {{ t('players.refresh') }}
-        </ButtonText>
+        <div class="header-actions">
+          <ButtonText @click="router.push('/cats')">🐱 Котики</ButtonText>
+          <ButtonText :loading="isLoading" @click="load">
+            {{ t('players.refresh') }}
+          </ButtonText>
+        </div>
       </div>
 
       <h3 class="telemetry-header">{{ t('admin.stats_title') }}</h3>
@@ -403,6 +423,28 @@ onMounted(load)
                 </span>
               </div>
             </FlatCard>
+
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">🐾 Погладжувань котиків</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalCatPets) }}</span>
+                <span
+                  v-if="telemetry.totalCatPetsDiff !== undefined"
+                  class="diff-tag"
+                  :class="diffClass(telemetry.totalCatPetsDiff)"
+                >
+                  {{ formatDiff(telemetry.totalCatPetsDiff) }}
+                </span>
+
+                <div v-if="catPets.length" class="yield-breakdown-box">
+                  <div v-for="c in catPets" :key="c.userId" class="yield-breakdown-row">
+                    <span class="breakdown-name">{{ c.userName }}:</span>
+                    <strong class="breakdown-val">{{ formatNumber(c.pets) }}</strong>
+                  </div>
+                </div>
+                <span v-else class="diff-tag diff-muted">за цей день ніхто не гладив</span>
+              </div>
+            </FlatCard>
           </div>
         </div>
       </Card>
@@ -412,6 +454,12 @@ onMounted(load)
 
 <style scoped src="./admin.css"></style>
 <style scoped>
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .diff-tag {
   font-size: 11px;
   font-weight: bold;

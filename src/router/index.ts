@@ -32,6 +32,11 @@ const router = createRouter({
       component: () => import('../views/DeleteAccountView.vue')
     },
     {
+      path: '/cats',
+      name: 'cats',
+      component: () => import('../views/AdminCatsView.vue')
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('../views/NotFoundView.vue'),

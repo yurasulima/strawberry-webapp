@@ -24,6 +24,7 @@ import WebLoginModal from "@/components/WebLoginModal.vue"
 import ProfileModal from "@/components/ProfileModal.vue"
 import AnnouncementModal, { type AnnouncementData } from "@/components/AnnouncementModal.vue"
 import SpiderFeature from "@/components/SpiderFeature.vue"
+import CatCompanion from "@/components/CatCompanion.vue"
 import { PixelToastContainer } from "@/components/pixel"
 import api from "@/services/api.ts"
 
@@ -214,6 +215,8 @@ onMounted(async () => {
         </template>
         <DebugSection v-show="activeTab === 'debug'" />
       </div>
+
+      <CatCompanion v-if="!isAdminMode" />
 
       <AdminNavigation
         v-if="isAdminMode"

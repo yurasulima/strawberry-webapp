@@ -34,11 +34,11 @@ class SoundEngine {
     }
   }
 
-  playSound(key: string, volume = 0.5) {
-    if (!soundEnabled) return
+  playSound(key: string, volume = 0.5): AudioBufferSourceNode | null {
+    if (!soundEnabled) return null
     const ctx = this.getContext()
     const buffer = this.buffers.get(key)
-    if (!ctx || !buffer) return
+    if (!ctx || !buffer) return null
 
     try {
       const source = ctx.createBufferSource()
@@ -51,8 +51,10 @@ class SoundEngine {
       gainNode.connect(ctx.destination)
 
       source.start(0)
+      return source
     } catch (e) {
       console.warn('Sound play error:', e)
+      return null
     }
   }
 }
@@ -168,6 +170,7 @@ if (typeof window !== 'undefined') {
   engine.loadSound('pluck', '/sfx/click-bubble-1.wav')
   engine.loadSound('itemGet', '/sfx/item-get.wav')
   engine.loadSound('snap', '/sfx/error-2.wav')
+  engine.loadSound('meow', '/cats/meow_1.mp3')
 }
 
 export function playTabSound() {
@@ -216,4 +219,77 @@ export function playItemGetSound() {
 
 export function playSnapSound() {
   engine.playSound('snap', 0.6)
+}
+
+let meowSource: AudioBufferSourceNode | null = null
+
+export function isMeowing(): boolean {
+  return meowSource !== null
+}
+
+export function stopMeow() {
+  if (!meowSource) return
+  try { meowSource.stop() } catch {}
+  meowSource = null
+}
+
+// Нявкає, лише якщо зараз не грає інше нявкання чи мурчання
+export function playMeowSound() {
+  if (meowSource || isPurring()) return
+  const src = engine.playSound('meow', 0.6)
+  if (!src) return
+  meowSource = src
+  src.onended = () => {
+    if (meowSource === src) meowSource = null
+  }
+}
+
+/* ---------- Мурчання котика (mur.mp3) ---------- */
+
+let purrAudio: HTMLAudioElement | null = null
+let purrFadeTimer: ReturnType<typeof setInterval> | null = null
+const PURR_VOLUME = 0.6
+
+function clearPurrFade() {
+  if (purrFadeTimer) {
+    clearInterval(purrFadeTimer)
+    purrFadeTimer = null
+  }
+}
+
+export function isPurring(): boolean {
+  return !!purrAudio && !purrAudio.paused
+}
+
+export function startPurr() {
+  if (typeof window === 'undefined' || !soundEnabled) return
+  if (!purrAudio) {
+    purrAudio = new Audio('/cats/mur.mp3')
+    purrAudio.loop = true
+  }
+  stopMeow()
+  clearPurrFade()
+  purrAudio.volume = PURR_VOLUME
+  if (purrAudio.paused) {
+    purrAudio.currentTime = 0
+    purrAudio.play().catch(() => {})
+  }
+}
+
+export function stopPurr(fadeMs = 600) {
+  if (!purrAudio || purrAudio.paused) return
+  clearPurrFade()
+  const audio = purrAudio
+  const steps = 12
+  const stepMs = Math.max(10, fadeMs / steps)
+  let i = 0
+  purrFadeTimer = setInterval(() => {
+    i++
+    audio.volume = Math.max(0, PURR_VOLUME * (1 - i / steps))
+    if (i >= steps) {
+      clearPurrFade()
+      audio.pause()
+      audio.volume = PURR_VOLUME
+    }
+  }, stepMs)
 }
