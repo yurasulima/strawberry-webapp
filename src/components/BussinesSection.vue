@@ -320,7 +320,8 @@ async function directWater(userBiz: UserBusiness) {
                     :loading="wateringName === biz.business?.name"
                     @click="directWater(biz)"
                   >
-                    💧
+
+                    <ItemIcon  item="water" size="24"  />
                   </ButtonText>
 
                   <ButtonText

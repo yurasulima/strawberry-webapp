@@ -293,7 +293,7 @@ onMounted(() => {
                   height="100%"
               >
                 <div class="slot-square">
-                  <ItemIcon :item="s.item.name" size="44" class="slot-img" />
+                  <ItemIcon :item="s.item.name" size="38" class="slot-img" />
                   <span class="slot-count">x{{ s.count }}</span>
                   <span class="slot-name">{{ getItemTitle(s.item.name) }}</span>
                 </div>
@@ -464,9 +464,10 @@ onMounted(() => {
 
 .slots-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* було repeat(4, 1fr) */
+  gap: 6px;
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -487,7 +488,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 3px;
   background-color: rgba(0, 0, 0, 0.06);
   border-radius: 4px;
   overflow: hidden;
@@ -499,8 +500,8 @@ onMounted(() => {
 }
 
 .slot-img {
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
   image-rendering: pixelated;
   display: block;
@@ -508,14 +509,14 @@ onMounted(() => {
 }
 
 .slot-count {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: bold;
   color: #3f2e21;
   line-height: 1;
 }
 
 .slot-name {
-  font-size: 13px;
+  font-size: 11px;
   color: #555;
   text-align: center;
   white-space: nowrap;
