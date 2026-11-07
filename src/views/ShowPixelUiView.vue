@@ -8,6 +8,7 @@ import {
   CloseButton, OkButton, HelpButton, ButtonText, Switch, Loading,
   Lock, SoundButton, MusicButton
 } from '@/components/pixel'
+import Chest from '@/components/Chest.vue'
 
 const router = useRouter()
 
@@ -109,6 +110,7 @@ const cardFs = ref(16)
 const msgClosable = ref(true)
 const sw = ref(true)
 const demoModal = ref(false)
+const chestOpened = ref(false)
 </script>
 
 <template>
@@ -342,6 +344,23 @@ const demoModal = ref(false)
           <SoundButton size="48" v-model="sfx" />
           <MusicButton size="32" v-model="music" />
           <MusicButton size="48" v-model="music" />
+        </div>
+      </div>
+
+      <div class="comp-block">
+        <h2>Анімована скриня · Chest</h2>
+        <div class="demo-row dark" style="gap: 32px; align-items: center;">
+          <Chest size="96" title="Закрита" :is-open="false" :interactive="false" />
+          <Chest size="96" title="Натисни, щоб відкрити" v-model="chestOpened">
+            <template #drop>
+              <span style="font-size: 20px; font-weight: bold; color: #ffca28; text-shadow: 1px 1px 0 #000;">+500 🪙</span>
+            </template>
+          </Chest>
+          <Chest size="96" title="Відкрита" :is-open="true" :interactive="false">
+            <template #drop>
+              <span style="font-size: 18px; font-weight: bold; color: #4caf50; text-shadow: 1px 1px 0 #000;">✦ НАГОРОДА ✦</span>
+            </template>
+          </Chest>
         </div>
       </div>
 

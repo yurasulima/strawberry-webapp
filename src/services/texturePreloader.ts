@@ -55,6 +55,7 @@ export const UI_TEXTURES = [
   '/ui/finger.png',
   '/ui/web.png',
   '/ui/spider.png',
+  '/ui/chest.png',
   '/items/candy.png',
   '/ui/button_sound_enabled.png',
   '/ui/button_sound_disabled.png',
