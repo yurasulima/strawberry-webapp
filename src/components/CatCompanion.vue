@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useUserStore } from '@/stores/user'
 import CatSprite from '@/components/pixel/CatSprite.vue'
 import MyCatModal from '@/components/MyCatModal.vue'
@@ -13,6 +13,73 @@ const hearts = ref<{ id: number; x: number; y: number }[]>([])
 let heartId = 0
 
 const myCat = computed(() => userStore.user?.cat)
+
+/* ───────── Перетягування котика вздовж тулбара ───────── */
+const APP_MAX_WIDTH = 420          // ширина ігрової колонки (як .app-container)
+const DRAG_THRESHOLD = 6           // px руху, після якого тап вважається перетягуванням
+const STORAGE_KEY = 'cat_offset_x'
+
+const wrapperRef = ref<HTMLElement | null>(null)
+const offsetX = ref(0)             // зсув від центру екрана, px
+const isDragging = ref(false)
+let suppressClick = false
+let dragStartX = 0
+let dragStartOffset = 0
+let dragMoved = false
+
+function maxOffset(): number {
+  const half = Math.min(window.innerWidth, APP_MAX_WIDTH) / 2
+  const catHalf = (wrapperRef.value?.offsetWidth ?? 72) / 2
+  return Math.max(0, half - catHalf - 4)
+}
+
+function clampOffset(v: number): number {
+  const m = maxOffset()
+  return Math.min(m, Math.max(-m, v))
+}
+
+function onPointerDown(e: PointerEvent) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return
+  dragStartX = e.clientX
+  dragStartOffset = offsetX.value
+  dragMoved = false
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('pointerup', onPointerUp)
+  window.addEventListener('pointercancel', onPointerUp)
+}
+
+function onPointerMove(e: PointerEvent) {
+  const dx = e.clientX - dragStartX
+  if (!dragMoved && Math.abs(dx) < DRAG_THRESHOLD) return
+  dragMoved = true
+  isDragging.value = true
+  offsetX.value = clampOffset(dragStartOffset + dx)
+}
+
+function onPointerUp() {
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerup', onPointerUp)
+  window.removeEventListener('pointercancel', onPointerUp)
+  if (dragMoved) {
+    // click після перетягування не повинен рахуватись як погладжування
+    suppressClick = true
+    setTimeout(() => (suppressClick = false), 0)
+    try { localStorage.setItem(STORAGE_KEY, String(Math.round(offsetX.value))) } catch {}
+  }
+  isDragging.value = false
+}
+
+function onResize() {
+  offsetX.value = clampOffset(offsetX.value)
+}
+
+onMounted(() => {
+  try {
+    const saved = Number(localStorage.getItem(STORAGE_KEY))
+    if (Number.isFinite(saved)) offsetX.value = clampOffset(saved)
+  } catch {}
+  window.addEventListener('resize', onResize)
+})
 
 // Якщо котик підібраний, але ще не має імені — авто-відкриваємо модалку для створення імені
 watch(myCat, (cat) => {
@@ -46,12 +113,17 @@ function handleCatSounds() {
 }
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize)
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerup', onPointerUp)
+  window.removeEventListener('pointercancel', onPointerUp)
   if (tapResetTimer) clearTimeout(tapResetTimer)
   if (purrStopTimer) clearTimeout(purrStopTimer)
   stopPurr(200)
 })
 
 async function petCat(e: MouseEvent) {
+  if (suppressClick) return
 
   handleCatSounds()
 
@@ -80,14 +152,25 @@ async function petCat(e: MouseEvent) {
 }
 
 function openModal() {
+  if (suppressClick) return
   playClickSound()
   showCatModal.value = true
 }
 </script>
 
 <template>
-  <div v-if="myCat" class="cat-companion-wrapper">
-    <div class="cat-companion" :class="{ 'is-petted': isPetted }" @click="petCat">
+  <div
+      v-if="myCat"
+      ref="wrapperRef"
+      class="cat-companion-wrapper"
+      :style="{ left: `calc(50% + ${offsetX}px)` }"
+  >
+    <div
+        class="cat-companion"
+        :class="{ 'is-petted': isPetted, 'is-dragging': isDragging }"
+        @pointerdown="onPointerDown"
+        @click="petCat"
+    >
       <div class="cat-bubble" @click.stop="openModal" title="Налаштувати ім'я котика">
         <span>{{ myCat.name || "Назвати котика" }}</span>
       </div>
@@ -125,7 +208,6 @@ function openModal() {
 .cat-companion-wrapper {
   position: fixed;
   bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
   transform: translateX(-50%);
   z-index: 99;
   display: flex;
@@ -140,10 +222,12 @@ function openModal() {
   flex-direction: column;
   align-items: start;
   cursor: grab;
+  touch-action: none;
   transition: transform 0.15s ease;
 }
 
-.cat-companion:active {
+.cat-companion:active,
+.cat-companion.is-dragging {
   cursor: grabbing;
 }
 
