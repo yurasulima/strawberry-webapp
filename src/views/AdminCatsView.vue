@@ -315,9 +315,9 @@ onMounted(() => {
         <!-- Галерея рандомних котиків -->
         <CardPrimary width="100%" height="auto" :padding="14" class="gallery-card">
           <div class="gallery-header">
-            <h3 class="section-title">🎲 Згенерована Сітка Котиків</h3>
+            <h3 class="section-title">Згенерована Сітка Котиків</h3>
             <ButtonText @click="generateGalleryBatch(8)">
-              🔄 Перегенерувати
+              Перегенерувати
             </ButtonText>
           </div>
 
@@ -331,7 +331,6 @@ onMounted(() => {
               <div class="gallery-cat-preview">
                 <CatSprite :colors="cat.colors" :size="72" :playing="true" />
               </div>
-              <span class="gallery-cat-name">{{ cat.name }}</span>
             </div>
           </div>
         </CardPrimary>

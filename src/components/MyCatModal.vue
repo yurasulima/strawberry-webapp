@@ -98,7 +98,7 @@ function handleClose() {
           </div>
 
           <div class="cat-stats-badge">
-            🐾 Загладжено: <strong>{{ pettedCount }}</strong> разів
+            🐾 Погладжено: <strong>{{ pettedCount }}</strong> разів
           </div>
         </div>
 
