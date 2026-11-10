@@ -18,12 +18,12 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const tabs: { id: AdminTabType; emoji: string; labelKey: string }[] = [
-  { id: 'admin-telemetry', emoji: '📊', labelKey: 'admin.nav.telemetry' },
-  { id: 'admin-chats', emoji: '💬', labelKey: 'admin.nav.chats' },
-  { id: 'admin-businesses', emoji: '🏭', labelKey: 'admin.nav.businesses' },
-  { id: 'admin-items', emoji: '📦', labelKey: 'admin.nav.items' },
-  { id: 'admin-users', emoji: '👥', labelKey: 'admin.nav.users' },
+const tabs: { id: AdminTabType; labelKey: string }[] = [
+  { id: 'admin-telemetry', labelKey: 'admin.nav.telemetry' },
+  { id: 'admin-chats', labelKey: 'admin.nav.chats' },
+  { id: 'admin-businesses', labelKey: 'admin.nav.businesses' },
+  { id: 'admin-items', labelKey: 'admin.nav.items' },
+  { id: 'admin-users', labelKey: 'admin.nav.users' },
 ]
 </script>
 
@@ -33,7 +33,7 @@ const tabs: { id: AdminTabType; emoji: string; labelKey: string }[] = [
       <div class="admin-nav-bar">
         <div class="admin-nav-item">
           <LeftButton
-              :size="64"  :title="t('admin.nav.back')" @click="emit('exit')" />
+              :size="64" :title="t('admin.nav.back')" @click="emit('exit')" />
         </div>
 
         <div v-for="tab in tabs" :key="tab.id" class="admin-nav-item">

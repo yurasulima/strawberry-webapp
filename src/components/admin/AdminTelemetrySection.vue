@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
-import { CardPrimary, Card, ButtonText, ItemIcon } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, ItemIcon, PixelPieChart } from '@/components/pixel'
+import type { PieItem } from '@/components/pixel/PixelPieChart.vue'
 import FlatCard from "@/components/pixel/FlatCard.vue"
 
 const { t } = useI18n()
@@ -59,6 +60,35 @@ interface GlobalTelemetry {
   totalSpiderCandiesLootedDiff?: number
   totalCatPets?: number
   totalCatPetsDiff?: number
+
+  // Розіграші
+  totalGiveawayAttempts?: number
+  totalGiveawayAttemptsDiff?: number
+  successfulGiveaways?: number
+  successfulGiveawaysDiff?: number
+  failedGiveaways?: number
+  failedGiveawaysDiff?: number
+  cancelledGiveaways?: number
+  cancelledGiveawaysDiff?: number
+  totalGiveawayPrizeCirculated?: number
+  totalGiveawayPrizeCirculatedDiff?: number
+  totalGiveawayRefundedCoins?: number
+  totalGiveawayRefundedCoinsDiff?: number
+  blockedSpamMessagesCount?: number
+  blockedSpamMessagesCountDiff?: number
+
+  // Інвайти
+  totalInvitesCount?: number
+  totalInvitesCountDiff?: number
+  totalInviteRewardsCoins?: number
+  totalInviteRewardsCoinsDiff?: number
+
+  // Чати
+  totalTelegramChats?: number
+  totalTelegramChatsDiff?: number
+  botAddRewardsClaimed?: number
+  botAddRewardsClaimedDiff?: number
+
   businessYieldBreakdown?: ItemYield[]
 }
 
@@ -123,6 +153,38 @@ function getCandyCount(tm: GlobalTelemetry | null): number {
   return found?.totalAmount ?? 0
 }
 
+const giveawayChartData = computed<PieItem[]>(() => {
+  if (!telemetry.value) return []
+  const tm = telemetry.value
+  return [
+    { label: 'Успішні', value: tm.successfulGiveaways || 0, color: '#2e7d32' },
+    { label: 'Відхилені', value: tm.failedGiveaways || 0, color: '#ff7043' },
+    { label: 'Скасовані 24г', value: tm.cancelledGiveaways || 0, color: '#ab47bc' },
+    { label: 'Спам відхилено', value: tm.blockedSpamMessagesCount || 0, color: '#c62828' }
+  ]
+})
+
+const economyChartData = computed<PieItem[]>(() => {
+  if (!telemetry.value) return []
+  const tm = telemetry.value
+  return [
+    { label: 'Обіг розіграшів', value: tm.totalGiveawayPrizeCirculated || 0, color: '#1e88e5' },
+    { label: 'Перекази монет', value: tm.totalCoinsTransferred || 0, color: '#2e7d32' },
+    { label: 'Украдено монет', value: tm.totalCoinsStolen || 0, color: '#c62828' },
+    { label: 'Зароблено з продажів', value: tm.totalCoinsEarned || 0, color: '#fbc02d' },
+    { label: 'Виплати за інвайти', value: tm.totalInviteRewardsCoins || 0, color: '#26a69a' }
+  ]
+})
+
+const chatEngagementChartData = computed<PieItem[]>(() => {
+  if (!telemetry.value) return []
+  const tm = telemetry.value
+  return [
+    { label: 'Групові чати', value: tm.totalTelegramChats || 0, color: '#1e88e5' },
+    { label: 'Реферальні інвайти', value: tm.totalInvitesCount || 0, color: '#2e7d32' }
+  ]
+})
+
 watch(selectedDate, () => {
   load()
 })
@@ -136,7 +198,7 @@ onMounted(load)
       <div class="section-header">
         <h2 class="title">{{ t('admin.nav.telemetry') }}</h2>
         <div class="header-actions">
-          <ButtonText @click="router.push('/cats')">🐱 Котики</ButtonText>
+          <ButtonText @click="router.push('/cats')">Котики</ButtonText>
           <ButtonText :loading="isLoading" @click="load">
             {{ t('players.refresh') }}
           </ButtonText>
@@ -191,7 +253,88 @@ onMounted(load)
               <input type="date" v-model="selectedDate" class="pixel-input-date" />
             </div>
           </div>
+
+          <!-- ── Секція справжніх піксельних кругових графіків ── -->
+          <h4 class="sub-header">Піксельна Аналітика та Розподіл</h4>
+          <div class="charts-row">
+            <FlatCard width="100%" height="auto" padding="10px">
+              <PixelPieChart
+                title="Статуси Розіграшів"
+                :items="giveawayChartData"
+                :display-size="200"
+              />
+            </FlatCard>
+
+            <FlatCard width="100%" height="auto" padding="10px">
+              <PixelPieChart
+                title="Обіг Економіки"
+                :items="economyChartData"
+                :display-size="200"
+              />
+            </FlatCard>
+
+            <FlatCard width="100%" height="auto" padding="10px">
+              <PixelPieChart
+                title="Залученість Чатив"
+                :items="chatEngagementChartData"
+                :display-size="200"
+              />
+            </FlatCard>
+          </div>
+
+          <h4 class="sub-header" style="margin-top: 16px;">Показники та Метрики</h4>
           <div class="telemetry-grid">
+            <!-- Розіграші -->
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Всього спроб розіграшів</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalGiveawayAttempts) }}</span>
+              </div>
+            </FlatCard>
+
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Успішних розіграшів</span>
+                <span class="telemetry-value text-success">{{ formatNumber(telemetry.successfulGiveaways) }}</span>
+              </div>
+            </FlatCard>
+
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Скасованих (24г без 10 людей)</span>
+                <span class="telemetry-value text-danger">{{ formatNumber(telemetry.cancelledGiveaways) }}</span>
+              </div>
+            </FlatCard>
+
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Обіг розіграшів (монет)</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalGiveawayPrizeCirculated) }}</span>
+              </div>
+            </FlatCard>
+
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Відфільтровано спам-повідомлень</span>
+                <span class="telemetry-value text-danger">{{ formatNumber(telemetry.blockedSpamMessagesCount) }}</span>
+              </div>
+            </FlatCard>
+
+            <!-- Інвайти та чати -->
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Всього реферальних інвайтів</span>
+                <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalInvitesCount) }}</span>
+              </div>
+            </FlatCard>
+
+            <FlatCard width="100%" height="auto" padding="8px 10px">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Збережених Telegram-чатів</span>
+                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalTelegramChats) }}</span>
+              </div>
+            </FlatCard>
+
             <FlatCard width="100%" height="auto" padding="8px 10px">
               <div class="telemetry-item">
                 <span class="telemetry-label">{{ t('admin.total_clicks_all_time') }}</span>
@@ -250,34 +393,6 @@ onMounted(load)
 
             <FlatCard width="100%" height="auto" padding="8px 10px">
               <div class="telemetry-item">
-                <span class="telemetry-label">{{ t('admin.avg_per_user') }}</span>
-                <span class="telemetry-value">{{ telemetry.avgClicksPerClicker }}</span>
-                <span
-                  v-if="telemetry.avgClicksPerClickerDiff !== undefined"
-                  class="diff-tag"
-                  :class="diffClass(telemetry.avgClicksPerClickerDiff)"
-                >
-                  {{ formatDiff(telemetry.avgClicksPerClickerDiff) }}
-                </span>
-              </div>
-            </FlatCard>
-
-            <FlatCard width="100%" height="auto" padding="8px 10px">
-              <div class="telemetry-item">
-                <span class="telemetry-label">{{ t('admin.avg_per_batch') }}</span>
-                <span class="telemetry-value">{{ telemetry.avgClicksPerBatch }}</span>
-                <span
-                  v-if="telemetry.avgClicksPerBatchDiff !== undefined"
-                  class="diff-tag"
-                  :class="diffClass(telemetry.avgClicksPerBatchDiff)"
-                >
-                  {{ formatDiff(telemetry.avgClicksPerBatchDiff) }}
-                </span>
-              </div>
-            </FlatCard>
-
-            <FlatCard width="100%" height="auto" padding="8px 10px">
-              <div class="telemetry-item">
                 <span class="telemetry-label">Спроб крадіжок</span>
                 <span class="telemetry-value">{{ formatNumber(telemetry.totalStealAttempts) }}</span>
                 <span
@@ -286,20 +401,6 @@ onMounted(load)
                   :class="diffClass(telemetry.totalStealAttemptsDiff)"
                 >
                   {{ formatDiff(telemetry.totalStealAttemptsDiff) }}
-                </span>
-              </div>
-            </FlatCard>
-
-            <FlatCard width="100%" height="auto" padding="8px 10px">
-              <div class="telemetry-item">
-                <span class="telemetry-label">Неуспішних крадіжок</span>
-                <span class="telemetry-value text-danger">{{ formatNumber(telemetry.failedStealAttempts) }}</span>
-                <span
-                  v-if="telemetry.failedStealAttemptsDiff !== undefined"
-                  class="diff-tag"
-                  :class="diffClass(telemetry.failedStealAttemptsDiff)"
-                >
-                  {{ formatDiff(telemetry.failedStealAttemptsDiff) }}
                 </span>
               </div>
             </FlatCard>
@@ -370,63 +471,7 @@ onMounted(load)
 
             <FlatCard width="100%" height="auto" padding="8px 10px">
               <div class="telemetry-item">
-                <span class="telemetry-label">Піднято з дропів бота</span>
-                <span class="telemetry-value text-danger">{{ formatNumber(telemetry.totalStrawberriesFromDrops) }}</span>
-                <span
-                  v-if="telemetry.totalStrawberriesFromDropsDiff !== undefined"
-                  class="diff-tag"
-                  :class="diffClass(telemetry.totalStrawberriesFromDropsDiff)"
-                >
-                  {{ formatDiff(telemetry.totalStrawberriesFromDropsDiff) }}
-                </span>
-              </div>
-            </FlatCard>
-
-            <FlatCard width="100%" height="auto" padding="8px 10px">
-              <div class="telemetry-item">
-                <span class="telemetry-label">З Daily Rewards</span>
-                <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalStrawberriesFromDailyRewards) }}</span>
-                <span
-                  v-if="telemetry.totalStrawberriesFromDailyRewardsDiff !== undefined"
-                  class="diff-tag"
-                  :class="diffClass(telemetry.totalStrawberriesFromDailyRewardsDiff)"
-                >
-                  {{ formatDiff(telemetry.totalStrawberriesFromDailyRewardsDiff) }}
-                </span>
-              </div>
-            </FlatCard>
-
-            <FlatCard width="100%" height="auto" padding="8px 10px">
-              <div class="telemetry-item">
-                <span class="telemetry-label">Отримано з переказів</span>
-                <span class="telemetry-value text-success">{{ formatNumber(telemetry.totalStrawberriesFromTransfers) }}</span>
-                <span
-                  v-if="telemetry.totalStrawberriesFromTransfersDiff !== undefined"
-                  class="diff-tag"
-                  :class="diffClass(telemetry.totalStrawberriesFromTransfersDiff)"
-                >
-                  {{ formatDiff(telemetry.totalStrawberriesFromTransfersDiff) }}
-                </span>
-              </div>
-            </FlatCard>
-
-            <FlatCard width="100%" height="auto" padding="8px 10px">
-              <div class="telemetry-item">
-                <span class="telemetry-label">Залутано цукерок</span>
-                <span class="telemetry-value text-gold">{{ formatNumber(getCandyCount(telemetry)) }}</span>
-                <span
-                  v-if="telemetry.totalSpiderCandiesLootedDiff !== undefined"
-                  class="diff-tag"
-                  :class="diffClass(telemetry.totalSpiderCandiesLootedDiff)"
-                >
-                  {{ formatDiff(telemetry.totalSpiderCandiesLootedDiff) }}
-                </span>
-              </div>
-            </FlatCard>
-
-            <FlatCard width="100%" height="auto" padding="8px 10px">
-              <div class="telemetry-item">
-                <span class="telemetry-label">🐾 Погладжувань котиків</span>
+                <span class="telemetry-label">Погладжувань котиків</span>
                 <span class="telemetry-value text-gold">{{ formatNumber(telemetry.totalCatPets) }}</span>
                 <span
                   v-if="telemetry.totalCatPetsDiff !== undefined"
@@ -458,6 +503,22 @@ onMounted(load)
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.sub-header {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fbc02d;
+  margin: 12px 0 8px 0;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
 }
 
 .diff-tag {

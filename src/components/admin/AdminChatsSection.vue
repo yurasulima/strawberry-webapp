@@ -19,6 +19,17 @@ interface ChatSummary {
   lastActivity: string
 }
 
+interface TelegramChatInfo {
+  chatId: number
+  title?: string
+  username?: string
+  chatLink?: string
+  type?: string
+  addedByUserId?: number
+  rewardClaimed?: boolean
+  addedAt?: string
+}
+
 interface ChatDailyStats {
   date: string
   messageCount: number
@@ -46,6 +57,7 @@ interface ChatDetail {
 }
 
 const chats = ref<ChatSummary[]>([])
+const telegramChats = ref<Map<number, TelegramChatInfo>>(new Map())
 const isLoading = ref(true)
 
 // Modal state
@@ -56,8 +68,18 @@ const isLoadingDetail = ref(false)
 async function loadChats() {
   isLoading.value = true
   try {
-    const res = await api.get<ChatSummary[]>('/admin/chats')
-    chats.value = res.data
+    const [resSummary, resTg] = await Promise.allSettled([
+      api.get<ChatSummary[]>('/admin/chats'),
+      api.get<TelegramChatInfo[]>('/admin/telegram-chats')
+    ])
+    if (resSummary.status === 'fulfilled') {
+      chats.value = resSummary.value.data
+    }
+    if (resTg.status === 'fulfilled') {
+      const map = new Map<number, TelegramChatInfo>()
+      resTg.value.data.forEach(tc => map.set(tc.chatId, tc))
+      telegramChats.value = map
+    }
   } catch (err) {
     console.error('Error fetching chats:', err)
   } finally {
@@ -79,6 +101,17 @@ async function openChatDetail(c: ChatSummary) {
   }
 }
 
+function getChatLink(chatId: number): string | null {
+  const tg = telegramChats.value.get(chatId)
+  if (tg && tg.chatLink) return tg.chatLink
+  return null
+}
+
+function isRewardClaimed(chatId: number): boolean {
+  const tg = telegramChats.value.get(chatId)
+  return tg?.rewardClaimed === true
+}
+
 function formatDate(isoStr?: string): string {
   if (!isoStr) return '-'
   const d = new Date(isoStr)
@@ -94,7 +127,7 @@ onMounted(loadChats)
     <CardPrimary width="100%" height="auto" :padding="8">
       <div class="section-header">
         <h2 class="title">{{ t('admin.chats_title') }}</h2>
-        <ButtonText  :loading="isLoading" @click="loadChats">
+        <ButtonText :loading="isLoading" @click="loadChats">
           {{ t('players.refresh') }}
         </ButtonText>
       </div>
@@ -111,8 +144,20 @@ onMounted(loadChats)
         <ul class="entity-list">
           <li v-for="c in chats" :key="c.chatId" class="chat-row" @click="openChatDetail(c)">
             <div class="chat-header-line">
-              <span class="chat-title">💬 {{ c.chatTitle }}</span>
-              <span class="chat-id-badge">ID: {{ c.chatId }}</span>
+              <span class="chat-title">{{ c.chatTitle }}</span>
+              <div class="chat-badges">
+                <span v-if="isRewardClaimed(c.chatId)" class="reward-badge">5000 монет</span>
+                <a
+                  v-if="getChatLink(c.chatId)"
+                  :href="getChatLink(c.chatId)!"
+                  target="_blank"
+                  class="link-button"
+                  @click.stop
+                >
+                  Перейти до чату
+                </a>
+                <span class="chat-id-badge">ID: {{ c.chatId }}</span>
+              </div>
             </div>
 
             <div class="chat-stats-grid">
@@ -150,7 +195,14 @@ onMounted(loadChats)
       </div>
 
       <div v-else-if="selectedChatDetail" class="telemetry-modal-body">
-        <div class="user-telemetry-title">💬 {{ selectedChatDetail.chatTitle }}</div>
+        <div class="user-telemetry-title">{{ selectedChatDetail.chatTitle }}</div>
+
+        <div v-if="getChatLink(selectedChatDetail.chatId)" class="telemetry-info-row">
+          <span>Посилання:</span>
+          <a :href="getChatLink(selectedChatDetail.chatId)!" target="_blank" class="chat-url-link">
+            {{ getChatLink(selectedChatDetail.chatId) }}
+          </a>
+        </div>
 
         <div class="telemetry-info-row">
           <span>{{ t('admin.total_messages') }}:</span>
@@ -189,9 +241,9 @@ onMounted(loadChats)
             <thead>
               <tr>
                 <th>{{ t('admin.date') }}</th>
-                <th>💬</th>
-                <th>🤖</th>
-                <th>👥</th>
+                <th>Повідомлення</th>
+                <th>Команди</th>
+                <th>Учасники</th>
               </tr>
             </thead>
             <tbody>
@@ -210,3 +262,39 @@ onMounted(loadChats)
 </template>
 
 <style scoped src="./admin.css"></style>
+<style scoped>
+.chat-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reward-badge {
+  font-size: 10px;
+  background: rgba(251, 192, 45, 0.2);
+  color: #fbc02d;
+  border: 1px solid #fbc02d;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.link-button {
+  font-size: 11px;
+  background: #2e7d32;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.link-button:hover {
+  background: #388e3c;
+}
+
+.chat-url-link {
+  color: #1e88e5;
+  text-decoration: underline;
+  word-break: break-all;
+}
+</style>
