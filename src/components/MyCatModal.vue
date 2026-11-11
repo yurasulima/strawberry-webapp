@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { PixelModal, ButtonText } from '@/components/pixel'
+import { PixelModal, ButtonText, RarityBadge } from '@/components/pixel'
 import CatSprite from '@/components/pixel/CatSprite.vue'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
@@ -93,6 +93,8 @@ function handleClose() {
       <template v-else>
         <!-- Перегляд унікального котика -->
         <div class="cat-preview-section">
+          <RarityBadge :colors="myCat.colors" :show-score="true" />
+
           <div class="cat-avatar-box">
             <CatSprite :colors="myCat.colors" :size="128" :playing="true" />
           </div>
@@ -187,6 +189,19 @@ function handleClose() {
   padding: 4px 10px;
   border-radius: 4px;
   border: 1px solid #5d4037;
+}
+
+.cat-rarity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 2px solid;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .field-group {

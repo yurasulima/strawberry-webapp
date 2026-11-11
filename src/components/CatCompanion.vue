@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useUserStore } from '@/stores/user'
 import CatSprite from '@/components/pixel/CatSprite.vue'
+import { CatNameBadge } from '@/components/pixel'
 import MyCatModal from '@/components/MyCatModal.vue'
 import { playClickSound, playMeowSound, startPurr, stopPurr } from '@/services/sound'
 import api from '@/services/api'
@@ -171,9 +172,10 @@ function openModal() {
         @pointerdown="onPointerDown"
         @click="petCat"
     >
-      <div class="cat-bubble" @click.stop="openModal" title="Налаштувати ім'я котика">
-        <span>{{ myCat.name || "Назвати котика" }}</span>
-      </div>
+      <CatNameBadge
+          :name="myCat.name"
+          @click.stop="openModal"
+      />
 
       <div class="cat-sprite-box">
         <CatSprite
@@ -220,7 +222,7 @@ function openModal() {
 .cat-companion {
   display: flex;
   flex-direction: column;
-  align-items: start;
+  align-items: center;
   cursor: grab;
   touch-action: none;
   transition: transform 0.15s ease;
@@ -235,31 +237,8 @@ function openModal() {
   animation: cat-bounce 0.35s ease-in-out;
 }
 
-.cat-bubble {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #fff8eb;
-  border: 1px solid #5d4037;
-  border-radius: 6px;
-  padding: 2px 6px;
-  font-family: var(--font-pixel), sans-serif;
-  font-size: 11px;
-  font-weight: bold;
-  color: #3f2e21;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin-bottom: 2px;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-}
-
-.cat-bubble:hover {
-  transform: scale(1.06);
-  background: #fff0d6;
-}
-
-.bubble-icon {
-  font-size: 10px;
+.cat-name-badge-el {
+  margin-bottom: 4px;
 }
 
 .cat-sprite-box {

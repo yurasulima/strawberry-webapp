@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PremiumBadge, PixelText, ItemIcon, SlideFade } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PremiumBadge, LevelBadge, PixelText, ItemIcon, SlideFade } from '@/components/pixel'
 import type { User } from "@/types/User.ts"
 import { useUserStore } from "@/stores/user.ts"
 import { useToastStore } from "@/stores/toast.ts"
@@ -97,8 +97,7 @@ onMounted(() => {
                 </div>
 
                 <div class="player-name-wrapper">
-
-                  <span class="level-val">LVL: {{ player.level }}</span>
+                  <LevelBadge :level="player.level" />
                   <PremiumBadge v-if="player.premium" />
                 </div>
               </div>
@@ -140,24 +139,6 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
-}
-.level-val {
-  font-family: var(--font-pixel);
-  font-size: 12px;
-  width: fit-content;
-  font-weight: bold;
-  background-color: #4c9174;
-  border: 1px solid #1b5e20;
-  color: #ffffff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-  box-shadow: 0 1px 0 #1b5e20;
-  user-select: none;
-  line-height: 1;
 }
 .title {
   margin: 0;

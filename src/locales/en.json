@@ -259,5 +259,15 @@
       "w3": "Week 3",
       "w4": "Week 4"
     }
+  },
+  "cats": {
+    "title": "My Cat",
+    "rarity": {
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "mythic": "Mythic"
+    }
   }
 }

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PixelModal } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PixelModal, RarityBadge } from '@/components/pixel'
 import CatSprite from '@/components/pixel/CatSprite.vue'
-import { ZONE_DEFS, type CatColors, type ZoneKey } from '@/services/catRecolor'
+import { ZONE_DEFS, evaluateCatRarity, type CatColors, type ZoneKey } from '@/services/catRecolor'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import { playClickSound, playSuccessSound } from '@/services/sound'
@@ -21,6 +21,8 @@ const colors = ref<CatColors>({
   accent: '#eb9486',
   collar: '#e3baad'
 })
+
+const currentRarity = computed(() => evaluateCatRarity(colors.value))
 
 /* Налаштування спрайта */
 const catSize = ref<number>(128)
@@ -50,57 +52,119 @@ function hslToHex(h: number, s: number, l: number): string {
 }
 
 function generateRandomColors(): CatColors {
-  let h: number
-  let s: number
-  let l: number
-
-  const roll = Math.random()
-  if (roll < 0.70) {
-    const hueType = Math.floor(Math.random() * 4)
-    if (hueType === 0) {
-      h = Math.floor(Math.random() * 36) // Рудий / оранжевий
-      s = Math.floor(40 + Math.random() * 45)
-      l = Math.floor(45 + Math.random() * 30)
-    } else if (hueType === 1) {
-      h = Math.floor(36 + Math.random() * 20) // Бежевий / кремовий
-      s = Math.floor(25 + Math.random() * 40)
-      l = Math.floor(55 + Math.random() * 30)
-    } else if (hueType === 2) {
-      h = Math.floor(180 + Math.random() * 60) // Попелясто-сірий
-      s = Math.floor(5 + Math.random() * 15)
-      l = Math.floor(35 + Math.random() * 40)
-    } else {
-      h = Math.floor(340 + Math.random() * 21) // Персиковий
-      s = Math.floor(30 + Math.random() * 40)
-      l = Math.floor(55 + Math.random() * 25)
+  const catTypes = [
+    // 1. Класичний рудий (Ginger / Orange Tabby)
+    () => {
+      const h = Math.floor(18 + Math.random() * 22)
+      const fur = hslToHex(h, Math.floor(75 + Math.random() * 25), Math.floor(58 + Math.random() * 18))
+      const markings = hslToHex(h - 5, Math.floor(80 + Math.random() * 20), Math.floor(32 + Math.random() * 15))
+      const belly = Math.random() < 0.7
+        ? hslToHex(35, 40, Math.floor(90 + Math.random() * 8))
+        : hslToHex(h + 5, 50, Math.floor(78 + Math.random() * 10))
+      const accent = hslToHex(350, Math.floor(80 + Math.random() * 20), Math.floor(65 + Math.random() * 10))
+      const collar = hslToHex(Math.floor(Math.random() * 360), 85, 50)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 2. Сірий таббі / Сріблястий (Silver / Gray Tabby)
+    () => {
+      const h = Math.floor(200 + Math.random() * 25)
+      const s = Math.floor(10 + Math.random() * 20)
+      const l = Math.floor(60 + Math.random() * 25)
+      const fur = hslToHex(h, s, l)
+      const markings = hslToHex(h, Math.min(60, s + 20), Math.floor(20 + Math.random() * 20))
+      const belly = hslToHex(h, 10, Math.floor(92 + Math.random() * 7))
+      const accent = hslToHex(340 + Math.floor(Math.random() * 20), 85, 70)
+      const collar = hslToHex(Math.floor(Math.random() * 360), 85, 52)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 3. Чорний смокінг / Темний (Tuxedo / Midnight)
+    () => {
+      const h = Math.floor(210 + Math.random() * 30)
+      const fur = hslToHex(h, 25, Math.floor(15 + Math.random() * 12))
+      const markings = hslToHex(h, 30, Math.floor(8 + Math.random() * 8))
+      const belly = hslToHex(40, 20, Math.floor(92 + Math.random() * 7))
+      const accent = hslToHex(350, 85, 68)
+      const collar = hslToHex(Math.floor(Math.random() * 360), 90, 55)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 4. Бежевий / Сіамський (Cream / Pointed)
+    () => {
+      const h = Math.floor(35 + Math.random() * 15)
+      const fur = hslToHex(h, Math.floor(45 + Math.random() * 30), Math.floor(80 + Math.random() * 12))
+      const markings = hslToHex(h - 15, Math.floor(50 + Math.random() * 30), Math.floor(25 + Math.random() * 20))
+      const belly = hslToHex(h, 30, Math.floor(92 + Math.random() * 6))
+      const accent = hslToHex(345, 80, 70)
+      const collar = hslToHex(Math.floor(180 + Math.random() * 40), 90, 50)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 5. Триколірний Калико (Calico / Tortie)
+    () => {
+      const fur = hslToHex(25 + Math.floor(Math.random() * 15), 85, 62)
+      const markings = hslToHex(210 + Math.floor(Math.random() * 20), 25, 22)
+      const belly = hslToHex(40, 20, 95)
+      const accent = hslToHex(350, 90, 68)
+      const collar = hslToHex(Math.floor(Math.random() * 360), 85, 50)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 6. Ніжно-рожевий / Полуничний (Sakura / Strawberry)
+    () => {
+      const h = (Math.floor(345 + Math.random() * 25)) % 360
+      const fur = hslToHex(h, Math.floor(70 + Math.random() * 25), Math.floor(75 + Math.random() * 15))
+      const markings = hslToHex((h - 10 + 360) % 360, Math.floor(80 + Math.random() * 20), Math.floor(45 + Math.random() * 15))
+      const belly = hslToHex(h, 20, Math.floor(94 + Math.random() * 5))
+      const accent = hslToHex(350, 95, 65)
+      const collar = hslToHex(140 + Math.floor(Math.random() * 30), 85, 48)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 7. М'ятний / Лісовий Магічний (Mint / Forest Emerald)
+    () => {
+      const h = Math.floor(145 + Math.random() * 35)
+      const fur = hslToHex(h, Math.floor(55 + Math.random() * 35), Math.floor(55 + Math.random() * 25))
+      const markings = hslToHex(h - 15, Math.floor(70 + Math.random() * 25), Math.floor(25 + Math.random() * 15))
+      const belly = hslToHex(h, 20, Math.floor(90 + Math.random() * 8))
+      const accent = hslToHex(340, 85, 70)
+      const collar = hslToHex(45 + Math.floor(Math.random() * 20), 95, 50)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 8. Космічний Фіолетовий / Лаванда (Cosmic Lavender)
+    () => {
+      const h = Math.floor(260 + Math.random() * 35)
+      const fur = hslToHex(h, Math.floor(55 + Math.random() * 35), Math.floor(65 + Math.random() * 20))
+      const markings = hslToHex(h + 20, Math.floor(70 + Math.random() * 25), Math.floor(30 + Math.random() * 15))
+      const belly = hslToHex(h - 15, 20, Math.floor(92 + Math.random() * 6))
+      const accent = hslToHex(330, 90, 72)
+      const collar = hslToHex(170 + Math.floor(Math.random() * 30), 90, 50)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 9. Золотисто-Бурштиновий (Golden Amber)
+    () => {
+      const h = Math.floor(42 + Math.random() * 14)
+      const fur = hslToHex(h, 90, Math.floor(52 + Math.random() * 15))
+      const markings = hslToHex(h - 15, 95, Math.floor(30 + Math.random() * 12))
+      const belly = hslToHex(h + 5, 60, Math.floor(88 + Math.random() * 8))
+      const accent = hslToHex(350, 85, 62)
+      const collar = hslToHex(210 + Math.floor(Math.random() * 30), 85, 50)
+      return { fur, markings, belly, accent, collar }
+    },
+    // 10. Шоколадний Мафін (Chocolate Muffin)
+    () => {
+      const h = Math.floor(18 + Math.random() * 15)
+      const fur = hslToHex(h, Math.floor(50 + Math.random() * 30), Math.floor(35 + Math.random() * 15))
+      const markings = hslToHex(h - 5, Math.floor(60 + Math.random() * 30), Math.floor(18 + Math.random() * 10))
+      const belly = hslToHex(35, 35, Math.floor(88 + Math.random() * 8))
+      const accent = hslToHex(350, 80, 68)
+      const collar = hslToHex(Math.floor(Math.random() * 360), 85, 52)
+      return { fur, markings, belly, accent, collar }
     }
-  } else if (roll < 0.90) {
-    h = Math.floor(Math.random() * 360) // Пастельні фентезі тони
-    s = Math.floor(30 + Math.random() * 35)
-    l = Math.floor(55 + Math.random() * 25)
-  } else {
-    h = Math.floor(190 + Math.random() * 70) // Помірні сині тони
-    s = Math.floor(30 + Math.random() * 30)
-    l = Math.floor(45 + Math.random() * 25)
-  }
+  ]
 
-  const fur = hslToHex(h, s, l)
-  const markings = hslToHex(h, Math.min(100, s + 18), Math.max(12, l - 22))
-  const belly = hslToHex(h, Math.max(5, s - 25), Math.min(96, l + 20))
-  const accent = hslToHex((h + 330) % 360, Math.min(100, s + 25), Math.min(85, l + 10))
-  const collar = hslToHex((h + 160 + Math.floor(Math.random() * 40)) % 360, 80, 52)
-
-  return { fur, markings, belly, accent, collar }
+  const choice = catTypes[Math.floor(Math.random() * catTypes.length)]
+  return choice()
 }
 
 function randomizeCurrentCat() {
   playClickSound()
   colors.value = generateRandomColors()
-}
-
-function applyPreset(pColors: CatColors) {
-  playClickSound()
-  colors.value = { ...pColors }
 }
 
 function generateGalleryBatch(count = 8) {
@@ -173,6 +237,8 @@ onMounted(() => {
       <div class="left-col">
         <CardPrimary width="100%" height="auto" :padding="14">
           <div class="preview-box">
+            <RarityBadge :colors="colors" :show-score="true" />
+
             <div class="cat-display">
               <CatSprite
                 :colors="colors"
@@ -265,8 +331,11 @@ onMounted(() => {
               v-for="cat in catGallery"
               :key="cat.id"
               class="gallery-item"
+              :style="{ borderColor: evaluateCatRarity(cat.colors).border }"
               @click="inspectGalleryCat(cat)"
             >
+              <RarityBadge :colors="cat.colors" />
+
               <div class="gallery-cat-preview">
                 <CatSprite :colors="cat.colors" :size="72" :playing="true" />
               </div>
@@ -279,6 +348,8 @@ onMounted(() => {
     <!-- Модальне вікно огляду обраного котика -->
     <PixelModal v-model="isCatModalOpen" title="Деталі котика" :width="340">
       <div v-if="selectedGalleryCat" class="modal-cat-detail">
+        <RarityBadge :colors="selectedGalleryCat.colors" :show-score="true" />
+
         <div class="modal-cat-preview">
           <CatSprite :colors="selectedGalleryCat.colors" :size="128" :playing="true" />
         </div>
@@ -600,5 +671,34 @@ onMounted(() => {
   height: 16px;
   border-radius: 2px;
   border: 1px solid #3f2e21;
+}
+
+/* Бейджі рідкісності */
+.rarity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 2px solid;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.rarity-score {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.gallery-rarity-tag {
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
 }
 </style>

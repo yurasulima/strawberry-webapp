@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { PixelModal, Card, PremiumBadge, PixelText } from '@/components/pixel'
+import { PixelModal, Card, PremiumBadge, LevelBadge, PixelText } from '@/components/pixel'
 import { useUserStore } from '@/stores/user'
 
 const props = withDefaults(defineProps<{
@@ -63,7 +63,7 @@ function handleClose() {
         <div class="level-box">
           <div class="level-header">
             <span class="level-label">Рівень</span>
-            <span class="level-val">{{ level }}</span>
+            <LevelBadge :level="level" prefix="" />
           </div>
 
           <!-- Прогрес-бар XP -->
@@ -155,17 +155,6 @@ function handleClose() {
   font-size: 18px;
   font-weight: bold;
   color: #3f2e21;
-}
-
-.level-val {
-  font-family: var(--font-pixel), sans-serif;
-  font-size: 18px;
-  font-weight: bold;
-  background-color: #d97706;
-  color: #ffffff;
-  padding: 2px 10px;
-  border-radius: 6px;
-  border: 2px solid #b45309;
 }
 
 .xp-bar-frame {
