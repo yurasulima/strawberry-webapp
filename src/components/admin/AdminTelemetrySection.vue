@@ -497,8 +497,143 @@ onMounted(load)
   </div>
 </template>
 
-<style scoped src="./admin.css"></style>
 <style scoped>
+.admin-container {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  font-family: var(--font-pixel);
+  color: #3f2e21;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-header .title {
+  margin: 0;
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: normal;
+}
+
+.telemetry-header {
+  font-size: 16px;
+  font-weight: bold;
+  color: #3f2e21;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #3f2e21;
+}
+
+.text-danger { color: #c62828; }
+.text-gold { color: #d97706; }
+.text-success { color: #2e7d32; }
+
+.empty-state {
+  text-align: center;
+  padding: 16px;
+  font-size: 16px;
+}
+
+.telemetry-card {
+  width: 100%;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.telemetry-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.telemetry-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.date-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-label {
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.pixel-input-date {
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  color: #3f2e21;
+  outline: none;
+  cursor: pointer;
+}
+
+.pixel-input-date:focus {
+  border-color: #2e7d32;
+}
+
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.telemetry-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.telemetry-label {
+  font-size: 13px;
+  color: #5d4037;
+}
+
+.telemetry-value {
+  font-size: 16px;
+  font-weight: bold;
+}
+
 .header-actions {
   display: flex;
   align-items: center;

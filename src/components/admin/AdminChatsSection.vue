@@ -261,8 +261,157 @@ onMounted(loadChats)
   </div>
 </template>
 
-<style scoped src="./admin.css"></style>
 <style scoped>
+.admin-container {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  font-family: var(--font-pixel);
+  color: #3f2e21;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-header .title {
+  margin: 0;
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: normal;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 16px;
+  font-size: 16px;
+}
+
+.list-card {
+  width: 100%;
+}
+
+.entity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.chat-row:hover {
+  background-color: rgba(63, 46, 33, 0.05);
+}
+
+.chat-row + .chat-row {
+  border-top: 2px solid rgba(63, 46, 33, 0.18);
+}
+
+.chat-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #3f2e21;
+}
+
+.chat-id-badge {
+  font-size: 12px;
+  color: #7c624d;
+}
+
+.chat-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  background: #fff8eb;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #5d4037;
+}
+
+.chat-stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.chat-stat-label {
+  color: #5d4037;
+}
+
+.chat-stat-val {
+  font-weight: bold;
+}
+
+.text-gold { color: #d97706; }
+.text-success { color: #2e7d32; }
+
+.telemetry-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+  font-family: var(--font-pixel);
+}
+
+.user-telemetry-title {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  color: #3f2e21;
+}
+
+.telemetry-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.daily-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.daily-table th, .daily-table td {
+  border: 1px solid #5d4037;
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.daily-table th {
+  background: #f0e2cd;
+  font-weight: bold;
+  color: #3f2e21;
+}
+
+.daily-table tr:nth-child(even) {
+  background: #fff8eb;
+}
+
 .chat-badges {
   display: flex;
   align-items: center;

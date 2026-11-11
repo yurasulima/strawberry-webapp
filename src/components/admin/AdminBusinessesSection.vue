@@ -285,4 +285,145 @@ onMounted(load)
   </div>
 </template>
 
-<style scoped src="./admin.css"></style>
+<style scoped>
+.admin-container {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  font-family: var(--font-pixel);
+  color: #3f2e21;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-header .title {
+  margin: 0;
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: normal;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 16px;
+  font-size: 16px;
+}
+
+.list-card {
+  width: 100%;
+}
+
+.entity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.entity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 6px;
+}
+
+.entity-row + .entity-row {
+  border-top: 2px solid rgba(63, 46, 33, 0.18);
+}
+
+.entity-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entity-name {
+  font-size: 18px;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-meta {
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.text-success { color: #2e7d32; }
+
+.hint-text {
+  font-size: 16px;
+  color: #7c624d;
+}
+
+.entity-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+  font-family: var(--font-pixel);
+}
+
+.input-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-field-row label {
+  font-size: 16px;
+  color: #5d4037;
+}
+
+.pixel-input {
+  flex: 1;
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  color: #3f2e21;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.pixel-input:focus {
+  border-color: #2e7d32;
+}
+
+.mode-switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+</style>

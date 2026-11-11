@@ -574,8 +574,277 @@ function formatDateTime(isoStr?: string | null): string {
   </div>
 </template>
 
-<style scoped src="./admin.css"></style>
 <style scoped>
+.admin-container {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  font-family: var(--font-pixel);
+  color: #3f2e21;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-header .title {
+  margin: 0;
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: normal;
+}
+
+.search-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pixel-input {
+  flex: 1;
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  color: #3f2e21;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.pixel-input:focus {
+  border-color: #2e7d32;
+}
+
+.sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sort-label {
+  font-size: 15px;
+  color: #5d4037;
+}
+
+.pixel-select {
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: var(--font-pixel);
+  font-size: 15px;
+  color: #3f2e21;
+  outline: none;
+  cursor: pointer;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 16px;
+  font-size: 16px;
+}
+
+.users-card {
+  width: 100%;
+}
+
+.user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 6px;
+}
+
+.user-row + .user-row {
+  border-top: 2px solid rgba(63, 46, 33, 0.18);
+}
+
+.user-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #5d4037;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-name {
+  font-size: 18px;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-online-line {
+  font-size: 13px;
+  margin: 1px 0;
+}
+
+.online-indicator {
+  color: #7c624d;
+}
+
+.online-indicator.is-online {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.tag {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.tag-premium { background-color: #2e7d32; }
+.tag-admin { background-color: #d97706; }
+.tag-banned { background-color: #c62828; }
+
+.user-meta {
+  font-size: 14px;
+  color: #5d4037;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.meta-res {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.res-icon-inline {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+.user-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.modal-body, .telemetry-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+  font-family: var(--font-pixel);
+}
+
+.mode-switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.input-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-field-row label {
+  font-size: 16px;
+  color: #5d4037;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.user-telemetry-title {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  color: #3f2e21;
+}
+
+.date-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-label {
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.pixel-input-date {
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  color: #3f2e21;
+  outline: none;
+  cursor: pointer;
+}
+
+.pixel-input-date:focus {
+  border-color: #2e7d32;
+}
+
+.telemetry-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.text-danger { color: #c62828; }
+.text-gold { color: #d97706; }
+.text-success { color: #2e7d32; }
+
 .user-yield-box {
   margin: -4px 0 6px 12px;
   padding: 4px 8px;
