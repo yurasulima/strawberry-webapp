@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { dpr, toPx, snapContain } from '@/services/pixelSnap'
 
 const props = withDefaults(defineProps<{
   src?: string | null
@@ -9,14 +10,19 @@ const props = withDefaults(defineProps<{
   height?: number | string
   fit?: 'contain' | 'cover' | 'fill' | 'none'
   fallback?: string
+  /** false = вимкнути підгонку під цілий піксельний масштаб */
+  snap?: boolean
 }>(), {
   src: '',
   alt: 'Pixel Image',
   fit: 'contain',
-  fallback: 'https://mcapi.memories-app.org/image/null.png'
+  fallback: 'https://mcapi.memories-app.org/image/null.png',
+  snap: true
 })
 
 const hasError = ref(false)
+const imgEl = ref<HTMLImageElement | null>(null)
+const natural = ref<{ w: number; h: number } | null>(null)
 
 function cssSize(value?: number | string): string | undefined {
   if (value === undefined || value === null || value === '') return undefined
@@ -25,24 +31,32 @@ function cssSize(value?: number | string): string | undefined {
   return value
 }
 
-const computedWidth = computed(() => {
-  if (props.width !== undefined) return cssSize(props.width)
-  if (props.size !== undefined) return cssSize(props.size)
-  return undefined
-})
+const rawWidth = computed(() => props.width !== undefined ? props.width : props.size)
+const rawHeight = computed(() => props.height !== undefined ? props.height : props.size)
 
-const computedHeight = computed(() => {
-  if (props.height !== undefined) return cssSize(props.height)
-  if (props.size !== undefined) return cssSize(props.size)
-  return undefined
-})
+const computedWidth = computed(() => cssSize(rawWidth.value))
+const computedHeight = computed(() => cssSize(rawHeight.value))
 
 const currentSrc = computed(() => {
-  if (hasError.value || !props.src) {
-    return props.fallback
-  }
+  if (hasError.value || !props.src) return props.fallback
   return props.src
 })
+
+/** Піксель-перфект розмір картинки: ціле число фізичних пікселів на піксель текстури. */
+const snapped = computed(() => {
+  if (!props.snap || props.fit !== 'contain' || !natural.value) return null
+  const bw = toPx(rawWidth.value)
+  const bh = toPx(rawHeight.value)
+  if (bw === null || bh === null) return null
+  return snapContain(bw, bh, natural.value.w, natural.value.h, dpr.value)
+})
+
+function readNatural() {
+  const el = imgEl.value
+  if (el && el.complete && el.naturalWidth) {
+    natural.value = { w: el.naturalWidth, h: el.naturalHeight }
+  }
+}
 
 function handleError() {
   hasError.value = true
@@ -50,13 +64,18 @@ function handleError() {
 
 watch(() => props.src, () => {
   hasError.value = false
+  natural.value = null
 })
+watch(currentSrc, () => { natural.value = null })
+
+onMounted(readNatural)
 </script>
 
 <template>
   <div
-    class="pixel-image-container"
-    :style="{
+      class="pixel-image-container"
+      :class="{ 'is-snapped': !!snapped }"
+      :style="{
       width: computedWidth,
       height: computedHeight,
       minWidth: computedWidth,
@@ -66,13 +85,15 @@ watch(() => props.src, () => {
     }"
   >
     <img
-      :src="currentSrc"
-      :alt="alt"
-      class="pixel-image"
-      :style="{
-        objectFit: fit,
-      }"
-      @error="handleError"
+        ref="imgEl"
+        :src="currentSrc"
+        :alt="alt"
+        class="pixel-image"
+        :style="snapped
+        ? { width: snapped.width + 'px', height: snapped.height + 'px', maxWidth: 'none', maxHeight: 'none' }
+        : { objectFit: fit }"
+        @load="readNatural"
+        @error="handleError"
     />
   </div>
 </template>
@@ -88,12 +109,18 @@ watch(() => props.src, () => {
   flex-shrink: 0;
 }
 
+/* при підгонці картинка може бути трохи більшою за бокс - не обрізаємо */
+.pixel-image-container.is-snapped {
+  overflow: visible;
+}
+
 .pixel-image {
   width: 100%;
   height: 100%;
   max-width: 100%;
   max-height: 100%;
   display: block;
+  flex-shrink: 0;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   user-select: none;

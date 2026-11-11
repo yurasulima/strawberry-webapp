@@ -406,7 +406,7 @@ onMounted(() => {
                 '--delay': `${c.delay}ms`
               }"
             >
-              <img src="/items/money.png" class="coin-img" alt="" />
+              <ItemIcon item="money" size="24" class="coin-img" />
               <span class="coin-val">+{{ c.val }}</span>
             </div>
           </div>
@@ -533,9 +533,9 @@ onMounted(() => {
   opacity: 0;
   transform: translateY(-8px) scale(0.98);
   transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-              margin-top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+  transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+  margin-top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   margin-top: 0;
 }
@@ -782,10 +782,6 @@ onMounted(() => {
 }
 
 .coin-img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  image-rendering: pixelated;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 

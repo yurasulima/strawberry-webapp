@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { CardPrimary, Card, ButtonText, SlideFade } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, ItemIcon, SlideFade } from '@/components/pixel'
 import { playClickSound, playPurchaseSound } from '@/services/sound'
 import { useAuthStore } from '@/stores/auth'
 import { useUserStore } from '@/stores/user'
@@ -92,7 +92,7 @@ onUnmounted(() => {
       <CardPrimary width="360px" height="auto" :padding="14">
         <div class="login-content">
           <div class="login-header">
-            <img src="/items/strawberry.png" class="login-logo" alt="Strawberry" />
+            <ItemIcon item="strawberry" size="56" :outline="false" class="login-logo" alt="Strawberry" />
             <h2 class="login-title">Вхід у Strawberry Game</h2>
           </div>
 
@@ -107,11 +107,11 @@ onUnmounted(() => {
               </ButtonText>
 
               <ButtonText
-                height="48"
-                width="100%"
-                padding="8px 16px"
-                :loading="isChecking"
-                @click="() => checkLoginStatus(false)"
+                  height="48"
+                  width="100%"
+                  padding="8px 16px"
+                  :loading="isChecking"
+                  @click="() => checkLoginStatus(false)"
               >
                 ✅ Продовжити (Перевірити вхід)
               </ButtonText>
@@ -155,12 +155,7 @@ onUnmounted(() => {
   text-align: center;
 }
 
-.login-logo {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
+/* login-logo: розмір задає ItemIcon */
 
 .login-title {
   margin: 0;

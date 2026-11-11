@@ -203,6 +203,7 @@
     "language_label": "Language:",
     "sound_label": "Sound:",
     "music_label": "Music:",
+    "outline_label": "Item outline:",
     "save": "Save",
     "saved_success": "Settings saved",
     "languages": {

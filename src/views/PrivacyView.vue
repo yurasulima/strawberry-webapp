@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { CardPrimary, Card, ButtonText, SlideFade } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, ItemIcon, SlideFade } from '@/components/pixel'
 
 const router = useRouter()
 
@@ -18,7 +18,7 @@ function goDeleteAccount() {
     <SlideFade>
       <CardPrimary width="100%" height="auto" :padding="16">
         <div class="privacy-header">
-          <img src="/items/strawberry.png" alt="Strawberry Logo" class="privacy-logo" />
+          <ItemIcon item="strawberry" size="56" :outline="false" alt="Strawberry Logo" class="privacy-logo" />
           <h1 class="title">Політика Конфіденційності</h1>
           <p class="subtitle">Strawberry Game • Останнє оновлення: 31 жовтня 2026 р.</p>
         </div>
@@ -112,10 +112,6 @@ function goDeleteAccount() {
 }
 
 .privacy-logo {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  image-rendering: pixelated;
   margin-bottom: 6px;
 }
 

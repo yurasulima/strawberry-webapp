@@ -250,7 +250,12 @@ onMounted(async () => {
 .app-container::before {
   content: "";
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 420px;
+  margin: 0 auto;
   background-image: url("/new_background.png");
   background-size: cover;
   background-position: center;

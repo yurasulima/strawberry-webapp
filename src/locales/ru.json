@@ -191,6 +191,7 @@
     "language_label": "Язык:",
     "sound_label": "Звуки:",
     "music_label": "Музыка:",
+    "outline_label": "Обводка предметов:",
     "save": "Сохранить",
     "saved_success": "Настройки сохранены",
     "languages": {

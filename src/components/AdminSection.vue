@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import api from '@/services/api.ts'
 import type { User } from '@/types/User.ts'
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PixelModal, Switch, PremiumBadge } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PixelModal, Switch, PremiumBadge, ItemIcon } from '@/components/pixel'
 import { playClickSound } from '@/services/sound'
 import { useToastStore } from '@/stores/toast.ts'
 
@@ -432,11 +432,11 @@ function formatDateTime(isoStr?: string | null): string {
                 <div class="user-meta">
                   <span>ID: {{ u.telegramId || u.userId }}</span>
                   <span class="meta-res">
-                    <img src="/items/money.png" alt="Money" class="res-icon-inline" />
+                    <ItemIcon item="money" size="16" alt="Money" class="res-icon-inline" />
                     {{ getUserMoney(u) }}
                   </span>
                   <span class="meta-res">
-                    <img src="/items/strawberry.png" alt="Strawberry" class="res-icon-inline" />
+                    <ItemIcon item="strawberry" size="16" alt="Strawberry" class="res-icon-inline" />
                     {{ getUserStrawberries(u) }}
                   </span>
                 </div>
@@ -821,12 +821,7 @@ function formatDateTime(isoStr?: string | null): string {
   gap: 3px;
 }
 
-.res-icon-inline {
-  width: 16px;
-  height: 16px;
-  image-rendering: pixelated;
-  object-fit: contain;
-}
+/* res-icon-inline: розмір задає ItemIcon */
 
 .user-actions {
   display: flex;

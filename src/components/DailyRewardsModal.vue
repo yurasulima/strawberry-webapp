@@ -214,11 +214,7 @@ async function handleClaim(dayToClaim?: number) {
         </div>
 
         <div class="streak-fruit">
-          <img
-              src="/items/strawberry.png"
-              alt=""
-              class="strawberry-large"
-          />
+          <ItemIcon item="strawberry" size="34" class="strawberry-large" />
         </div>
 
         <div class="progress-track">
@@ -390,12 +386,7 @@ async function handleClaim(dayToClaim?: number) {
   background: #ffedd8;
 }
 
-.strawberry-large {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
+/* strawberry-large: розмір задає ItemIcon */
 
 .progress-track {
   grid-column: 1 / -1;

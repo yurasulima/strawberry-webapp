@@ -209,6 +209,7 @@
     "language_label": "Мова:",
     "sound_label": "Звуки:",
     "music_label": "Музика:",
+    "outline_label": "Обводка предметів:",
     "save": "Зберегти",
     "saved_success": "Налаштування збережено",
     "languages": {

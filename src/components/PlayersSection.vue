@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PremiumBadge, PixelText, SlideFade } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, PremiumBadge, PixelText, ItemIcon, SlideFade } from '@/components/pixel'
 import type { User } from "@/types/User.ts"
 import { useUserStore } from "@/stores/user.ts"
 import { useToastStore } from "@/stores/toast.ts"
@@ -17,7 +17,7 @@ const loading = ref(false)
 function isMe(player: User): boolean {
   if (!userStore.user) return false
   return player.userId === userStore.user.userId ||
-         player.telegramId === userStore.user.telegramId
+      player.telegramId === userStore.user.telegramId
 }
 
 function formatPlayerName(player: User): string {
@@ -69,48 +69,48 @@ onMounted(() => {
 
       <template v-else>
         <SlideFade>
-            <ul v-if="players.length"class="players-list">
+          <ul v-if="players.length"class="players-list">
 
 
-              <li
+            <li
                 v-for="(player, index) in players"
                 :key="player.userId || index"
                 class="player-row"
 
-              >
+            >
                 <span class="player-rank" :class="{ 'gold': index === 0, 'silver': index === 1, 'bronze': index === 2 }">
                   #{{ index + 1 }}
                 </span>
 
-                <img
-                    :src="player.photoUrl || '/default-avatar.png'"
-                    alt=""
-                    class="player-avatar"
-                    draggable="false"
-                >
+              <img
+                  :src="player.photoUrl || '/default-avatar.png'"
+                  alt=""
+                  class="player-avatar"
+                  draggable="false"
+              >
 
 
-                <div class="player-info">
-                  <div class="player-name-wrapper">
-                    <span class="player-name" :class="{ 'player-name-me': isMe(player) }"    ><PixelText :text="formatPlayerName(player)" /></span>
+              <div class="player-info">
+                <div class="player-name-wrapper">
+                  <span class="player-name" :class="{ 'player-name-me': isMe(player) }"    ><PixelText :text="formatPlayerName(player)" /></span>
 
-                  </div>
-
-                  <div class="player-name-wrapper">
-
-                    <span class="level-val">LVL: {{ player.level }}</span>
-                    <PremiumBadge v-if="player.premium" />
-                  </div>
                 </div>
 
-                <div class="player-score">
-                  <img src="/items/money.png" alt="" class="score-icon" />
-                  <strong class="score-val">{{ getMoneyCount(player) }}</strong>
+                <div class="player-name-wrapper">
+
+                  <span class="level-val">LVL: {{ player.level }}</span>
+                  <PremiumBadge v-if="player.premium" />
                 </div>
-              </li>
+              </div>
+
+              <div class="player-score">
+                <ItemIcon item="money" size="22" class="score-icon" />
+                <strong class="score-val">{{ getMoneyCount(player) }}</strong>
+              </div>
+            </li>
 
 
-            </ul>
+          </ul>
 
           <div v-else class="empty-state">
             <Icon icon="pixelarticons:info-box" class="empty-icon" />
@@ -252,11 +252,7 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.score-icon {
-  width: 22px;
-  height: 22px;
-  image-rendering: pixelated;
-}
+/* score-icon: розмір задає ItemIcon */
 
 .score-val {
   font-size: 18px;

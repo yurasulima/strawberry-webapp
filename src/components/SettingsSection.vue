@@ -3,9 +3,10 @@ import { ref, computed, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useWebApp } from 'vue-tg'
-import { CardPrimary, Card, ButtonText, LeftButton, RightButton, SoundButton, MusicButton, SlideFade } from '@/components/pixel'
+import { CardPrimary, Card, ButtonText, LeftButton, RightButton, SoundButton, MusicButton, Switch, SlideFade } from '@/components/pixel'
 import WikiSection from '@/components/WikiSection.vue'
 import { playClickSound, playPurchaseSound, isSoundEnabled, setSoundEnabled, isMusicEnabled, setMusicEnabled } from '@/services/sound'
+import { isGlobalItemOutlineEnabled, setGlobalItemOutline } from '@/services/itemOutline'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 
@@ -21,6 +22,7 @@ const emit = defineEmits<{
 const isWikiOpen = ref(false)
 const soundState = ref(isSoundEnabled())
 const musicState = ref(isMusicEnabled())
+const outlineState = ref(isGlobalItemOutlineEnabled.value)
 
 watch(soundState, (val) => {
   setSoundEnabled(val)
@@ -28,6 +30,10 @@ watch(soundState, (val) => {
 
 watch(musicState, (val) => {
   setMusicEnabled(val)
+})
+
+watch(outlineState, (val) => {
+  setGlobalItemOutline(val)
 })
 
 const { initDataUnsafe } = useWebApp()
@@ -39,8 +45,8 @@ const isUkrainianUser = computed(() => {
   const navLang = (typeof navigator !== 'undefined' ? navigator.language : '').toLowerCase()
 
   return tgLang.startsWith('uk') || tgLang.startsWith('ua') ||
-         userLang.startsWith('uk') || userLang.startsWith('ua') ||
-         navLang.startsWith('uk') || navLang.startsWith('ua')
+      userLang.startsWith('uk') || userLang.startsWith('ua') ||
+      navLang.startsWith('uk') || navLang.startsWith('ua')
 })
 
 const languages = computed(() => {
@@ -106,6 +112,7 @@ function saveSettings() {
   localStorage.setItem('lang', selectedLangCode.value)
   setSoundEnabled(soundState.value)
   setMusicEnabled(musicState.value)
+  setGlobalItemOutline(outlineState.value)
   toastStore.showToast(t('settings.saved_success'), 'success')
   emit('close')
 }
@@ -148,6 +155,12 @@ function saveSettings() {
             <div class="setting-row">
               <span class="setting-label">{{ t('settings.music_label') }}</span>
               <MusicButton v-model="musicState" size="48" />
+            </div>
+
+            <!-- Обводка предметів -->
+            <div class="setting-row">
+              <span class="setting-label">{{ t('settings.outline_label') }}</span>
+              <Switch v-model="outlineState" :width="64" :height="32" />
             </div>
 
             <!-- Кнопка Зберегти -->

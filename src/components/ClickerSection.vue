@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import api from "@/services/api.ts"
 import { useI18n } from 'vue-i18n'
 import { playHarvestSound, playCoinSound, playClickSound } from '@/services/sound'
-import { ButtonText, Card } from '@/components/pixel'
+import { ButtonText, Card, ItemIcon } from '@/components/pixel'
 import { useUserStore } from "@/stores/user.ts"
 import { useAuthStore } from "@/stores/auth.ts"
 import { useToastStore } from "@/stores/toast.ts"
@@ -281,10 +281,11 @@ const sellAllStrawberries = async (e: MouseEvent) => {
             ondragstart="return false;"
             @contextmenu.prevent
         >
-          <img
-              src="/items/strawberry.png"
+          <ItemIcon
+              item="strawberry"
+              size="200"
+              :outline="false"
               alt="Strawberry"
-              draggable="false"
               oncontextmenu="return false;"
               ondragstart="return false;"
               class="strawberry-icon"
@@ -300,17 +301,17 @@ const sellAllStrawberries = async (e: MouseEvent) => {
       <Teleport to="body">
         <div class="flying-particles-layer">
           <div
-            v-for="p in particles"
-            :key="p.id"
-            class="flying-particle"
-            :style="{
+              v-for="p in particles"
+              :key="p.id"
+              class="flying-particle"
+              :style="{
               left: `${p.startX}px`,
               top: `${p.startY}px`,
               '--dx': `${p.dx}px`,
               '--dy': `${p.dy}px`
             }"
           >
-            <img src="/items/strawberry.png" class="particle-img" alt="" />
+            <ItemIcon item="strawberry" size="22" class="particle-img" />
             <span class="particle-val">+1</span>
           </div>
         </div>
@@ -523,9 +524,6 @@ const sellAllStrawberries = async (e: MouseEvent) => {
 }
 
 .strawberry-icon {
-  width: 200px;
-  height: 200px;
-  image-rendering: pixelated;
   transition: transform 0.1s ease-in-out, filter 0.3s ease;
   user-select: none;
   -webkit-user-select: none;
@@ -584,12 +582,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   will-change: transform, opacity;
 }
 
-.particle-img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
+/* particle-img: розмір задає ItemIcon */
 
 .particle-val {
   font-size: 20px;

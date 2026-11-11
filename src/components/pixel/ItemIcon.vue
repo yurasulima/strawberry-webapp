@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import Image from './Image.vue'
+import { getOutlinedTexture, isGlobalItemOutlineEnabled } from '@/services/itemOutline'
 
 const props = withDefaults(defineProps<{
   item?: string | number | null
@@ -12,6 +13,7 @@ const props = withDefaults(defineProps<{
   alt?: string
   fit?: 'contain' | 'cover' | 'fill' | 'none'
   fallback?: string
+  outline?: boolean
 }>(), {
   item: '',
   name: '',
@@ -21,7 +23,8 @@ const props = withDefaults(defineProps<{
   height: undefined,
   alt: '',
   fit: 'contain',
-  fallback: '/items/strawberry.png'
+  fallback: '/items/strawberry.png',
+  outline: undefined
 })
 
 const itemId = computed<string>(() => {
@@ -29,7 +32,7 @@ const itemId = computed<string>(() => {
   return String(val).trim()
 })
 
-const textureSrc = computed<string>(() => {
+const baseTextureSrc = computed<string>(() => {
   const raw = itemId.value
   if (!raw) return props.fallback || '/items/strawberry.png'
 
@@ -41,6 +44,32 @@ const textureSrc = computed<string>(() => {
   return `/items/${clean}.png`
 })
 
+const shouldOutline = computed(() => {
+  if (props.outline !== undefined) return props.outline
+  return isGlobalItemOutlineEnabled.value
+})
+
+const displayTextureSrc = ref<string>(baseTextureSrc.value)
+
+watchEffect(() => {
+  const src = baseTextureSrc.value
+  if (!shouldOutline.value || !src) {
+    displayTextureSrc.value = src
+    return
+  }
+
+  let isCurrent = true
+  getOutlinedTexture(src).then((outlined) => {
+    if (isCurrent) {
+      displayTextureSrc.value = outlined
+    }
+  })
+
+  return () => {
+    isCurrent = false
+  }
+})
+
 const computedAlt = computed(() => {
   if (props.alt) return props.alt
   if (itemId.value) return itemId.value
@@ -50,7 +79,7 @@ const computedAlt = computed(() => {
 
 <template>
   <Image
-    :src="textureSrc"
+    :src="displayTextureSrc"
     :alt="computedAlt"
     :size="size"
     :width="width"

@@ -4,12 +4,13 @@ import {
   CardPrimary,
   AvatarBorder,
   SettingsButton,
-  Image,
+  ItemIcon,
   Card,
   PixelText
 } from '@/components/pixel'
 import { playClickSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user'
+import { isGlobalItemOutlineEnabled } from '@/services/itemOutline'
 
 const userStore = useUserStore()
 
@@ -27,6 +28,10 @@ const emit = defineEmits<{
   (e: 'openDailyRewards'): void
   (e: 'openProfile'): void
 }>()
+
+// 16px-текстура ×2 = 32, з обводкою (18px) ×2 = 36: цілий масштаб на будь-якому DPR
+const resIconSize = computed(() => (isGlobalItemOutlineEnabled.value ? 36 : 32))
+const resCardHeight = computed(() => `${resIconSize.value + 4}px`)
 
 const canClaimDaily = computed(() => userStore.canClaimDaily)
 
@@ -75,16 +80,16 @@ function handleOpenProfile() {
 
     <!-- Resource Cards underneath avatar on the left -->
     <div class="resource-cards-list">
-      <Card width="fit-content" height="36px" :padding="0" class="resource-card toolbar-money-card">
+      <Card width="fit-content" :height="resCardHeight" :padding="0" class="resource-card toolbar-money-card">
         <div class="resource-row">
-          <Image src="/items/money.png" size="28" alt="Money" class="res-icon toolbar-money-icon" />
+          <ItemIcon item="money" :size="resIconSize" alt="Money" class="res-icon toolbar-money-icon" />
           <span class="res-amount">{{ props.money ?? 0 }}</span>
         </div>
       </Card>
 
-      <Card width="fit-content" height="36px" :padding="0" class="resource-card toolbar-strawberry-card">
+      <Card width="fit-content" :height="resCardHeight" :padding="0" class="resource-card toolbar-strawberry-card">
         <div class="resource-row">
-          <Image src="/items/strawberry.png" size="24" alt="Strawberry" class="res-icon toolbar-strawberry-icon" />
+          <ItemIcon item="strawberry" :size="resIconSize" alt="Strawberry" class="res-icon toolbar-strawberry-icon" />
           <span class="res-amount">{{ props.strawberry ?? 0 }}</span>
         </div>
       </Card>
@@ -242,7 +247,6 @@ function handleOpenProfile() {
   min-width: 110px;
   width: fit-content;
   max-width: 180px;
-  height: 36px;
   box-sizing: border-box;
   z-index: 1;
 }

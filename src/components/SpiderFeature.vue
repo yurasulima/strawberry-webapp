@@ -3,21 +3,21 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useUserStore } from '@/stores/user.ts'
 import { useToastStore } from '@/stores/toast.ts'
 import { playPluckSound, playItemGetSound, playSuccessSound, playSnapSound } from '@/services/sound.ts'
-import { Image } from '@/components/pixel'
+import { Image, ItemIcon } from '@/components/pixel'
 import api from '@/services/api.ts'
 import { isSpiderActive, SPIDER_DEFAULT_DATES, type DateRange } from '@/utils/seasonal.ts'
 
 const props = withDefaults(
-  defineProps<{
-    activeTab?: string
-    enabled?: boolean
-    activeDates?: DateRange[]
-  }>(),
-  {
-    activeTab: 'clicker',
-    enabled: undefined,
-    activeDates: undefined
-  }
+    defineProps<{
+      activeTab?: string
+      enabled?: boolean
+      activeDates?: DateRange[]
+    }>(),
+    {
+      activeTab: 'clicker',
+      enabled: undefined,
+      activeDates: undefined
+    }
 )
 
 const userStore = useUserStore()
@@ -172,9 +172,9 @@ function step(now: number) {
     for (let i = 0; i < sub; i++) {
       const idle = Math.sin(idleTime * 1.3) * 0.25 + Math.sin(idleTime * 0.7 + 1.2) * 0.15
       const acc =
-        -GRAVITY_K * Math.sin(angle - tiltTarget * TILT_GAIN) -
-        DAMPING * angVel +
-        idle
+          -GRAVITY_K * Math.sin(angle - tiltTarget * TILT_GAIN) -
+          DAMPING * angVel +
+          idle
       angVel += acc * h
       angle += angVel * h
 
@@ -397,41 +397,41 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    v-if="isFeatureActive && !isAdminMode"
-    class="card__web-wrap"
-    :class="{ 'card__web-wrap--bg': activeTab !== 'clicker' }"
+      v-if="isFeatureActive && !isAdminMode"
+      class="card__web-wrap"
+      :class="{ 'card__web-wrap--bg': activeTab !== 'clicker' }"
   >
     <Image src="/ui/web.png" size="200" class="card__web" alt="Web" />
     <div ref="spiderPivot" class="card__spider-pivot">
       <div ref="spiderEl" class="card__spider-assembly">
         <div
-          ref="threadEl"
-          class="card__spider-thread"
-          title="Дьорнути павутинку"
-          @pointerdown="onSpiderDown"
-          @pointermove="onSpiderMove"
-          @pointerup="onSpiderUp"
-          @pointercancel="onSpiderUp"
-        ></div>
-        <div class="card__spider-body-wrap">
-          <img
-            src="/ui/spider.png"
-            class="card__spider-img"
-            alt="Spider"
-            draggable="false"
+            ref="threadEl"
+            class="card__spider-thread"
+            title="Дьорнути павутинку"
             @pointerdown="onSpiderDown"
             @pointermove="onSpiderMove"
             @pointerup="onSpiderUp"
             @pointercancel="onSpiderUp"
+        ></div>
+        <div class="card__spider-body-wrap">
+          <img
+              src="/ui/spider.png"
+              class="card__spider-img"
+              alt="Spider"
+              draggable="false"
+              @pointerdown="onSpiderDown"
+              @pointermove="onSpiderMove"
+              @pointerup="onSpiderUp"
+              @pointercancel="onSpiderUp"
           />
           <div
-            v-if="hasCandy"
-            class="card__spider-candy-wrap"
-            title="Забрати цукерку"
-            @click.stop="collectCandy"
-            @pointerdown.stop
+              v-if="hasCandy"
+              class="card__spider-candy-wrap"
+              title="Забрати цукерку"
+              @click.stop="collectCandy"
+              @pointerdown.stop
           >
-            <img src="/items/candy.png" class="card__spider-candy" alt="Candy" />
+            <ItemIcon item="candy" size="28" class="card__spider-candy" alt="Candy" />
             <span class="candy-sparkle">✦</span>
           </div>
         </div>
@@ -550,10 +550,6 @@ onBeforeUnmount(() => {
 }
 
 .card__spider-candy {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  image-rendering: pixelated;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
   transition: transform 0.15s ease;
 }
