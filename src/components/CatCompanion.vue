@@ -178,7 +178,7 @@ function openModal() {
       <div class="cat-sprite-box">
         <CatSprite
             :colors="myCat.colors"
-            :size="72"
+            :size="100"
             :playing="true"
         />
       </div>

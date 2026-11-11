@@ -37,50 +37,6 @@ interface SavedCat {
 const catGallery = ref<SavedCat[]>([])
 let catIdCounter = 1
 
-/* Пресети кольорів */
-const presets: { name: string; icon: string; colors: CatColors }[] = [
-  {
-    name: 'Оригінальний',
-    icon: '🐱',
-    colors: { fur: '#fdd5b5', markings: '#e6b4a0', belly: '#fef5e6', accent: '#eb9486', collar: '#e3baad' }
-  },
-  {
-    name: 'Рудичок',
-    icon: '🦊',
-    colors: { fur: '#ff9f43', markings: '#d97706', belly: '#fff200', accent: '#ff6b6b', collar: '#10ac84' }
-  },
-  {
-    name: 'Сірий Таббі',
-    icon: '🐺',
-    colors: { fur: '#a4b0be', markings: '#475569', belly: '#f8fafc', accent: '#fb7185', collar: '#0284c7' }
-  },
-  {
-    name: 'Сіамський',
-    icon: '👑',
-    colors: { fur: '#fde68a', markings: '#475569', belly: '#fffbebf', accent: '#f43f5e', collar: '#06b6d4' }
-  },
-  {
-    name: 'Полуничний',
-    icon: '🍓',
-    colors: { fur: '#ff6b81', markings: '#9f1239', belly: '#ffffff', accent: '#fb7185', collar: '#22c55e' }
-  },
-  {
-    name: 'Неоновий Кібер',
-    icon: '⚡',
-    colors: { fur: '#06b6d4', markings: '#3b82f6', belly: '#a855f7', accent: '#ec4899', collar: '#eab308' }
-  },
-  {
-    name: 'Нічний Пантер',
-    icon: '🌙',
-    colors: { fur: '#334155', markings: '#0f172a', belly: '#64748b', accent: '#f43f5e', collar: '#f59e0b' }
-  },
-  {
-    name: 'Золотий',
-    icon: '✨',
-    colors: { fur: '#eab308', markings: '#ea580c', belly: '#fef08a', accent: '#ef4444', collar: '#3b82f6' }
-  }
-]
-
 /* Генерація гармонійного випадкового кольору в HSL */
 function hslToHex(h: number, s: number, l: number): string {
   l /= 100
@@ -198,7 +154,7 @@ function applyGalleryCatColors(cat: SavedCat) {
 }
 
 onMounted(() => {
-  generateGalleryBatch(6)
+  generateGalleryBatch(12)
 })
 </script>
 
@@ -293,30 +249,13 @@ onMounted(() => {
         </Card>
       </div>
 
-      <!-- Права колонка: Пресети та Згенерована сітка -->
+      <!-- Права колонка: Згенерована сітка -->
       <div class="right-col">
-        <!-- Пресети кольорів -->
-        <Card width="100%" height="auto" :padding="12" class="presets-card">
-          <h3 class="section-title">🌈 Готові Пресети</h3>
-          <div class="presets-grid">
-            <button
-              v-for="p in presets"
-              :key="p.name"
-              type="button"
-              class="preset-card-btn"
-              @click="applyPreset(p.colors)"
-            >
-              <span class="preset-icon">{{ p.icon }}</span>
-              <span class="preset-name">{{ p.name }}</span>
-            </button>
-          </div>
-        </Card>
-
         <!-- Галерея рандомних котиків -->
         <CardPrimary width="100%" height="auto" :padding="14" class="gallery-card">
           <div class="gallery-header">
             <h3 class="section-title">Згенерована Сітка Котиків</h3>
-            <ButtonText @click="generateGalleryBatch(8)">
+            <ButtonText @click="generateGalleryBatch(12)">
               Перегенерувати
             </ButtonText>
           </div>
@@ -560,48 +499,6 @@ onMounted(() => {
 
 .palette-footer {
   margin-top: 10px;
-}
-
-/* Пресети */
-.presets-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-
-@media (max-width: 480px) {
-  .presets-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.preset-card-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 4px;
-  background: #e2d3be;
-  border: 1px solid #5d4037;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.1s ease;
-}
-
-.preset-card-btn:hover {
-  background: #d2c0a8;
-  transform: translateY(-2px);
-}
-
-.preset-icon {
-  font-size: 20px;
-}
-
-.preset-name {
-  font-size: 11px;
-  font-weight: bold;
-  color: #3f2e21;
-  text-align: center;
 }
 
 /* Галерея котів */
