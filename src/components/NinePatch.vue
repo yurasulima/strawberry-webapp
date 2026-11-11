@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 
@@ -21,7 +20,7 @@ let observer = null
 let image = null
 let disposed = false
 
-  function isBlack(data, offset) {
+function isBlack(data, offset) {
   return (
       data[offset + 3] > 127 &&
       data[offset] < 32 &&
@@ -131,9 +130,11 @@ function draw() {
   const height = rect.height
 
   // Для високого розширення (наприклад, 50x50 і більше) маштаб 1, для низької деталізації 2
-  const effectiveScale = props.scale !== undefined
-    ? props.scale
-    : (sourceWidth >= 40 || sourceHeight >= 40 ? 1 : 2)
+  const baseScale = props.scale !== undefined
+      ? props.scale
+      : (sourceWidth >= 40 || sourceHeight >= 40 ? 1 : 2)
+  // 1 піксель текстури = ціле число фізичних пікселів (інакше на дробовому DPR рамка "пливе")
+  const effectiveScale = Math.max(1, Math.round(baseScale * dpr)) / dpr
 
   const leftWidth = sx0 * effectiveScale
   const rightWidth = (sourceWidth - sx1) * effectiveScale

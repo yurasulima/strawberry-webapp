@@ -1,13 +1,16 @@
+
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PixelModal from '@/components/pixel/PixelModal.vue'
 import Card from '@/components/pixel/Card.vue'
-import Lock from '@/components/pixel/Lock.vue'
+import ButtonText from '@/components/pixel/ButtonText.vue'
 import ItemIcon from '@/components/pixel/ItemIcon.vue'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import { playClickSound, playCoinSound } from '@/services/sound'
+import { dpr } from '@/services/pixelSnap'
+import type { DailyRewardDay } from '@/types/DailyReward'
 
 const props = defineProps<{
   modelValue: boolean
@@ -17,157 +20,141 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const userStore = useUserStore()
 const toastStore = useToastStore()
 
+const TOTAL = 30
+const MILESTONES = new Set([7, 14, 21, 28, 30])
+const COIN_DAYS = new Set([10, 17, 23])
+
 const isClaiming = ref(false)
+const selectedDay = ref(1)
 
 const canClaim = computed(() => !!userStore.canClaimDaily)
 
-const todayDayNumber = computed(() => {
-  const apiDays = userStore.dailyRewardsStatus?.days
-  if (Array.isArray(apiDays) && apiDays.length > 0) {
-    const currentApiDay = apiDays.find((d: any) => d.current)
-    if (currentApiDay) {
-      return Number(currentApiDay.day)
-    }
-
-    const claimedDays = apiDays.filter((d: any) => d.claimed).map((d: any) => Number(d.day))
-    if (claimedDays.length > 0) {
-      const maxClaimed = Math.max(...claimedDays)
-      return canClaim.value ? Math.min(30, maxClaimed + 1) : maxClaimed
-    }
-  }
-
-  const rawStreak = userStore.dailyStreak || 1
-  return Math.min(30, Math.max(1, rawStreak))
+const apiDays = computed<DailyRewardDay[]>(() => {
+  const d = userStore.dailyRewardsStatus?.days
+  return Array.isArray(d) ? d : []
 })
 
 const lastClaimedDay = computed(() => {
-  const apiDays = userStore.dailyRewardsStatus?.days
-  if (Array.isArray(apiDays) && apiDays.length > 0) {
-    const claimedDays = apiDays.filter((d: any) => d.claimed).map((d: any) => Number(d.day))
-    if (claimedDays.length > 0) {
-      return Math.max(...claimedDays)
-    }
-  }
+  const claimed = apiDays.value.filter(d => d.claimed).map(d => Number(d.day))
+  return claimed.length ? Math.max(...claimed) : 0
+})
+
+/** Номер "сьогоднішнього" дня: той, що можна забрати зараз, або той, що вже забрано сьогодні. */
+const todayDay = computed(() => {
+  const current = apiDays.value.find(d => d.current)
+  if (current) return Number(current.day)
+
   if (canClaim.value) {
-    return Math.max(0, todayDayNumber.value - 1)
+    return Math.min(TOTAL, lastClaimedDay.value + 1 || 1)
   }
-  return todayDayNumber.value
+
+  return lastClaimedDay.value || 1
 })
 
-const currentStreak = computed(() => {
-  return todayDayNumber.value
-})
+/** Скільки днів серії вже забрано (сьогодні враховується лише після отримання). */
+const streak = computed(() => Math.max(0, canClaim.value ? todayDay.value - 1 : todayDay.value))
 
-const startWindowDay = computed(() => {
-  return Math.min(25, Math.max(1, todayDayNumber.value))
-})
+type CellState = 'claimed' | 'today' | 'missed' | 'future'
 
-interface RewardConfig {
+interface DayCell {
   day: number
   icon: string
-  isMilestone?: boolean
-}
-
-interface RewardDay extends RewardConfig {
-  isClaimed: boolean
-  isCurrent: boolean
-  isLocked: boolean
+  milestone: boolean
   strawberries: number
   coins: number
+  state: CellState
+  done: boolean
+  claimable: boolean
 }
 
-const strawberryRewardDays = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30])
+const cells = computed<DayCell[]>(() =>
+    Array.from({ length: TOTAL }, (_, i) => {
+      const day = i + 1
+      const api = apiDays.value.find(d => Number(d.day) === day)
+      const strawberries = Number(api?.strawberries ?? 0)
+      const coins = Number(api?.coins ?? 0)
 
-const rewardConfigs: RewardConfig[] = Array.from(
-    { length: 30 },
-    (_, index) => {
-      const day = index + 1
+      const fallbackIcon = (coins > 0 && strawberries === 0) || (!api && COIN_DAYS.has(day))
+          ? '/items/money.png'
+          : '/items/strawberry.png'
+      const icon = typeof api?.icon === 'string' && api.icon.startsWith('/') ? api.icon : fallbackIcon
+
+      const isToday = day === todayDay.value
+      const claimedByApi = typeof api?.claimed === 'boolean' ? api.claimed : day <= lastClaimedDay.value
+
+      let state: CellState
+      if (isToday) state = 'today'
+      else if (claimedByApi) state = 'claimed'
+      else if (day < todayDay.value) state = 'missed'
+      else state = 'future'
+
       return {
         day,
-        icon: strawberryRewardDays.has(day) ? '/items/strawberry.png' : '/items/money.png',
-        isMilestone: [7, 14, 21, 28, 30].includes(day),
+        icon,
+        milestone: api?.milestone ?? MILESTONES.has(day),
+        strawberries,
+        coins,
+        state,
+        done: state === 'claimed' || (isToday && !canClaim.value),
+        claimable: isToday && canClaim.value
       }
-    }
+    })
 )
 
-const visibleDays = computed<RewardDay[]>(() => {
-  const startDay = startWindowDay.value
-  const endDay = Math.min(30, startDay + 5)
-  const apiDays = userStore.dailyRewardsStatus?.days
+const selected = computed<DayCell>(() => cells.value[Math.min(TOTAL, Math.max(1, selectedDay.value)) - 1])
 
-  return rewardConfigs
-      .filter(({ day }) => day >= startDay && day <= endDay)
-      .map((config) => {
-        const apiDay = Array.isArray(apiDays)
-            ? apiDays.find((item: any) => Number(item.day) === config.day)
-            : undefined
-
-        const isClaimed = apiDay && typeof apiDay.claimed === 'boolean'
-            ? apiDay.claimed
-            : config.day <= lastClaimedDay.value
-
-        const isCurrent = canClaim.value && config.day === todayDayNumber.value
-
-        const isLocked = !isClaimed && !isCurrent
-
-        return {
-          ...config,
-          icon: typeof apiDay?.icon === 'string' && apiDay.icon.startsWith('/')
-              ? apiDay.icon
-              : config.icon,
-          isMilestone: apiDay?.milestone ?? config.isMilestone,
-          strawberries: Number(apiDay?.strawberries ?? 0),
-          coins: Number(apiDay?.coins ?? 0),
-          isClaimed,
-          isCurrent,
-          isLocked,
-        }
-      })
+const statusText = computed(() => {
+  const c = selected.value
+  if (c.claimable) return t('daily_rewards.available')
+  if (c.done) return t('daily_rewards.claimed')
+  if (c.state === 'future') return t('daily_rewards.locked_day')
+  return '—'
 })
 
-const activeDayReward = computed(() => {
-  if (canClaim.value && todayDayNumber.value) {
-    return visibleDays.value.find(d => d.day === todayDayNumber.value) || visibleDays.value[0]
-  }
-  return null
-})
+const nf = computed(() => new Intl.NumberFormat(String(locale.value)))
+const fmt = (n: number) => nf.value.format(n)
 
-const progress = computed(() =>
-    Math.round((currentStreak.value / 30) * 100)
-)
+function rewardParts(c: DayCell) {
+  return [
+    ...(c.strawberries > 0 ? [{ icon: '/items/strawberry.png', amount: c.strawberries, label: t('daily_rewards.strawberries') }] : []),
+    ...(c.coins > 0 ? [{ icon: '/items/money.png', amount: c.coins, label: t('daily_rewards.coins') }] : [])
+  ]
+}
+
+/** Усі зсуви/рамки кратні фізичному пікселю, щоб піксель-арт не "плавав" на дробовому DPR. */
+const unitStyle = computed(() => ({
+  '--d': `${1 / dpr.value}px`,
+  '--b': `${Math.round(2 * dpr.value) / dpr.value}px`
+}))
+
+function selectDay(day: number) {
+  if (day === selectedDay.value) return
+  playClickSound()
+  selectedDay.value = day
+}
 
 watch(
     () => props.modelValue,
     async (isOpen) => {
       if (isOpen) {
         await userStore.fetchDailyRewards()
+        selectedDay.value = todayDay.value
       }
     },
     { immediate: true }
 )
 
-function rewardDescription(day?: RewardDay) {
-  if (!day) return ''
-  return [
-    day.strawberries > 0 ? `+${day.strawberries} ${t('daily_rewards.strawberries')}` : '',
-    day.coins > 0 ? `+${day.coins} ${t('daily_rewards.coins')}` : '',
-  ].filter(Boolean).join(' · ')
-}
+// після отримання нагороди / оновлення даних повертаємо вибір на сьогодні
+watch(todayDay, (day) => {
+  selectedDay.value = day
+})
 
-function rewardParts(day?: RewardDay) {
-  if (!day) return []
-  return [
-    ...(day.strawberries > 0 ? [{ icon: '/items/strawberry.png', amount: day.strawberries, label: t('daily_rewards.strawberries') }] : []),
-    ...(day.coins > 0 ? [{ icon: '/items/money.png', amount: day.coins, label: t('daily_rewards.coins') }] : []),
-  ]
-}
-
-async function handleClaim(dayToClaim?: number) {
-  const targetDay = dayToClaim ?? todayDayNumber.value
+async function handleClaim() {
+  const targetDay = todayDay.value
   if (!canClaim.value || isClaiming.value || !targetDay) return
 
   playClickSound()
@@ -199,101 +186,93 @@ async function handleClaim(dayToClaim?: number) {
       :padding="8"
       @update:model-value="emit('update:modelValue', $event)"
   >
-    <div class="daily-modal">
-      <!-- Streak header -->
+    <div class="daily-modal" :style="unitStyle">
+      <!-- Серія -->
       <div class="streak-panel">
-        <div class="streak-copy">
-          <span class="eyebrow">
-            {{ t('daily_rewards.streak_label') }}
-          </span>
-
-          <div class="streak-number">
-            {{ currentStreak }}
-            <span>/ 30</span>
+        <div class="streak-top">
+          <div class="streak-copy">
+            <span class="eyebrow">{{ t('daily_rewards.streak_label') }}</span>
+            <div class="streak-number">
+              {{ streak }}<span>/ {{ TOTAL }}</span>
+            </div>
           </div>
+          <ItemIcon item="strawberry" size="36" class="streak-fruit" />
         </div>
 
-        <div class="streak-fruit">
-          <ItemIcon item="strawberry" size="34" class="strawberry-large" />
-        </div>
-
-        <div class="progress-track">
-          <div
-              class="progress-fill"
-              :style="{ width: `${progress}%` }"
+        <div class="streak-bar" aria-hidden="true">
+          <i
+              v-for="n in TOTAL"
+              :key="n"
+              :class="{ on: n <= streak, next: canClaim && n === streak + 1, mile: MILESTONES.has(n) }"
           />
         </div>
       </div>
 
-      <!-- Only current day + next six days -->
-      <div class="rewards-heading">
-        <span>{{ t('daily_rewards.upcoming') }}</span>
-        <span class="days-count">
-          {{ visibleDays.length }} / 6
-        </span>
-      </div>
-
-      <!-- Grid of Days -->
-      <div class="days-grid">
-        <div
-            v-for="day in visibleDays"
-            :key="day.day"
-            class="day-wrapper"
-            :class="{
-              'day-wrapper-current': day.isCurrent,
-              'day-wrapper-claimed': day.isClaimed,
-              'day-wrapper-milestone': day.isMilestone,
-              'day-wrapper-clickable': day.isCurrent && canClaim,
-            }"
-            @click="day.isCurrent && canClaim && handleClaim(day.day)"
+      <!-- Календар на 30 днів -->
+      <div class="days-grid" role="list">
+        <button
+            v-for="cell in cells"
+            :key="cell.day"
+            type="button"
+            role="listitem"
+            class="day-cell"
+            :class="[
+              `is-${cell.state}`,
+              {
+                'is-selected': cell.day === selectedDay,
+                'is-milestone': cell.milestone,
+                'is-claimable': cell.claimable,
+                'is-done': cell.done
+              }
+            ]"
+            :aria-label="t('daily_rewards.day_title', { day: cell.day })"
+            @click="selectDay(cell.day)"
         >
-          <Card
-              width="100%"
-              height="100%"
-              :padding="4"
-              class="day-card"
-              :class="{
-                'is-claimed': day.isClaimed,
-                'is-current': day.isCurrent,
-                'is-locked': day.isLocked,
-                'is-milestone': day.isMilestone,
-              }"
-          >
-            <div class="day-card-inner">
-              <span class="day-number">{{ day.day }}</span>
-
-              <div class="reward-values" :aria-label="rewardDescription(day)">
-                <span v-for="reward in rewardParts(day)" :key="reward.icon" class="reward-value">
-                  <ItemIcon :item="reward.icon" size="28" class="reward-value-icon" />
-                  <span>+{{ reward.amount }}</span>
-                </span>
-              </div>
-
-              <span v-if="day.isClaimed" class="claimed-mark">✓</span>
-              <div v-else-if="day.isCurrent && canClaim" class="claim-badge">
-                {{ isClaiming ? '...' : 'Тисни!' }}
-              </div>
-              <div v-else-if="day.isLocked" class="lock-overlay">
-                <Lock width="40" height="40" />
-              </div>
-            </div>
-          </Card>
-        </div>
+          <span class="day-face">
+            <span class="day-num">{{ cell.day }}</span>
+            <ItemIcon :item="cell.icon" size="32" class="day-icon" />
+            <span v-if="cell.done" class="day-mark">✓</span>
+          </span>
+          <span v-if="cell.state === 'today'" class="today-flag" :class="{ 'is-done': cell.done }">
+            {{ t('daily_rewards.today') }}
+          </span>
+        </button>
       </div>
 
-      <!-- Info panel without separate button -->
-      <div class="claim-panel">
-        <div class="claim-copy">
-          <div v-if="canClaim && activeDayReward" class="claim-reward-values" :aria-label="rewardDescription(activeDayReward)">
-            <span v-for="reward in rewardParts(activeDayReward)" :key="reward.icon" class="reward-value">
-              <ItemIcon :item="reward.icon" size="20" class="reward-value-icon" />
-              <span>+{{ reward.amount }}</span>
+      <!-- Деталі вибраного дня -->
+      <Card width="100%" height="auto" :padding="10" class="detail-card">
+        <div class="detail">
+          <div class="detail-head">
+            <span class="detail-title">
+              {{ t('daily_rewards.day_title', { day: selected.day }) }}
+              <em v-if="selected.state === 'today'" class="detail-today">{{ t('daily_rewards.today') }}</em>
             </span>
+            <span class="detail-status" :class="{ ok: selected.done, hot: selected.claimable }">{{ statusText }}</span>
           </div>
-          <span v-else class="claim-description">{{ t('daily_rewards.come_back_tomorrow') }}</span>
-        </div>
-      </div>
 
+          <div class="detail-rewards">
+            <div v-for="r in rewardParts(selected)" :key="r.icon" class="reward">
+              <ItemIcon :item="r.icon" size="32" />
+              <span class="reward-amount">+{{ fmt(r.amount) }}</span>
+              <span class="reward-label">{{ r.label }}</span>
+            </div>
+            <span v-if="!rewardParts(selected).length" class="reward-empty">—</span>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Дія -->
+      <div class="claim-zone">
+        <ButtonText
+            width="100%"
+            :disabled="!canClaim"
+            :loading="isClaiming"
+            @click="handleClaim"
+        >
+          {{ canClaim ? t('daily_rewards.claim') : t('daily_rewards.claimed') }}
+        </ButtonText>
+        <span v-if="!canClaim" class="claim-caption">{{ t('daily_rewards.come_back_tomorrow') }}</span>
+      </div>
     </div>
   </PixelModal>
 </template>
@@ -304,14 +283,16 @@ async function handleClaim(dayToClaim?: number) {
   --muted: #8b6d51;
   --paper: #fff6df;
   --paper-dark: #ead8b7;
+  --edge: #8b6d51;
   --berry: #e05b67;
   --berry-dark: #a93c4b;
   --gold: #e9b955;
+  --gold-dark: #b9852a;
   --green: #4f8b55;
 
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   box-sizing: border-box;
   color: var(--ink);
@@ -333,345 +314,316 @@ async function handleClaim(dayToClaim?: number) {
   overflow-y: auto;
 }
 
+/* ── Серія ─────────────────────────────── */
 .streak-panel {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--paper);
+  border: var(--b) solid var(--edge);
+  box-shadow: inset var(--b) var(--b) 0 rgba(255, 255, 255, 0.6), 0 var(--b) 0 #b99a77;
+}
+
+.streak-top {
+  display: flex;
   align-items: center;
-  gap: 4px 12px;
-  padding: 11px;
-  border: 2px solid #8b6d51;
-  border-radius: 4px;
-  background:
-      linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.48),
-          transparent 65%
-      ),
-      var(--paper);
-  box-shadow: 0 3px 0 #b99a77;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .streak-copy {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 2px;
 }
 
 .eyebrow {
+  font-size: 13px;
   color: var(--muted);
-  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .streak-number {
-  font-size: 27px;
-  font-weight: 900;
+  font-size: 28px;
   line-height: 1;
 }
 
 .streak-number span {
+  margin-left: 6px;
+  font-size: 16px;
   color: var(--muted);
-  font-size: 13px;
 }
 
-.streak-fruit {
+.streak-bar {
   display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border: 2px solid #edc8a0;
-  border-radius: 6px;
-  background: #ffedd8;
+  grid-template-columns: repeat(30, 1fr);
+  gap: var(--d);
+  padding: var(--b);
+  background: #5d4a38;
 }
 
-/* strawberry-large: розмір задає ItemIcon */
+.streak-bar i {
+  height: calc(var(--d) * 12);
+  background: #8b7660;
+}
+.streak-bar i.mile { background: #a38b45; }
+.streak-bar i.on { background: var(--berry); }
+.streak-bar i.on.mile { background: var(--gold); }
+.streak-bar i.next { animation: bar-next 0.8s infinite steps(1, end); }
 
-.progress-track {
-  grid-column: 1 / -1;
-  height: 8px;
-  margin-top: 8px;
-  overflow: hidden;
-  border: 1px solid #8b6d51;
-  border-radius: 2px;
-  background: #e6d5b9;
+@keyframes bar-next {
+  0%   { background: var(--berry); }
+  50%  { background: #8b7660; }
 }
 
-.progress-fill {
-  height: 100%;
-  background: repeating-linear-gradient(
-      90deg,
-      var(--berry) 0,
-      var(--berry) 8px,
-      var(--berry-dark) 8px,
-      var(--berry-dark) 10px
-  );
-  transition: width 0.25s ease;
-  image-rendering: pixelated;
-}
-
-.rewards-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.days-count {
-  color: var(--muted);
-  font-size: 10px;
-}
-
+/* ── Календар ──────────────────────────── */
 .days-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  width: 100%;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--b);
+  padding-top: calc(var(--b) * 3);
 }
 
-.day-wrapper {
-  width: 100%;
-  aspect-ratio: 1;
-  filter: drop-shadow(0 2px 0 rgba(63, 46, 33, 0.12));
+.day-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
 
-.day-wrapper-clickable {
-  cursor: pointer;
-}
+.day-cell:active { transform: translateY(var(--b)); }
+.day-cell.is-selected { transform: translateY(calc(var(--b) * -1)); z-index: 2; }
+.day-cell.is-selected:active { transform: translateY(0); }
 
-.day-wrapper-clickable .day-card {
-  border: 2px solid #e9b955;
-  animation: pulse-card 1.5s infinite ease-in-out;
-}
-
-.day-wrapper-clickable:hover .day-card {
-  transform: translateY(-4px) scale(1.03);
-}
-
-.day-wrapper-clickable:active .day-card {
-  transform: translateY(0) scale(0.97);
-}
-
-@keyframes pulse-card {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(233, 185, 85, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 8px 4px rgba(233, 185, 85, 0.8);
-  }
-}
-
-.day-card {
-  box-sizing: border-box;
-  overflow: hidden;
-  border-radius: 4px;
-  transition:
-      transform 0.15s ease,
-      background-color 0.15s ease,
-      opacity 0.15s ease;
-}
-
-.day-card-inner {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  padding: 4px;
-  box-sizing: border-box;
-  text-align: center;
-}
-
-.day-number {
-  display: grid;
-  place-items: center;
-  min-width: 20px;
-  height: 16px;
-  padding: 0 4px;
-  border: 1px solid #d9c5a6;
-  border-radius: 3px;
-  background: #f3e4ca;
-  color: var(--ink);
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.reward-values {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  flex: 1;
-  color: var(--ink);
-  font-size: 11px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.reward-value {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  white-space: nowrap;
-}
-
-.reward-value-icon {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-.day-wrapper-current {
-  transform: translateY(-2px);
-}
-
-.day-wrapper-current .day-card {
-  background-color: #fff2cb;
-  box-shadow: inset 0 0 0 1px rgba(233, 185, 85, 0.8);
-}
-
-.day-wrapper-claimed {
-  opacity: 0.8;
-}
-
-.day-wrapper-claimed .day-card {
-  background-color: #f2ead7;
-}
-
-.day-wrapper-milestone .day-number {
-  border-color: #d6a94c;
-  background: #ffedbd;
-  color: #805a16;
-}
-
-.claimed-mark {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  border: 1px solid #fff;
-  border-radius: 50%;
-  background: var(--green);
-  color: #fff;
-  font-family: sans-serif;
-  font-size: 10px;
-  font-weight: 900;
-  z-index: 2;
-}
-
-.claim-badge {
-  font-size: 9px;
-  font-weight: bold;
-  background: var(--berry);
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-top: 2px;
-  animation: bounce 1s infinite alternate;
-}
-
-@keyframes bounce {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-3px); }
-}
-
-.lock-overlay {
+/* грань клітинки зі зрізаними кутами - піксельні "заокруглення" */
+.day-face {
+  --cut: var(--b);
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 3px;
-  background: rgba(67, 51, 36, 0.15);
-  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background: var(--paper);
+  border: var(--b) solid var(--edge);
+  box-shadow:
+      inset var(--b) var(--b) 0 rgba(255, 255, 255, 0.55),
+      inset calc(var(--b) * -1) calc(var(--b) * -1) 0 rgba(0, 0, 0, 0.12);
+  clip-path: polygon(
+      var(--cut) 0, calc(100% - var(--cut)) 0,
+      100% var(--cut), 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, var(--cut) 100%,
+      0 calc(100% - var(--cut)), 0 var(--cut)
+  );
 }
 
-.claim-panel {
+.day-num {
+  position: absolute;
+  top: calc(var(--b) * 1.5);
+  left: calc(var(--b) * 2);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.day-icon {
+  margin-top: calc(var(--b) * 2);
+}
+
+.day-mark {
+  position: absolute;
+  right: calc(var(--b) * 1.5);
+  bottom: calc(var(--b) * 1);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--green);
+  text-shadow: var(--d) var(--d) 0 #fff;
+}
+
+/* стани */
+.is-claimed .day-face,
+.is-today.is-done .day-face {
+  background: var(--paper-dark);
+}
+.is-claimed .day-icon,
+.is-today.is-done .day-icon {
+  opacity: 0.55;
+}
+
+.is-missed .day-face {
+  background: #ddd5c6;
+  border-color: #a39a89;
+}
+.is-missed .day-icon {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.is-future .day-icon {
+  opacity: 0.9;
+}
+
+.is-milestone .day-face {
+  border-color: var(--gold-dark);
+  background: #fff0c4;
+}
+.is-milestone.is-claimed .day-face { background: #e6d29a; }
+.is-milestone .day-face::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: calc(var(--b) * 4);
+  height: calc(var(--b) * 4);
+  background: var(--gold);
+}
+
+.is-today .day-face {
+  border-color: var(--berry-dark);
+}
+.is-today .day-num {
+  color: var(--berry-dark);
+}
+
+/* сьогодні, можна забрати: блимає рамка + підстрибує іконка */
+.is-claimable .day-face {
+  background: #ffe9a8;
+  animation: today-blink 0.8s infinite steps(1, end);
+}
+.is-claimable .day-icon {
+  animation: icon-bob 0.9s infinite;
+  animation-timing-function: steps(4, end);
+}
+
+@keyframes today-blink {
+  0%   { border-color: var(--berry-dark); background: #ffe9a8; }
+  50%  { border-color: var(--gold-dark);  background: #fff2c4; }
+}
+@keyframes icon-bob {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(calc(var(--d) * -4)); }
+  100% { transform: translateY(0); }
+}
+
+.is-selected:not(.is-today) .day-face {
+  border-color: var(--ink);
+}
+
+/* прапорець "Сьогодні" над клітинкою */
+.today-flag {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--b) * -3);
+  transform: translateX(-50%);
+  padding: calc(var(--b) * 0.5) calc(var(--b) * 2);
+  background: var(--berry-dark);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 var(--b) 0 rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 3;
+}
+.today-flag.is-done {
+  background: var(--green);
+}
+
+/* ── Деталі дня ────────────────────────── */
+.detail-card {
+  box-sizing: border-box;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 9px 10px;
-  border: 2px solid #8b6d51;
-  border-radius: 4px;
-  background: #f6e8d0;
-  box-shadow: 0 3px 0 #b99a77;
+  font-size: 16px;
 }
 
-.claim-copy {
+.detail-title {
   display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
+  align-items: center;
+  gap: 6px;
 }
 
-.claim-title {
+.detail-today {
+  font-style: normal;
   font-size: 11px;
-  font-weight: bold;
-  line-height: 1.4;
+  padding: 1px 5px;
+  background: var(--berry-dark);
+  color: #fff;
 }
 
-.claim-description {
+.detail-status {
+  font-size: 13px;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.4;
 }
+.detail-status.ok { color: var(--green); }
+.detail-status.hot { color: var(--berry-dark); }
 
-.claim-reward-values {
+.detail-rewards {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  min-height: 36px;
+}
+
+.reward {
+  display: flex;
+  align-items: center;
   gap: 6px;
-  color: var(--ink);
-  font-size: 11px;
-  font-weight: bold;
 }
 
-.claim-reward-values .reward-value-icon {
-  width: 18px;
-  height: 18px;
+.reward-amount {
+  font-size: 20px;
+  line-height: 1;
 }
 
-@media (max-width: 360px) {
-  .daily-modal {
-    gap: 8px;
-  }
+.reward-label {
+  font-size: 13px;
+  color: var(--muted);
+}
 
-  .days-grid {
-    gap: 6px;
-  }
+.reward-empty {
+  color: var(--muted);
+}
 
-  .reward-value-icon {
-    width: 18px;
-    height: 18px;
-  }
+/* ── Кнопка ────────────────────────────── */
+.claim-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
 
-  .claim-panel {
-    gap: 5px;
-    padding: 7px;
-  }
+.claim-caption {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .day-card,
-  .progress-fill,
-  .claim-badge {
-    animation: none;
-    transition: none;
-  }
+  .is-claimable .day-face,
+  .is-claimable .day-icon,
+  .streak-bar i.next { animation: none; }
 }
 </style>

@@ -8,6 +8,7 @@ import { useUserStore } from "@/stores/user.ts"
 import { useAuthStore } from "@/stores/auth.ts"
 import { useToastStore } from "@/stores/toast.ts"
 import GiftButton from "./pixel/GiftButton.vue"
+import { dpr, snapContain } from '@/services/pixelSnap'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -38,6 +39,75 @@ const isClicking = ref(false)
 const isSelling = ref(false)
 const particles = ref<FlyingParticle[]>([])
 let pendingClicks = 0
+
+// ── Динаміка ─────────────────────────────────────────────
+// Усі зсуви кратні текселю / фізичному пікселю, щоб піксель-арт не розмивався.
+const texel = computed(() => snapContain(200, 200, 16, 16, dpr.value).width / 16)
+const unitStyle = computed(() => ({
+  '--d': `${1 / dpr.value}px`,
+  '--t': `${texel.value}px`,
+  '--o': `${4 / dpr.value}px`
+}))
+const snapPx = (v: number) => Math.round(v * dpr.value) / dpr.value
+
+// чергуємо два клас-імені з однаковими keyframes, щоб анімація перезапускалась на кожен клік
+const bumpClass = ref<'bump-a' | 'bump-b'>('bump-a')
+const badgeClass = computed(() => bumpClass.value.replace('bump', 'badge'))
+const flashClass = computed(() => bumpClass.value.replace('bump', 'flash'))
+const shakeClass = computed(() => bumpClass.value.replace('bump', 'shake'))
+
+const combo = ref(0)
+const tier = computed(() => (combo.value >= 50 ? 3 : combo.value >= 25 ? 2 : combo.value >= 10 ? 1 : 0))
+let comboTimer: ReturnType<typeof setTimeout> | null = null
+
+interface Splat { id: number; x: number; y: number; pts: number[][]; color: string; size: number }
+const splats = ref<Splat[]>([])
+let splatId = 0
+const SPLAT_COLORS = ['#e53935', '#ff6b6b', '#b71c1c', '#4caf50', '#fff3c4']
+
+function haptic(kind: 'light' | 'medium' | 'heavy' = 'light') {
+  try { (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred?.(kind) } catch {}
+}
+
+function bumpCombo() {
+  combo.value++
+  if (comboTimer) clearTimeout(comboTimer)
+  comboTimer = setTimeout(() => (combo.value = 0), 900)
+}
+
+function spawnSplats(x: number, y: number, n: number) {
+  const fresh: Splat[] = []
+  for (let i = 0; i < n; i++) {
+    const ang = -Math.PI * (0.1 + Math.random() * 0.8)
+    const dist = 70 + Math.random() * 90
+    const pts = [0.25, 0.5, 0.75, 1].map(t => [
+      snapPx(Math.cos(ang) * dist * t),
+      snapPx(Math.sin(ang) * dist * t + 110 * t * t)
+    ])
+    fresh.push({
+      id: splatId++,
+      x: snapPx(x),
+      y: snapPx(y),
+      pts,
+      color: SPLAT_COLORS[Math.floor(Math.random() * SPLAT_COLORS.length)],
+      size: [8, 8, 12, 16][Math.floor(Math.random() * 4)]
+    })
+  }
+  splats.value = [...splats.value, ...fresh].slice(-120)
+  const ids = new Set(fresh.map(f => f.id))
+  setTimeout(() => {
+    splats.value = splats.value.filter(sp => !ids.has(sp.id))
+  }, 560)
+}
+
+function splatStyle(sp: Splat) {
+  const st: Record<string, string> = { left: `${sp.x}px`, top: `${sp.y}px`, background: sp.color, '--s': String(sp.size) }
+  sp.pts.forEach((pt, i) => {
+    st[`--x${i + 1}`] = `${pt[0]}px`
+    st[`--y${i + 1}`] = `${pt[1]}px`
+  })
+  return st
+}
 
 const formattedResetTime = ref('00:00:00')
 let timerInterval: ReturnType<typeof setInterval> | null = null
@@ -127,6 +197,7 @@ onMounted(async () => {
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
   if (flushInterval) clearInterval(flushInterval)
+  if (comboTimer) clearTimeout(comboTimer)
   window.removeEventListener("beforeunload", handleBeforeUnload)
 })
 
@@ -177,6 +248,19 @@ const registerClick = (clientX?: number, clientY?: number) => {
       startX = rect.left + rect.width / 2 + (Math.random() * 40 - 20)
       startY = rect.top + rect.height / 2 + (Math.random() * 40 - 20)
     }
+  }
+
+  bumpClass.value = bumpClass.value === 'bump-a' ? 'bump-b' : 'bump-a'
+  bumpCombo()
+  haptic('light')
+  spawnSplats(startX, startY, 9 + tier.value * 3)
+  if (combo.value === 10 || combo.value === 25 || combo.value === 50) {
+    const btn = document.querySelector('.strawberry-button') as HTMLElement | null
+    if (btn) {
+      const rc = btn.getBoundingClientRect()
+      spawnSplats(rc.left + rc.width / 2, rc.top + rc.height / 2, 28)
+    }
+    haptic('heavy')
   }
 
   const targetEl = document.querySelector('.toolbar-strawberry-card') || document.querySelector('.toolbar-strawberry-icon')
@@ -254,7 +338,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
 </script>
 
 <template>
-  <div class="clicker-container">
+  <div class="clicker-container" :style="unitStyle">
     <!-- Ліва колонка кнопок (Clash Royale Style) -->
     <div class="side-actions side-actions--left">
     </div>
@@ -270,36 +354,41 @@ const sellAllStrawberries = async (e: MouseEvent) => {
     <div class="clicker-section">
       <div
           class="click-area"
+          :class="[shakeClass, `tier-${tier}`]"
           @touchstart.prevent.stop="handleTouchStart"
           @click="handleClick"
       >
-        <button
+        <div v-if="combo >= 5" class="combo-badge" :class="[badgeClass, `tier-${tier}`]">x{{ combo }}</div>
+        <div
             class="strawberry-button"
-            :class="{ 'strawberry-button--disabled': isLimitReached }"
+            :class="[flashClass, { 'strawberry-button--disabled': isLimitReached }]"
             draggable="false"
             oncontextmenu="return false;"
             ondragstart="return false;"
             @contextmenu.prevent
         >
-          <ItemIcon
-              item="strawberry"
-              size="200"
-              :outline="false"
-              alt="Strawberry"
-              oncontextmenu="return false;"
-              ondragstart="return false;"
-              class="strawberry-icon"
-              :class="{ 'pop-animation': isClicking, 'disabled-icon': isLimitReached }"
-          />
+          <div class="berry-wrap" :class="[`tier-${tier}`, { 'berry-wrap--idle': !isLimitReached }]">
+            <ItemIcon
+                item="strawberry"
+                size="200"
+                :outline="false"
+                alt="Strawberry"
+                oncontextmenu="return false;"
+                ondragstart="return false;"
+                class="strawberry-icon"
+                :class="[bumpClass, { 'disabled-icon': isLimitReached }]"
+            />
+          </div>
           <div v-if="isLimitReached" class="lock-overlay">
             <img src="/ui/lock.png" alt="Locked" draggable="false" class="lock-icon-img" />
           </div>
-        </button>
+        </div>
       </div>
 
       <!-- Летючі частинки полуничок до тулбара -->
       <Teleport to="body">
-        <div class="flying-particles-layer">
+        <div class="flying-particles-layer" :style="unitStyle">
+          <div v-for="sp in splats" :key="sp.id" class="splat" :style="splatStyle(sp)" />
           <div
               v-for="p in particles"
               :key="p.id"
@@ -494,33 +583,23 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   -webkit-touch-callout: none;
 }
 
+/* Без рамки: клікається сама полуниця (padding - запас зони натискання) */
 .strawberry-button {
-  background-color: #b8cfce;
-  border: 4px solid #7f8caa;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 6px 0 0 #5e6d8a, 0 0 0 2px #333446 inset;
-  cursor: pointer;
-  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+  padding: 24px;
+  cursor: pointer;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
 
-.strawberry-button:active:not(.strawberry-button--disabled) {
-  transform: translateY(3px);
-  box-shadow: 0 3px 0 0 #5e6d8a, 0 0 0 2px #333446 inset;
-}
-
 .strawberry-button--disabled {
   opacity: 0.8;
   cursor: not-allowed;
-  box-shadow: 0 4px 0 0 #5e6d8a, 0 0 0 2px #333446 inset;
 }
 
 .strawberry-icon {
@@ -546,8 +625,7 @@ const sellAllStrawberries = async (e: MouseEvent) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(63, 46, 33, 0.25);
-  border-radius: 8px;
+  pointer-events: none;
 }
 
 .lock-icon-img {
@@ -583,6 +661,154 @@ const sellAllStrawberries = async (e: MouseEvent) => {
 }
 
 /* particle-img: розмір задає ItemIcon */
+
+/* ── Динаміка кліку ───────────────────────────────── */
+.berry-wrap {
+  display: flex;
+  --ring: #ffd54f;
+}
+
+/* ідл: плавне погойдування на 8 фізичних пікселів, кожен крок рівно 1 піксель екрана */
+.berry-wrap--idle {
+  animation: berry-idle 1.8s infinite;
+  animation-timing-function: steps(8, end);
+}
+.berry-wrap--idle.tier-1,
+.berry-wrap--idle.tier-2,
+.berry-wrap--idle.tier-3 {
+  animation-duration: 1s;
+}
+
+@keyframes berry-idle {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(calc(var(--d) * -8)); }
+  100% { transform: translateY(0); }
+}
+
+/* клік: сильний "удар" - втискання, пружний переліт вгору, відскок і спокій.
+   Усі кроки по цілому фізичному пікселю. Два імена - щоб анімація перезапускалась на кожен клік */
+.strawberry-icon.bump-a { animation: bump-a 0.26s; }
+.strawberry-icon.bump-b { animation: bump-b 0.26s; }
+
+@keyframes bump-a {
+  0%   { transform: translateY(calc(var(--d) * 24));  animation-timing-function: steps(8, end); }
+  35%  { transform: translateY(calc(var(--d) * -16)); animation-timing-function: steps(11, end); }
+  65%  { transform: translateY(calc(var(--d) * 6));   animation-timing-function: steps(6, end); }
+  100% { transform: translateY(0); }
+}
+@keyframes bump-b {
+  0%   { transform: translateY(calc(var(--d) * 24));  animation-timing-function: steps(8, end); }
+  35%  { transform: translateY(calc(var(--d) * -16)); animation-timing-function: steps(11, end); }
+  65%  { transform: translateY(calc(var(--d) * 6));   animation-timing-function: steps(6, end); }
+  100% { transform: translateY(0); }
+}
+
+/* спалах при влучанні (дискретні кадри яскравості) */
+.strawberry-button.flash-a { animation: flash-a 0.2s; }
+.strawberry-button.flash-b { animation: flash-b 0.2s; }
+@keyframes flash-a {
+  0%   { filter: brightness(1.9); animation-timing-function: steps(1, end); }
+  30%  { filter: brightness(1.45); animation-timing-function: steps(1, end); }
+  60%  { filter: brightness(1.15); animation-timing-function: steps(1, end); }
+  100% { filter: none; }
+}
+@keyframes flash-b {
+  0%   { filter: brightness(1.9); animation-timing-function: steps(1, end); }
+  30%  { filter: brightness(1.45); animation-timing-function: steps(1, end); }
+  60%  { filter: brightness(1.15); animation-timing-function: steps(1, end); }
+  100% { filter: none; }
+}
+
+/* тряска зони кліку; амплітуда росте з комбо (значення парні, щоб при множнику 1.5 лишались цілими) */
+.click-area { --k: 1; }
+.click-area.tier-1 { --k: 1.5; }
+.click-area.tier-2 { --k: 2; }
+.click-area.tier-3 { --k: 3; }
+.click-area.shake-a { animation: shake-a 0.2s; }
+.click-area.shake-b { animation: shake-b 0.2s; }
+@keyframes shake-a {
+  0%   { transform: translate(calc(var(--d) * 6 * var(--k)), calc(var(--d) * -4 * var(--k))); animation-timing-function: steps(1, end); }
+  25%  { transform: translate(calc(var(--d) * -4 * var(--k)), calc(var(--d) * 2 * var(--k))); animation-timing-function: steps(1, end); }
+  50%  { transform: translate(calc(var(--d) * 2 * var(--k)), calc(var(--d) * -2 * var(--k))); animation-timing-function: steps(1, end); }
+  75%  { transform: translate(calc(var(--d) * -2 * var(--k)), 0); animation-timing-function: steps(1, end); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes shake-b {
+  0%   { transform: translate(calc(var(--d) * -6 * var(--k)), calc(var(--d) * -4 * var(--k))); animation-timing-function: steps(1, end); }
+  25%  { transform: translate(calc(var(--d) * 4 * var(--k)), calc(var(--d) * 2 * var(--k))); animation-timing-function: steps(1, end); }
+  50%  { transform: translate(calc(var(--d) * -2 * var(--k)), calc(var(--d) * -2 * var(--k))); animation-timing-function: steps(1, end); }
+  75%  { transform: translate(calc(var(--d) * 2 * var(--k)), 0); animation-timing-function: steps(1, end); }
+  100% { transform: translate(0, 0); }
+}
+
+/* комбо 25+: чіткий піксельний контур, 50+: мигає */
+.berry-wrap.tier-2 .strawberry-icon,
+.berry-wrap.tier-3 .strawberry-icon {
+  filter:
+      drop-shadow(var(--o) 0 0 var(--ring))
+      drop-shadow(calc(var(--o) * -1) 0 0 var(--ring))
+      drop-shadow(0 var(--o) 0 var(--ring))
+      drop-shadow(0 calc(var(--o) * -1) 0 var(--ring));
+}
+.berry-wrap.tier-3 {
+  animation-name: berry-idle, ring-cycle;
+  animation-duration: 1s, 0.24s;
+  animation-iteration-count: infinite;
+  animation-timing-function: steps(8, end), steps(1, end);
+}
+@keyframes ring-cycle {
+  0%   { --ring: #ffd54f; }
+  50%  { --ring: #ff6b6b; }
+}
+
+/* лічильник комбо */
+.combo-badge {
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  margin-left: -40px;
+  width: 80px;
+  text-align: center;
+  font-family: var(--font-pixel), sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 #333446, -2px -2px 0 #333446, 2px -2px 0 #333446, -2px 2px 0 #333446;
+  pointer-events: none;
+  z-index: 5;
+}
+.combo-badge.tier-1 { color: #ffd54f; }
+.combo-badge.tier-2 { color: #ff9800; }
+.combo-badge.tier-3 { color: #ff6b6b; }
+.combo-badge.badge-a { animation: badge-a 0.15s; animation-timing-function: steps(1, end); }
+.combo-badge.badge-b { animation: badge-b 0.15s; animation-timing-function: steps(1, end); }
+@keyframes badge-a { 0% { transform: translateY(calc(var(--d) * -16)); } 50% { transform: translateY(0); } 100% { transform: translateY(0); } }
+@keyframes badge-b { 0% { transform: translateY(calc(var(--d) * -16)); } 50% { transform: translateY(0); } 100% { transform: translateY(0); } }
+
+/* бризки соку: квадрати по 8 фізичних пікселів, 4 кадри по параболі */
+.splat {
+  position: fixed;
+  width: calc(var(--d) * var(--s, 8));
+  height: calc(var(--d) * var(--s, 8));
+  margin: calc(var(--d) * var(--s, 8) / -2) 0 0 calc(var(--d) * var(--s, 8) / -2);
+  pointer-events: none;
+  will-change: transform;
+  animation: splat 0.48s forwards;
+  animation-timing-function: steps(1, end);
+}
+@keyframes splat {
+  0%   { transform: translate(var(--x1), var(--y1)); }
+  25%  { transform: translate(var(--x2), var(--y2)); }
+  50%  { transform: translate(var(--x3), var(--y3)); }
+  75%  { transform: translate(var(--x4), var(--y4)); }
+  100% { transform: translate(var(--x4), var(--y4)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .berry-wrap, .strawberry-icon.bump-a, .strawberry-icon.bump-b, .combo-badge,
+  .strawberry-button.flash-a, .strawberry-button.flash-b, .click-area.shake-a, .click-area.shake-b { animation: none !important; }
+  .splat { display: none; }
+}
 
 .particle-val {
   font-size: 20px;
