@@ -20,6 +20,9 @@ export interface Item {
 export interface UBusiness {
     id: number;
     name: string;
+    nameUk?: string | null;
+    nameEn?: string | null;
+    nameRu?: string | null;
     yieldCount: number;
     yieldInterval: YieldInterval;
     item: Item;

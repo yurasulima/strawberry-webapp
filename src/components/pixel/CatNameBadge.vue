@@ -18,7 +18,7 @@ const displayName = computed(() => {
 
 <template>
   <div class="cat-name-badge-wrapper" title="Налаштувати ім'я котика">
-    <NinePatch src="/ui/badge_name.9.png?v=2" :scale="1" class="badge__bg" />
+    <NinePatch src="/ui/flat_card.9.png" class="badge__bg" />
     <span class="badge__content">{{ displayName }}</span>
     <span class="badge__pointer"></span>
   </div>
@@ -30,14 +30,21 @@ const displayName = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 14px;
+  padding: 5px 12px;
   cursor: pointer;
   user-select: none;
   line-height: 1;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
+  transition: transform 0.1s ease;
 }
 
+.cat-name-badge-wrapper:hover {
+  transform: scale(1.06);
+}
 
+.cat-name-badge-wrapper:active {
+  transform: scale(0.96);
+}
 
 .badge__bg {
   position: absolute;
@@ -49,7 +56,7 @@ const displayName = computed(() => {
   position: relative;
   z-index: 1;
   font-family: var(--font-pixel), sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: bold;
   color: #3f2e21;
   white-space: nowrap;
@@ -59,6 +66,7 @@ const displayName = computed(() => {
   position: absolute;
   bottom: -4px;
   left: 50%;
+  transform: translateX(-50%);
   width: 6px;
   height: 4px;
   background-color: #5d4037;

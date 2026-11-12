@@ -8,7 +8,7 @@ import { CardPrimary, Card, ButtonText, SlideFade, ItemIcon, PixelModal } from '
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user.ts'
 import { useToastStore } from '@/stores/toast.ts'
-import { formatBizName as formatBizNameUtil, translateError as translateErrorUtil } from '@/utils/business'
+import { formatBizName as formatBizNameUtil, translateError as translateErrorUtil, type BizNames } from '@/utils/business'
 import InfoButton from "@/components/pixel/InfoButton.vue"
 import FlatCard from "@/components/pixel/FlatCard.vue";
 
@@ -50,8 +50,8 @@ async function refreshUser() {
 const timerMap = ref<Record<number, number>>({})
 let timerInterval: any = null
 
-function formatBizName(rawName?: string): string {
-  return formatBizNameUtil(rawName, t, te)
+function formatBizName(rawName?: string, meta?: BizNames | null): string {
+  return formatBizNameUtil(rawName, t, te, meta)
 }
 
 function translateError(err: any): string {
@@ -242,7 +242,7 @@ async function directCollect(userBiz: UserBusiness, e?: MouseEvent) {
     await api.post('/business/collect', { name: rawName })
     playCoinSound()
     spawnFlyingItems(itemName, e)
-    toastStore.showToast(t('business.collected_success', { name: formatBizName(rawName) }), 'success')
+    toastStore.showToast(t('business.collected_success', { name: formatBizName(rawName, userBiz.business) }), 'success')
     await userStore.fetchUser()
   } catch (err: any) {
     toastStore.showToast(translateError(err), 'error')
@@ -266,7 +266,7 @@ async function directWater(userBiz: UserBusiness) {
 
   try {
     await api.post('/business/water', { name: rawName })
-    toastStore.showToast(t('business.watered_success', { name: formatBizName(rawName) }), 'success')
+    toastStore.showToast(t('business.watered_success', { name: formatBizName(rawName, userBiz.business) }), 'success')
     await userStore.fetchUser()
   } catch (err: any) {
     toastStore.showToast(translateError(err), 'error')
@@ -297,7 +297,7 @@ async function directWater(userBiz: UserBusiness) {
               <li v-for="biz in sortedMyBusinesses" :key="biz.id" class="biz-row">
                 <div class="biz-info">
                   <span class="biz-name">
-                    {{ formatBizName(biz.business?.name) }}
+                    {{ formatBizName(biz.business?.name, biz.business) }}
                     <span v-if="biz.accumulatedYield && biz.maxAccumulatedYield && biz.accumulatedYield >= biz.maxAccumulatedYield" class="tag-max">MAX (7d)</span>
                     <span>[{{ countOf(biz) }} {{ t('business.count_pcs') }}]</span>
                   </span>

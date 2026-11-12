@@ -1,11 +1,19 @@
 export const UI_TEXTURES = [
   '/ui/card.9.png',
   '/ui/primary_card.9.png',
+  '/ui/flat_card.9.png',
   '/ui/border.9.png',
   '/ui/message.9.png',
   '/ui/selected.9.png',
   '/ui/button_text.9.png',
   '/ui/button_text_pressed.9.png',
+  '/ui/badge_name.9.png',
+  '/ui/badge_common.9.png',
+  '/ui/badge_rare.9.png',
+  '/ui/badge_epic.9.png',
+  '/ui/badge_legendary.9.png',
+  '/ui/badge_mythic.9.png',
+  '/ui/badge_level.9.png',
   '/ui/switch_on.png',
   '/ui/switch_off.png',
   '/ui/button_shop.png',
@@ -61,6 +69,11 @@ export const UI_TEXTURES = [
   '/ui/button_sound_disabled.png',
   '/ui/button_music_enabled.png',
   '/ui/button_music_disabled.png',
+  '/ui/heart.png',
+  '/ui/info.png',
+  '/cats/cat_gray.png',
+  '/cats/cat_zones.png',
+  '/new_background.png'
 ]
 
 const cache = new Map<string, HTMLImageElement>()

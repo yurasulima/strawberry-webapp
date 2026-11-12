@@ -83,7 +83,7 @@ watch(
 function isMoney(itemName?: string): boolean {
   if (!itemName) return false
   const clean = itemName.toLowerCase().trim()
-  return clean === 'money'
+  return clean === 'money' || clean === 'money_v2'
 }
 
 const { itemTitle } = useItemMeta()

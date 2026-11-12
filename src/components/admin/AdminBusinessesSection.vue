@@ -7,6 +7,7 @@ import { playClickSound, playPurchaseSound } from '@/services/sound'
 import { useToastStore } from '@/stores/toast.ts'
 import EditButton from "@/components/pixel/EditButton.vue";
 import DeleteButton from "@/components/pixel/DeleteButton.vue";
+import { formatBizName } from '@/utils/business'
 
 const { t, te } = useI18n()
 const toastStore = useToastStore()
@@ -14,13 +15,17 @@ const toastStore = useToastStore()
 /**
  * Контракт з бекендом (див. README/документацію):
  *   GET    /admin/businesses
- *   POST   /admin/businesses            { name, price, yieldCount, yieldIntervalSeconds, item }
- *   PUT    /admin/businesses/{id}       { name, price, yieldCount, yieldIntervalSeconds, item }
+ *   POST   /admin/businesses            { name, price, yieldCount, yieldIntervalSeconds, item, nameUk, nameEn, nameRu }
+ *   PUT    /admin/businesses/{id}       { name, price, yieldCount, yieldIntervalSeconds, item, nameUk, nameEn, nameRu }
+ *                                        (назви: null = не чіпати, '' = очистити)
  *   DELETE /admin/businesses/{id}
  */
 interface AdminBusiness {
   id: number
   name: string
+  nameUk?: string | null
+  nameEn?: string | null
+  nameRu?: string | null
   price: number
   yieldCount: number
   yieldIntervalSeconds: number
@@ -40,6 +45,9 @@ const isFormOpen = ref(false)
 const editingId = ref<number | null>(null)
 const form = ref({
   name: '',
+  nameUk: '',
+  nameEn: '',
+  nameRu: '',
   price: 100 as number | null,
   yieldCount: 10 as number | null,
   yieldIntervalSeconds: 3600 as number | null,
@@ -68,9 +76,8 @@ const isFormValid = computed(() => {
   )
 })
 
-function displayName(raw: string): string {
-  const key = `business.names.${raw.toLowerCase().trim()}`
-  return te(key) ? t(key) : raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+function displayName(raw: string, meta?: AdminBusiness | null): string {
+  return formatBizName(raw, t, te, meta)
 }
 
 function formatInterval(seconds: number): string {
@@ -105,7 +112,7 @@ async function load() {
 function openCreate() {
   playClickSound()
   editingId.value = null
-  form.value = { name: '', price: 100, yieldCount: 10, yieldIntervalSeconds: 3600, item: 'strawberry', minLevel: 1, premiumOnly: false, waterable: false }
+  form.value = { name: '', nameUk: '', nameEn: '', nameRu: '', price: 100, yieldCount: 10, yieldIntervalSeconds: 3600, item: 'strawberry', minLevel: 1, premiumOnly: false, waterable: false }
   isFormOpen.value = true
 }
 
@@ -114,6 +121,9 @@ function openEdit(b: AdminBusiness) {
   editingId.value = b.id
   form.value = {
     name: b.name,
+    nameUk: b.nameUk ?? '',
+    nameEn: b.nameEn ?? '',
+    nameRu: b.nameRu ?? '',
     price: b.price,
     yieldCount: b.yieldCount,
     yieldIntervalSeconds: b.yieldIntervalSeconds,
@@ -130,6 +140,9 @@ async function save() {
   isSaving.value = true
   const payload = {
     name: form.value.name.trim(),
+    nameUk: form.value.nameUk,
+    nameEn: form.value.nameEn,
+    nameRu: form.value.nameRu,
     price: form.value.price,
     yieldCount: form.value.yieldCount,
     yieldIntervalSeconds: form.value.yieldIntervalSeconds,
@@ -196,7 +209,7 @@ onMounted(load)
             <div class="entity-info">
               <span class="entity-name">
                 <ItemIcon :item="b.item" size="24" style="vertical-align: middle; margin-right: 6px;" />
-                {{ displayName(b.name) }}
+                {{ displayName(b.name, b) }}
                 <span v-if="b.waterable" style="margin-left: 4px;" title="Поливається">💧</span>
               </span>
               <span class="entity-meta">
@@ -228,6 +241,18 @@ onMounted(load)
         <div class="input-field-row">
           <label>{{ t('admin.field_key') }}</label>
           <input v-model="form.name" type="text" class="pixel-input" placeholder="garden_bed" />
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · UK</label>
+          <input v-model="form.nameUk" type="text" maxlength="128" class="pixel-input" placeholder="Грядка" />
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · EN</label>
+          <input v-model="form.nameEn" type="text" maxlength="128" class="pixel-input" placeholder="Garden Bed" />
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · RU</label>
+          <input v-model="form.nameRu" type="text" maxlength="128" class="pixel-input" placeholder="Грядка" />
         </div>
         <div class="input-field-row">
           <label>{{ t('admin.field_price') }}</label>
@@ -274,7 +299,7 @@ onMounted(load)
       @close="isDeleteOpen = false"
     >
       <div class="modal-body">
-        <span>{{ t('admin.confirm_delete', { name: businessToDelete ? displayName(businessToDelete.name) : '' }) }}</span>
+        <span>{{ t('admin.confirm_delete', { name: businessToDelete ? displayName(businessToDelete.name, businessToDelete) : '' }) }}</span>
         <div class="modal-actions">
           <ButtonText  :loading="deletingId !== null" @click="confirmDelete">
             {{ t('admin.delete') }}

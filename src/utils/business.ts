@@ -1,5 +1,35 @@
-export function formatBizName(rawName?: string, t?: (key: string) => string, te?: (key: string) => boolean): string {
+import i18n from '@/i18n'
+
+/** Назви бізнесу по мовах: приходять з бекенду разом із самим бізнесом (задаються в адмінці). */
+export interface BizNames {
+  nameUk?: string | null
+  nameEn?: string | null
+  nameRu?: string | null
+}
+
+const FIELD_BY_LOCALE: Record<string, keyof BizNames> = {
+  uk: 'nameUk',
+  en: 'nameEn',
+  ru: 'nameRu',
+}
+
+/**
+ * Назва бізнесу для поточної мови. Порядок:
+ *   1. назва з БД для поточної мови (meta)
+ *   2. business.names.<key> з locales/*.json (старі бізнеси)
+ *   3. англійська назва з БД
+ *   4. ключ у «читабельному» вигляді
+ */
+export function formatBizName(
+  rawName?: string,
+  t?: (key: string) => string,
+  te?: (key: string) => boolean,
+  meta?: BizNames | null,
+): string {
   if (!rawName) return t ? t('business.default_name') : 'Business'
+  const field = FIELD_BY_LOCALE[String(i18n.global.locale.value)]
+  const own = field ? meta?.[field] : null
+  if (own) return own
   const clean = rawName.toLowerCase().trim()
   const key = `business.names.${clean}`
   if (te && t && te(key)) {
@@ -10,7 +40,7 @@ export function formatBizName(rawName?: string, t?: (key: string) => string, te?
   if (te && t && te(altKey)) {
     return t(altKey)
   }
-  return rawName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return meta?.nameEn || rawName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
 export function translateError(err: any, t?: (key: string, values?: any) => string): string {

@@ -15,6 +15,8 @@
       "strawberry": "Полуниця",
       "candy": "Цукерка",
       "money": "Монети",
+      "money_v2": "Монети V2",
+      "demo_item": "Демо Предмет",
       "water": "Вода",
       "blueberry": "Чорниця",
       "strawberry_juice": "Полуничний Сік",
@@ -22,7 +24,12 @@
       "jam_cherry": "Вишневе Варення",
       "blueberry_jam": "Чорничне Варення",
       "blueberry_pie": "Чорничний Пиріг",
-      "strawberry_pie": "Полуничний Пиріг"
+      "strawberry_pie": "Полуничний Пиріг",
+      "strawberry_jam": "Полуничне Варення",
+      "chest_gardener": "Скриня Садівника",
+      "chest_super": "Супер-Скриня",
+      "chest_mega": "Мега-Скриня",
+      "chest_royal": "Королівська Скриня"
     }
   },
   "clicker": {
@@ -190,6 +197,7 @@
   "items": {
     "strawberry": "Полуничка",
     "money": "Монета",
+    "demo_item": "Демо предмет",
     "water": "Вода",
     "blueberry": "Чорниця",
     "strawberry_juice": "Полуничний сік"

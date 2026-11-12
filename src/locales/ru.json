@@ -15,14 +15,21 @@
       "strawberry": "Клубника",
       "candy": "Конфета",
       "money": "Монеты",
+      "demo_item": "Демо Предмет",
       "water": "Вода",
       "blueberry": "Черника",
       "strawberry_juice": "Клубничный Сок",
+      "money_v2": "Монеты V2",
       "cherries": "Вишни",
       "jam_cherry": "Вишнёвое Варенье",
       "blueberry_jam": "Черничное Варенье",
       "blueberry_pie": "Черничный Пирог",
-      "strawberry_pie": "Клубничный Пирог"
+      "strawberry_pie": "Клубничный Пирог",
+      "strawberry_jam": "Клубничное Варенье",
+      "chest_gardener": "Сундук Садовника",
+      "chest_super": "Супер-Сундук",
+      "chest_mega": "Мега-Сундук",
+      "chest_royal": "Королевский Сундук"
     }
   },
   "clicker": {
@@ -190,6 +197,7 @@
   "items": {
     "strawberry": "Клубничка",
     "money": "Монета",
+    "demo_item": "Демо предмет",
     "water": "Вода",
     "blueberry": "Черника",
     "strawberry_juice": "Клубничный сок"

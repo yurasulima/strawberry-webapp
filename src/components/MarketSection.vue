@@ -9,7 +9,7 @@ import {playClickSound, playPurchaseSound} from "@/services/sound"
 import {useUserStore} from "@/stores/user.ts"
 import {useAuthStore} from "@/stores/auth.ts"
 import {useToastStore} from "@/stores/toast.ts"
-import {formatBizName as formatBizNameUtil, translateError as translateErrorUtil} from '@/utils/business'
+import {formatBizName as formatBizNameUtil, translateError as translateErrorUtil, type BizNames} from '@/utils/business'
 
 const props = defineProps<{ user?: any }>()
 const {t, te} = useI18n()
@@ -55,8 +55,8 @@ const sortedBusinessesForSale = computed(() => {
   })
 })
 
-function formatBizName(rawName?: string): string {
-  return formatBizNameUtil(rawName, t, te)
+function formatBizName(rawName?: string, meta?: BizNames | null): string {
+  return formatBizNameUtil(rawName, t, te, meta)
 }
 
 function formatYieldInterval(interval: any): string {
@@ -127,7 +127,7 @@ onMounted(() => {
 async function directBuy(biz: Business) {
   playClickSound()
   buyingName.value = biz.name
-  const displayName = formatBizName(biz.name)
+  const displayName = formatBizName(biz.name, biz)
 
   try {
     await api.post('/business/buy', {name: biz.name})
@@ -162,7 +162,7 @@ async function directBuy(biz: Business) {
               <li v-for="biz in sortedBusinessesForSale" :key="biz.id" class="biz-column">
 
                  <span class="biz-name">
-                    {{ formatBizName(biz.name) }}
+                    {{ formatBizName(biz.name, biz) }}
                   </span>
 
 

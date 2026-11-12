@@ -15,6 +15,7 @@
       "strawberry": "Strawberry",
       "candy": "Candy",
       "money": "Coins",
+      "demo_item": "Demo Item",
       "water": "Water",
       "blueberry": "Blueberry",
       "strawberry_juice": "Strawberry Juice",
@@ -22,7 +23,13 @@
       "jam_cherry": "Cherry Jam",
       "blueberry_jam": "Blueberry Jam",
       "blueberry_pie": "Blueberry Pie",
-      "strawberry_pie": "Strawberry Pie"
+      "strawberry_pie": "Strawberry Pie",
+      "money_v2": "Coins V2",
+      "strawberry_jam": "Strawberry Jam",
+      "chest_gardener": "Gardener's Chest",
+      "chest_super": "Super Chest",
+      "chest_mega": "Mega Chest",
+      "chest_royal": "Royal Chest"
     }
   },
   "clicker": {
@@ -190,6 +197,7 @@
   "items": {
     "strawberry": "Strawberry",
     "money": "Coin",
+    "demo_item": "Demo Item",
     "water": "Water",
     "blueberry": "Blueberry",
     "strawberry_juice": "Strawberry Juice"

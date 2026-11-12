@@ -23,17 +23,6 @@ const toastStore = useToastStore()
 const catalog = useItemCatalogStore()
 const {itemTitle: resolveItemTitle} = useItemMeta()
 
-/**
- * Контракт з бекендом:
- *   GET    /admin/items                    -> [{ id, name, sellPrice, buyPrice, nameUk, nameEn, nameRu, iconVersion }]
- *   POST   /admin/items                    { name, sellPrice, buyPrice, nameUk, nameEn, nameRu }
- *   PUT    /admin/items/{id}               { name, sellPrice, buyPrice, nameUk, nameEn, nameRu }  (null = не чіпати, '' = очистити)
- *   DELETE /admin/items/{id}
- *   POST   /admin/items/{id}/icon          multipart `file` (PNG, ≤128×128, ≤64 КБ)
- *   DELETE /admin/items/{id}/icon
- *   GET    /admin/users?search=...         — пошук гравця
- *   POST   /admin/users/{userId}/items     { name, amount }  (amount може бути від'ємним — списання)
- */
 interface AdminItem {
   id: number
   name: string
@@ -43,6 +32,8 @@ interface AdminItem {
   nameEn?: string | null
   nameRu?: string | null
   iconVersion?: number | null
+  emojiId?: string | null
+  emojiFallback?: string | null
 }
 
 const items = ref<AdminItem[]>([])
@@ -58,11 +49,12 @@ const isCreating = ref(false)
 const newNameUk = ref('')
 const newNameEn = ref('')
 const newNameRu = ref('')
+const newEmojiFallback = ref('🍓')
 const newIconFile = ref<File | null>(null)
 const newIconPreview = ref<string | null>(null)
 const newFileInput = ref<HTMLInputElement | null>(null)
 
-// Редагування предмета (цін)
+// Редагування предмета
 const isEditOpen = ref(false)
 const editingItem = ref<AdminItem | null>(null)
 const editSellPrice = ref<number | null>(1)
@@ -71,8 +63,12 @@ const isSavingEdit = ref(false)
 const editNameUk = ref('')
 const editNameEn = ref('')
 const editNameRu = ref('')
+const editEmojiFallback = ref('🍓')
 const editFileInput = ref<HTMLInputElement | null>(null)
 const isIconBusy = ref(false)
+
+// Глобальна перегенерація емодзі
+const isRebuildingEmojis = ref(false)
 
 // Підтвердження видалення
 const isDeleteOpen = ref(false)
@@ -131,6 +127,7 @@ function openCreate() {
   newNameUk.value = ''
   newNameEn.value = ''
   newNameRu.value = ''
+  newEmojiFallback.value = '🍓'
   clearNewIcon()
   isCreateOpen.value = true
 }
@@ -146,12 +143,12 @@ async function createItem() {
       nameUk: newNameUk.value,
       nameEn: newNameEn.value,
       nameRu: newNameRu.value,
+      emojiFallback: newEmojiFallback.value || '🍓'
     })
     if (newIconFile.value && res.data?.id) {
       try {
         await uploadIcon(res.data.id, newIconFile.value)
       } catch (err) {
-        // предмет уже створено — іконку можна додати пізніше через «Редагувати»
         toastStore.showToast(errorText(err), 'error')
       }
     }
@@ -174,6 +171,7 @@ function openEdit(item: AdminItem) {
   editNameUk.value = item.nameUk ?? ''
   editNameEn.value = item.nameEn ?? ''
   editNameRu.value = item.nameRu ?? ''
+  editEmojiFallback.value = item.emojiFallback ?? '🍓'
   isEditOpen.value = true
 }
 
@@ -188,6 +186,7 @@ async function saveEdit() {
       nameUk: editNameUk.value,
       nameEn: editNameEn.value,
       nameRu: editNameRu.value,
+      emojiFallback: editEmojiFallback.value || '🍓'
     })
     toastStore.showToast(t('admin.success_update'), 'success')
     isEditOpen.value = false
@@ -196,6 +195,28 @@ async function saveEdit() {
     toastStore.showToast(errorText(err), 'error')
   } finally {
     isSavingEdit.value = false
+  }
+}
+
+async function rebuildAllEmojis() {
+  playClickSound()
+  isRebuildingEmojis.value = true
+  try {
+    const res = await api.post<{ successCount: number; totalItems: number; ownerUserIdUsed: number; results: any[] }>('/admin/items/rebuild-emojis')
+    const data = res.data
+    if (data) {
+      if (data.successCount > 0) {
+        toastStore.showToast(`Успішно перегенеровано ${data.successCount}/${data.totalItems} емодзі (Owner ID: ${data.ownerUserIdUsed})`, 'success')
+      } else {
+        const firstError = data.results?.find((r: any) => r.error)?.error || 'Помилка генерації'
+        toastStore.showToast(`0/${data.totalItems} емодзі: ${firstError}`, 'error')
+      }
+    }
+    await refreshAfterChange()
+  } catch (err) {
+    toastStore.showToast(errorText(err), 'error')
+  } finally {
+    isRebuildingEmojis.value = false
   }
 }
 
@@ -337,7 +358,6 @@ async function removeIcon() {
   }
 }
 
-/** Оновлює і список в адмінці, і каталог, з якого ItemIcon/useItemMeta беруть назви та текстури по всій грі. */
 async function refreshAfterChange(keepEditingId?: number) {
   await Promise.all([load(true), catalog.load(true)])
   if (keepEditingId !== undefined) {
@@ -353,7 +373,10 @@ onMounted(() => load())
     <CardPrimary width="100%" height="auto" :padding="8">
       <div class="section-header">
         <h2 class="title">{{ t('admin.nav.items') }}</h2>
-        <ButtonText @click="openCreate">+ {{ t('admin.create') }}</ButtonText>
+        <div style="display: flex; gap: 6px;">
+          <ButtonText :loading="isRebuildingEmojis" @click="rebuildAllEmojis">✨ Емодзі</ButtonText>
+          <ButtonText @click="openCreate">+ {{ t('admin.create') }}</ButtonText>
+        </div>
       </div>
 
       <div v-if="isLoading" class="loading-state">{{ t('invite_list.loading') }}</div>
@@ -369,6 +392,9 @@ onMounted(() => load())
 
             <h3 class="item-card__name">{{ itemTitle(item.name, item) }}</h3>
             <code class="item-card__key">{{ item.name }}</code>
+            <code v-if="item.emojiId" class="item-card__key" style="color: #2e7d32;" :title="`Telegram Custom Emoji ID: ${item.emojiId}`">
+              {{ item.emojiFallback || '🍓' }} {{ item.emojiId }}
+            </code>
 
             <div class="item-card__prices">
               <div class="price-cell price-cell--sell">
@@ -422,6 +448,10 @@ onMounted(() => load())
           <input v-model="newNameRu" type="text" maxlength="128" class="pixel-input" placeholder="Клубника"/>
         </div>
         <div class="input-field-row">
+          <label>Telegram Fallback Emoji</label>
+          <input v-model="newEmojiFallback" type="text" maxlength="8" class="pixel-input" placeholder="🍓"/>
+        </div>
+        <div class="input-field-row">
           <label>{{ t('admin.field_icon') }}</label>
           <div class="icon-row">
             <img v-if="newIconPreview" :src="newIconPreview" alt="" class="icon-preview"/>
@@ -446,7 +476,7 @@ onMounted(() => load())
       </div>
     </PixelModal>
 
-    <!-- Редагування цін предмета -->
+    <!-- Редагування предмету -->
     <PixelModal v-model="isEditOpen" :title="t('admin.item_edit_title')" width="320px" @close="isEditOpen = false">
       <div class="modal-body">
         <div class="user-telemetry-title">{{ editingItem ? itemTitle(editingItem.name, editingItem) : '' }}</div>
@@ -462,6 +492,10 @@ onMounted(() => load())
         <div class="input-field-row">
           <label>{{ t('admin.field_name') }} · RU</label>
           <input v-model="editNameRu" type="text" maxlength="128" class="pixel-input"/>
+        </div>
+        <div class="input-field-row">
+          <label>Telegram Fallback Emoji</label>
+          <input v-model="editEmojiFallback" type="text" maxlength="8" class="pixel-input" placeholder="🍓"/>
         </div>
         <div class="input-field-row">
           <label>{{ t('admin.field_icon') }}</label>

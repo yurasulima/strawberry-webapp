@@ -190,16 +190,16 @@ onMounted(async () => {
     <!-- Основний контент показуємо, якщо завантаження завершено -->
     <template v-else>
       <Toolbar
-          v-if="!isAdminMode"
-          :language_code="user.language_code"
-          :firstName="user.first_name"
-          :lastName="user.last_name"
-          :avatar="user.photo_url"
-          :money="userStore.money"
-          :strawberry="userStore.strawberries"
-          @openSettings="activeTab = activeTab === 'settings' ? 'clicker' : 'settings'"
-          @openDailyRewards="showDailyRewards = true"
-          @openProfile="showProfileModal = true"
+        v-if="!isAdminMode"
+        :language_code="user.language_code"
+        :firstName="user.first_name"
+        :lastName="user.last_name"
+        :avatar="user.photo_url"
+        :money="userStore.money"
+        :strawberry="userStore.strawberries"
+        @openSettings="activeTab = activeTab === 'settings' ? 'clicker' : 'settings'"
+        @openDailyRewards="showDailyRewards = true"
+        @openProfile="showProfileModal = true"
       />
 
       <DailyRewardsModal v-model="showDailyRewards" />
@@ -225,11 +225,11 @@ onMounted(async () => {
       <CatCompanion v-if="!isAdminMode" />
 
       <AdminNavigation
-          v-if="isAdminMode"
-          class="bott"
-          :activeTab="activeTab"
-          @changeTab="activeTab = $event"
-          @exit="activeTab = 'clicker'"
+        v-if="isAdminMode"
+        class="bott"
+        :activeTab="activeTab"
+        @changeTab="activeTab = $event"
+        @exit="activeTab = 'clicker'"
       />
       <BottomNavigation v-else class="bott" :activeTab="activeTab" @changeTab="activeTab = $event" />
     </template>
