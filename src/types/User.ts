@@ -30,6 +30,7 @@ export interface User {
   lastClaimedDailyAt?: string | null
   canClaimDaily?: boolean
   cat?: UserCat | null
+  cats?: UserCat[]
   slots: Slot[]
   businesses: UserBusiness[]
   invites: InvitedUser[]

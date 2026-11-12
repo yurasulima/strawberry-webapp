@@ -21,6 +21,8 @@ const props = withDefaults(
     zonesTexture?: string
     frameSize?: number
     frames?: number
+    /** Якщо true — клікабельні (для pointer-подій) лише непрозорі пікселі кота; решта кадру пропускає кліки */
+    hitMask?: boolean
   }>(),
   {
     colors: () => ({}),
@@ -31,13 +33,17 @@ const props = withDefaults(
     grayTexture: '/cats/cat_gray.png',
     zonesTexture: '/cats/cat_zones.png',
     frameSize: 32,
-    frames: 10
+    frames: 10,
+    hitMask: false
   }
 )
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const currentFrame = ref(0)
 const textures = shallowRef<CatTextures | null>(null)
+const maskPaths = shallowRef<string[]>([])
+
+const HIT_ALPHA_THRESHOLD = 20
 
 let strip: HTMLCanvasElement | null = null
 let timer: ReturnType<typeof setInterval> | null = null
@@ -67,12 +73,50 @@ function numericSize(): number {
 
 const displayHeight = computed(() => numericSize())
 
+const hitStyle = computed(() => {
+  const clip = maskPaths.value[(props.frame ?? currentFrame.value) % props.frames]
+  if (!clip) return null
+  const fw = actualFrameWidth.value
+  const fh = actualFrameHeight.value
+  return {
+    width: `${fw}px`,
+    height: `${fh}px`,
+    clipPath: clip,
+    transform: `scale(${displayWidth.value / fw}, ${displayHeight.value / fh})`
+  }
+})
+
 const displayWidth = computed(() => {
   const fh = actualFrameHeight.value
   const fw = actualFrameWidth.value
   if (!fh || !fw) return numericSize()
   return Math.round(numericSize() * (fw / fh))
 })
+
+// Для кожного кадру будує clip-path (в пікселях оригінальної текстури) з усіх непрозорих пікселів.
+// Браузер враховує clip-path при hit-testing, тож клік по прозорій частині проходить крізь спрайт.
+function buildMasks(data: ArrayLike<number>, texWidth: number): string[] {
+  const fw = actualFrameWidth.value
+  const fh = actualFrameHeight.value
+  const opaque = (f: number, x: number, y: number) =>
+    data[(y * texWidth + f * fw + x) * 4 + 3] > HIT_ALPHA_THRESHOLD
+
+  const result: string[] = []
+  for (let f = 0; f < props.frames; f++) {
+    let d = ''
+    for (let y = 0; y < fh; y++) {
+      let x = 0
+      while (x < fw) {
+        if (!opaque(f, x, y)) { x++; continue }
+        const x0 = x
+        while (x < fw && opaque(f, x, y)) x++
+        d += `M${x0} ${y}h${x - x0}v1h-${x - x0}z`
+      }
+    }
+    result.push(`path('${d || 'M0 0z'}')`)
+  }
+  return result
+}
 
 function rebuildStrip() {
   const tex = textures.value
@@ -83,6 +127,7 @@ function rebuildStrip() {
   strip.width = tex.width
   strip.height = tex.height
   const data = recolorStrip(tex.gray, tex.zones, props.colors)
+  if (props.hitMask) maskPaths.value = buildMasks(data, tex.width)
   const image = new ImageData(new Uint8ClampedArray(data), tex.width, tex.height)
   strip.getContext('2d')!.putImageData(image, 0, 0)
   draw()
@@ -137,16 +182,36 @@ onBeforeUnmount(stopTimer)
 </script>
 
 <template>
-  <canvas
-    ref="canvasRef"
-    class="cat-sprite"
-    :width="actualFrameWidth"
-    :height="actualFrameHeight"
-    :style="{ width: `${displayWidth}px`, height: `${displayHeight}px` }"
-  />
+  <div class="cat-sprite-wrap" :style="{ width: `${displayWidth}px`, height: `${displayHeight}px` }">
+    <canvas
+      ref="canvasRef"
+      class="cat-sprite"
+      :width="actualFrameWidth"
+      :height="actualFrameHeight"
+      :style="{ width: `${displayWidth}px`, height: `${displayHeight}px` }"
+    />
+    <div v-if="hitMask && hitStyle" class="cat-hit" :style="hitStyle" />
+  </div>
 </template>
 
 <style scoped>
+.cat-sprite-wrap {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  line-height: 0;
+  pointer-events: none;
+}
+
+/* Прозорий шар, що приймає події лише в межах clip-path (непрозорі пікселі кота) */
+.cat-hit {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  pointer-events: auto;
+}
+
 .cat-sprite {
   display: block;
   image-rendering: pixelated;

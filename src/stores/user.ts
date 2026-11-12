@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import api from '@/services/api'
 import type { User } from '@/types/User'
 import type { DailyRewardStatus } from '@/types/DailyReward'
+import type { UserCat } from '@/types/UserCat'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
@@ -20,6 +21,27 @@ export const useUserStore = defineStore('user', () => {
     const strawberrySlot = user.value.slots.find(slot => slot.item?.name === 'strawberry')
     return strawberrySlot?.count || 0
   })
+
+  // Усі котики гравця (найновіший першим). Фолбек на одиночне поле cat для старого API
+  const cats = computed<UserCat[]>(() => {
+    const u = user.value
+    if (!u) return []
+    if (u.cats && u.cats.length) return u.cats
+    return u.cat ? [u.cat] : []
+  })
+
+  // Оновлює котика і в масиві cats, і в одиночному полі cat (якщо це той самий)
+  function patchCat(updated: UserCat) {
+    const u = user.value
+    if (!u) return
+    if (u.cats) {
+      const i = u.cats.findIndex(c => c.id === updated.id)
+      if (i >= 0) u.cats[i] = { ...u.cats[i], ...updated }
+    }
+    if (u.cat && u.cat.id === updated.id) {
+      u.cat = { ...u.cat, ...updated }
+    }
+  }
 
   const maxDailyClicks = computed(() => {
     if (user.value?.maxDailyClicks !== undefined) {
@@ -173,6 +195,8 @@ export const useUserStore = defineStore('user', () => {
     user,
     money,
     strawberries,
+    cats,
+    patchCat,
     remainingDailyClicks,
     maxDailyClicks,
     nextClickResetTime,

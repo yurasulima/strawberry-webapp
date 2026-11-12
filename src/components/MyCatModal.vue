@@ -9,6 +9,7 @@ import api from '@/services/api'
 
 const props = defineProps<{
   modelValue: boolean
+  catId?: number | null
 }>()
 
 const emit = defineEmits<{
@@ -21,7 +22,12 @@ const toastStore = useToastStore()
 const isSaving = ref(false)
 const catName = ref('')
 
-const myCat = computed(() => userStore.user?.cat)
+const myCat = computed(() => {
+  if (props.catId != null) {
+    return userStore.cats.find(c => c.id === props.catId) ?? null
+  }
+  return userStore.cats[0] ?? null
+})
 const pettedCount = computed(() => myCat.value?.pettedCount || 0)
 
 function syncCatData() {
@@ -53,15 +59,14 @@ async function saveCat() {
   isSaving.value = true
 
   try {
-    const res = await api.put('/cats/me', {
+    const url = myCat.value.id != null ? `/cats/${myCat.value.id}` : '/cats/me'
+    const res = await api.put(url, {
       name: catName.value.trim(),
       colors: myCat.value.colors
     })
     playSuccessSound()
     toastStore.showToast("Ім'я котика збережено!", 'success')
-    if (userStore.user) {
-      userStore.user.cat = res.data
-    }
+    userStore.patchCat(res.data)
     emit('update:modelValue', false)
   } catch (err: any) {
     console.error('Error saving cat name:', err)
