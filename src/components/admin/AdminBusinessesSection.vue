@@ -8,9 +8,13 @@ import { useToastStore } from '@/stores/toast.ts'
 import EditButton from "@/components/pixel/EditButton.vue";
 import DeleteButton from "@/components/pixel/DeleteButton.vue";
 import { formatBizName } from '@/utils/business'
+import { useItemCatalogStore } from '@/stores/itemCatalog'
+import { useItemMeta } from '@/composables/useItemMeta'
 
 const { t, te } = useI18n()
 const toastStore = useToastStore()
+const catalog = useItemCatalogStore()
+const { itemTitle: resolveItemTitle } = useItemMeta()
 
 /**
  * Контракт з бекендом (див. README/документацію):
@@ -96,11 +100,35 @@ function errorText(err: any): string {
   return typeof raw === 'string' ? raw : JSON.stringify(raw)
 }
 
+interface SimpleItem {
+  id?: number
+  name: string
+  nameUk?: string | null
+  nameEn?: string | null
+  nameRu?: string | null
+}
+
+const availableItems = ref<SimpleItem[]>([])
+
+const itemList = computed(() => {
+  const list = [...availableItems.value]
+  if (form.value.item && !list.some(i => i.name === form.value.item)) {
+    list.unshift({ name: form.value.item })
+  }
+  return list.sort((a, b) => a.name.localeCompare(b.name))
+})
+
 async function load() {
   isLoading.value = true
   try {
-    const res = await api.get<AdminBusiness[]>('/admin/businesses')
-    businesses.value = res.data || []
+    const [bizRes, itemRes] = await Promise.all([
+      api.get<AdminBusiness[]>('/admin/businesses'),
+      api.get<SimpleItem[]>('/items').catch(() => ({ data: [] }))
+    ])
+    businesses.value = bizRes.data || []
+    if (itemRes.data && itemRes.data.length > 0) {
+      availableItems.value = itemRes.data
+    }
   } catch (err) {
     console.error('Error fetching admin businesses:', err)
     toastStore.showToast(errorText(err), 'error')
@@ -269,7 +297,14 @@ onMounted(load)
         </div>
         <div class="input-field-row">
           <label>{{ t('admin.field_item') }}</label>
-          <input v-model="form.item" type="text" class="pixel-input" placeholder="strawberry" />
+          <div class="item-select-wrapper">
+            <ItemIcon :item="form.item" size="28" style="flex-shrink: 0;" />
+            <select v-model="form.item" class="pixel-select">
+              <option v-for="it in itemList" :key="it.name" :value="it.name">
+                {{ resolveItemTitle(it.name, it) }} ({{ it.name }})
+              </option>
+            </select>
+          </div>
         </div>
         <div class="input-field-row">
           <label>Мінімальний рівень</label>
@@ -437,6 +472,35 @@ onMounted(load)
 
 .pixel-input:focus {
   border-color: #2e7d32;
+}
+
+.item-select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pixel-select {
+  flex: 1;
+  background: #fff8eb;
+  border: 2px solid #5d4037;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  color: #3f2e21;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.pixel-select:focus {
+  border-color: #2e7d32;
+}
+
+.pixel-select option {
+  background: #fff8eb;
+  color: #3f2e21;
 }
 
 .mode-switch-row {

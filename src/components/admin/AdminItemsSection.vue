@@ -358,6 +358,21 @@ async function removeIcon() {
   }
 }
 
+async function rebuildSingleEmoji(item?: AdminItem | null) {
+  const it = item || editingItem.value
+  if (!it || isIconBusy.value) return
+  isIconBusy.value = true
+  try {
+    await api.post(`/admin/items/${it.id}/rebuild-emoji`)
+    toastStore.showToast('Емодзі предмета успішно оновлено в Telegram!', 'success')
+    await refreshAfterChange(it.id)
+  } catch (err) {
+    toastStore.showToast(errorText(err), 'error')
+  } finally {
+    isIconBusy.value = false
+  }
+}
+
 async function refreshAfterChange(keepEditingId?: number) {
   await Promise.all([load(true), catalog.load(true)])
   if (keepEditingId !== undefined) {
@@ -503,6 +518,7 @@ onMounted(() => load())
             <ItemIcon v-if="editingItem" :item="editingItem.name" size="48"/>
             <input ref="editFileInput" type="file" accept="image/png" class="file-hidden" @change="onEditIconPicked"/>
             <ButtonText :loading="isIconBusy" @click="editFileInput?.click()">{{ t('admin.icon_upload') }}</ButtonText>
+            <ButtonText v-if="editingItem" :loading="isIconBusy" @click="rebuildSingleEmoji(editingItem)">✨ Емодзі</ButtonText>
             <ButtonText v-if="editingItem?.iconVersion" :loading="isIconBusy" @click="removeIcon">
               {{ t('admin.icon_remove') }}
             </ButtonText>
