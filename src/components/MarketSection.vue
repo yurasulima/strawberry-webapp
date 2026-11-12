@@ -33,7 +33,13 @@ const isAvailable = (biz: Business) => {
 }
 
 const sortedBusinessesForSale = computed(() => {
-  const list = [...businessesForSale.value]
+  const list = businessesForSale.value.filter(biz => {
+    if (biz.premiumOnly && !isPremiumUser.value) {
+      return false
+    }
+    return true
+  })
+
   return list.sort((a, b) => {
     const availA = isAvailable(a)
     const availB = isAvailable(b)

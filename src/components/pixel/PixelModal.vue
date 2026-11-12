@@ -117,15 +117,32 @@ onUnmounted(() => {
 
 .pixel-modal-dialog {
   max-width: 100%;
-  max-height: 90vh;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+
+.pixel-modal-dialog :deep(.card) {
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pixel-modal-dialog :deep(.card__content) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .pixel-modal-inner {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   color: #25211c;
 }
 
@@ -137,6 +154,7 @@ onUnmounted(() => {
   margin-bottom: 12px;
   border-bottom: 1px solid rgba(139, 109, 81, 0.3);
   padding-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .pixel-modal-title {
@@ -152,10 +170,26 @@ onUnmounted(() => {
 }
 
 .pixel-modal-body {
-  flex-grow: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   font-size: 14px;
   line-height: 1.4;
   overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pixel-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pixel-modal-body::-webkit-scrollbar-track {
+  background: rgba(63, 46, 33, 0.1);
+  border-radius: 3px;
+}
+
+.pixel-modal-body::-webkit-scrollbar-thumb {
+  background: #8b6d51;
+  border-radius: 3px;
 }
 
 .pixel-modal-footer {
@@ -166,6 +200,7 @@ onUnmounted(() => {
   margin-top: 16px;
   border-top: 1px solid rgba(139, 109, 81, 0.3);
   padding-top: 12px;
+  flex-shrink: 0;
 }
 
 /* Modal Slide-Fade Animation */
