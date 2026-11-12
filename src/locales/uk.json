@@ -15,8 +15,6 @@
       "strawberry": "Полуниця",
       "candy": "Цукерка",
       "money": "Монети",
-      "money_v2": "Монети V2",
-      "demo_item": "Демо Предмет",
       "water": "Вода",
       "blueberry": "Чорниця",
       "strawberry_juice": "Полуничний Сік",
@@ -24,12 +22,7 @@
       "jam_cherry": "Вишневе Варення",
       "blueberry_jam": "Чорничне Варення",
       "blueberry_pie": "Чорничний Пиріг",
-      "strawberry_pie": "Полуничний Пиріг",
-      "strawberry_jam": "Полуничне Варення",
-      "chest_gardener": "Скриня Садівника",
-      "chest_super": "Супер-Скриня",
-      "chest_mega": "Мега-Скриня",
-      "chest_royal": "Королівська Скриня"
+      "strawberry_pie": "Полуничний Пиріг"
     }
   },
   "clicker": {
@@ -131,7 +124,13 @@
     "buy_price": "Ціна купівлі",
     "item_given": "Предмет гравцю оновлено",
     "amount": "Кількість",
-    "amount_hint": "Від'ємне значення забирає предмет"
+    "amount_hint": "Від'ємне значення забирає предмет",
+    "field_name": "Назва",
+    "field_icon": "Текстура",
+    "icon_upload": "Завантажити PNG",
+    "icon_remove": "Прибрати",
+    "icon_invalid": "Потрібен PNG до 64 КБ",
+    "icon_hint": "PNG, до 128×128 px, до 64 КБ"
   },
   "business": {
     "title": "Мої бізнеси",
@@ -191,7 +190,6 @@
   "items": {
     "strawberry": "Полуничка",
     "money": "Монета",
-    "demo_item": "Демо предмет",
     "water": "Вода",
     "blueberry": "Чорниця",
     "strawberry_juice": "Полуничний сік"

@@ -7,8 +7,9 @@ import { CardPrimary, Card, ButtonText, Selected, ItemIcon } from '@/components/
 import { playClickSound, playCoinSound } from '@/services/sound'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
+import { useItemMeta } from '@/composables/useItemMeta'
 
-const { t, te } = useI18n()
+const { t } = useI18n()
 const userStore = useUserStore()
 const toastStore = useToastStore()
 
@@ -82,16 +83,14 @@ watch(
 function isMoney(itemName?: string): boolean {
   if (!itemName) return false
   const clean = itemName.toLowerCase().trim()
-  return clean === 'money' || clean === 'money_v2'
+  return clean === 'money'
 }
+
+const { itemTitle } = useItemMeta()
 
 function getItemTitle(itemName?: string): string {
   if (!itemName) return 'Предмет'
-  const key = `inventory.items.${itemName.toLowerCase().trim()}`
-  if (te(key)) {
-    return t(key)
-  }
-  return itemName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return itemTitle(itemName)
 }
 
 function getItemUnitPrice(itemName?: string): number {

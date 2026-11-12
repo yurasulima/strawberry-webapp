@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useWebApp } from "vue-tg"
 import { useAuthStore } from "@/stores/auth.ts"
 import { useUserStore } from "@/stores/user.ts"
+import { useItemCatalogStore } from "@/stores/itemCatalog"
 import Toolbar from "@/components/Toolbar.vue"
 import PlayersSection from '@/components/PlayersSection.vue'
 import ClickerSection from '@/components/ClickerSection.vue'
@@ -29,6 +30,7 @@ import { PixelToastContainer } from "@/components/pixel"
 import api from "@/services/api.ts"
 
 const { t } = useI18n()
+const itemCatalog = useItemCatalogStore()
 const isLoading = ref(true)
 const showDailyRewards = ref(false)
 const showWebLogin = ref(false)
@@ -103,6 +105,7 @@ watch(activeTab, () => {
 
 async function handleWebLoginSuccess() {
   showWebLogin.value = false
+  void itemCatalog.preloadAll() // сплеша тут немає — прогріваємо в фоні
   await userStore.fetchUser()
   if (userStore.canClaimDaily) {
     showDailyRewards.value = true
@@ -140,6 +143,8 @@ onMounted(async () => {
         await userStore.fetchUser().catch(() => {})
       }
     } finally {
+      // Сплеш тримається, доки не прогріті текстури предметів (ліміт ~4 с, помилки не блокують старт)
+      if (authStore.token) await itemCatalog.preloadAll()
       isLoading.value = false
     }
   } else if (authStore.token) {
@@ -159,6 +164,7 @@ onMounted(async () => {
       authStore.logout()
       showWebLogin.value = true
     } finally {
+      if (authStore.token) await itemCatalog.preloadAll()
       isLoading.value = false
     }
   } else {
@@ -184,16 +190,16 @@ onMounted(async () => {
     <!-- Основний контент показуємо, якщо завантаження завершено -->
     <template v-else>
       <Toolbar
-        v-if="!isAdminMode"
-        :language_code="user.language_code"
-        :firstName="user.first_name"
-        :lastName="user.last_name"
-        :avatar="user.photo_url"
-        :money="userStore.money"
-        :strawberry="userStore.strawberries"
-        @openSettings="activeTab = activeTab === 'settings' ? 'clicker' : 'settings'"
-        @openDailyRewards="showDailyRewards = true"
-        @openProfile="showProfileModal = true"
+          v-if="!isAdminMode"
+          :language_code="user.language_code"
+          :firstName="user.first_name"
+          :lastName="user.last_name"
+          :avatar="user.photo_url"
+          :money="userStore.money"
+          :strawberry="userStore.strawberries"
+          @openSettings="activeTab = activeTab === 'settings' ? 'clicker' : 'settings'"
+          @openDailyRewards="showDailyRewards = true"
+          @openProfile="showProfileModal = true"
       />
 
       <DailyRewardsModal v-model="showDailyRewards" />
@@ -219,11 +225,11 @@ onMounted(async () => {
       <CatCompanion v-if="!isAdminMode" />
 
       <AdminNavigation
-        v-if="isAdminMode"
-        class="bott"
-        :activeTab="activeTab"
-        @changeTab="activeTab = $event"
-        @exit="activeTab = 'clicker'"
+          v-if="isAdminMode"
+          class="bott"
+          :activeTab="activeTab"
+          @changeTab="activeTab = $event"
+          @exit="activeTab = 'clicker'"
       />
       <BottomNavigation v-else class="bott" :activeTab="activeTab" @changeTab="activeTab = $event" />
     </template>

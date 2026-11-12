@@ -15,16 +15,22 @@ import {
 } from '@/components/pixel'
 import {playClickSound, playCoinSound} from '@/services/sound'
 import {useToastStore} from '@/stores/toast.ts'
+import {useItemMeta} from '@/composables/useItemMeta'
+import {useItemCatalogStore} from '@/stores/itemCatalog'
 
-const {t, te} = useI18n()
+const {t} = useI18n()
 const toastStore = useToastStore()
+const catalog = useItemCatalogStore()
+const {itemTitle: resolveItemTitle} = useItemMeta()
 
 /**
  * Контракт з бекендом:
- *   GET    /admin/items                    -> [{ id, name, sellPrice, buyPrice }]
- *   POST   /admin/items                    { name, sellPrice, buyPrice }
- *   PUT    /admin/items/{id}               { name, sellPrice, buyPrice }
+ *   GET    /admin/items                    -> [{ id, name, sellPrice, buyPrice, nameUk, nameEn, nameRu, iconVersion }]
+ *   POST   /admin/items                    { name, sellPrice, buyPrice, nameUk, nameEn, nameRu }
+ *   PUT    /admin/items/{id}               { name, sellPrice, buyPrice, nameUk, nameEn, nameRu }  (null = не чіпати, '' = очистити)
  *   DELETE /admin/items/{id}
+ *   POST   /admin/items/{id}/icon          multipart `file` (PNG, ≤128×128, ≤64 КБ)
+ *   DELETE /admin/items/{id}/icon
  *   GET    /admin/users?search=...         — пошук гравця
  *   POST   /admin/users/{userId}/items     { name, amount }  (amount може бути від'ємним — списання)
  */
@@ -33,6 +39,10 @@ interface AdminItem {
   name: string
   sellPrice?: number | null
   buyPrice?: number | null
+  nameUk?: string | null
+  nameEn?: string | null
+  nameRu?: string | null
+  iconVersion?: number | null
 }
 
 const items = ref<AdminItem[]>([])
@@ -45,6 +55,12 @@ const newItemName = ref('')
 const newSellPrice = ref<number | null>(1)
 const newBuyPrice = ref<number | null>(1)
 const isCreating = ref(false)
+const newNameUk = ref('')
+const newNameEn = ref('')
+const newNameRu = ref('')
+const newIconFile = ref<File | null>(null)
+const newIconPreview = ref<string | null>(null)
+const newFileInput = ref<HTMLInputElement | null>(null)
 
 // Редагування предмета (цін)
 const isEditOpen = ref(false)
@@ -52,6 +68,11 @@ const editingItem = ref<AdminItem | null>(null)
 const editSellPrice = ref<number | null>(1)
 const editBuyPrice = ref<number | null>(1)
 const isSavingEdit = ref(false)
+const editNameUk = ref('')
+const editNameEn = ref('')
+const editNameRu = ref('')
+const editFileInput = ref<HTMLInputElement | null>(null)
+const isIconBusy = ref(false)
 
 // Підтвердження видалення
 const isDeleteOpen = ref(false)
@@ -74,9 +95,8 @@ const isNameValid = computed(() => /^[a-z0-9_]+$/.test(newItemName.value.trim())
 const showNameError = computed(() => newItemName.value.trim().length > 0 && !isNameValid.value)
 const canGive = computed(() => !!selectedUser.value && !!giveAmount.value && giveAmount.value !== 0)
 
-function itemTitle(name: string): string {
-  const key = `inventory.items.${name.toLowerCase().trim()}`
-  return te(key) ? t(key) : name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+function itemTitle(name: string, item?: AdminItem | null): string {
+  return resolveItemTitle(name, item)
 }
 
 function userTitle(u: User): string {
@@ -90,8 +110,8 @@ function errorText(err: any): string {
   return typeof raw === 'string' ? raw : JSON.stringify(raw)
 }
 
-async function load() {
-  isLoading.value = true
+async function load(silent = false) {
+  if (!silent) isLoading.value = true
   try {
     const res = await api.get<AdminItem[]>('/admin/items')
     items.value = res.data || []
@@ -108,6 +128,10 @@ function openCreate() {
   newItemName.value = ''
   newSellPrice.value = 1
   newBuyPrice.value = 1
+  newNameUk.value = ''
+  newNameEn.value = ''
+  newNameRu.value = ''
+  clearNewIcon()
   isCreateOpen.value = true
 }
 
@@ -115,14 +139,26 @@ async function createItem() {
   if (!isNameValid.value || isCreating.value) return
   isCreating.value = true
   try {
-    await api.post('/admin/items', {
+    const res = await api.post<AdminItem>('/admin/items', {
       name: newItemName.value.trim(),
       sellPrice: newSellPrice.value ?? 1,
       buyPrice: newBuyPrice.value ?? 1,
+      nameUk: newNameUk.value,
+      nameEn: newNameEn.value,
+      nameRu: newNameRu.value,
     })
+    if (newIconFile.value && res.data?.id) {
+      try {
+        await uploadIcon(res.data.id, newIconFile.value)
+      } catch (err) {
+        // предмет уже створено — іконку можна додати пізніше через «Редагувати»
+        toastStore.showToast(errorText(err), 'error')
+      }
+    }
     toastStore.showToast(t('admin.success_update'), 'success')
     isCreateOpen.value = false
-    await load()
+    clearNewIcon()
+    await refreshAfterChange()
   } catch (err) {
     toastStore.showToast(errorText(err), 'error')
   } finally {
@@ -135,6 +171,9 @@ function openEdit(item: AdminItem) {
   editingItem.value = item
   editSellPrice.value = item.sellPrice ?? 1
   editBuyPrice.value = item.buyPrice ?? 1
+  editNameUk.value = item.nameUk ?? ''
+  editNameEn.value = item.nameEn ?? ''
+  editNameRu.value = item.nameRu ?? ''
   isEditOpen.value = true
 }
 
@@ -146,10 +185,13 @@ async function saveEdit() {
       name: editingItem.value.name,
       sellPrice: editSellPrice.value ?? 1,
       buyPrice: editBuyPrice.value ?? 1,
+      nameUk: editNameUk.value,
+      nameEn: editNameEn.value,
+      nameRu: editNameRu.value,
     })
     toastStore.showToast(t('admin.success_update'), 'success')
     isEditOpen.value = false
-    await load()
+    await refreshAfterChange()
   } catch (err) {
     toastStore.showToast(errorText(err), 'error')
   } finally {
@@ -171,7 +213,7 @@ async function confirmDelete() {
     await api.delete(`/admin/items/${item.id}`)
     toastStore.showToast(t('admin.deleted'), 'success')
     isDeleteOpen.value = false
-    await load()
+    await refreshAfterChange()
   } catch (err) {
     toastStore.showToast(errorText(err), 'error')
   } finally {
@@ -222,7 +264,88 @@ async function give() {
   }
 }
 
-onMounted(load)
+// ───────── Текстури ─────────
+
+const ICON_MAX_BYTES = 64 * 1024
+
+function iconFileError(file: File): string | null {
+  return file.type === 'image/png' && file.size <= ICON_MAX_BYTES ? null : t('admin.icon_invalid')
+}
+
+async function uploadIcon(id: number, file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  await api.post(`/admin/items/${id}/icon`, form, {headers: {'Content-Type': 'multipart/form-data'}})
+}
+
+function clearNewIcon() {
+  if (newIconPreview.value) URL.revokeObjectURL(newIconPreview.value)
+  newIconFile.value = null
+  newIconPreview.value = null
+}
+
+function onNewIconPicked(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  const problem = iconFileError(file)
+  if (problem) {
+    toastStore.showToast(problem, 'error')
+    return
+  }
+  clearNewIcon()
+  newIconFile.value = file
+  newIconPreview.value = URL.createObjectURL(file)
+}
+
+async function onEditIconPicked(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  const item = editingItem.value
+  if (!item || !file || isIconBusy.value) return
+  const problem = iconFileError(file)
+  if (problem) {
+    toastStore.showToast(problem, 'error')
+    return
+  }
+  isIconBusy.value = true
+  try {
+    await uploadIcon(item.id, file)
+    toastStore.showToast(t('admin.success_update'), 'success')
+    await refreshAfterChange(item.id)
+  } catch (err) {
+    toastStore.showToast(errorText(err), 'error')
+  } finally {
+    isIconBusy.value = false
+  }
+}
+
+async function removeIcon() {
+  const item = editingItem.value
+  if (!item || isIconBusy.value) return
+  isIconBusy.value = true
+  try {
+    await api.delete(`/admin/items/${item.id}/icon`)
+    toastStore.showToast(t('admin.success_update'), 'success')
+    await refreshAfterChange(item.id)
+  } catch (err) {
+    toastStore.showToast(errorText(err), 'error')
+  } finally {
+    isIconBusy.value = false
+  }
+}
+
+/** Оновлює і список в адмінці, і каталог, з якого ItemIcon/useItemMeta беруть назви та текстури по всій грі. */
+async function refreshAfterChange(keepEditingId?: number) {
+  await Promise.all([load(true), catalog.load(true)])
+  if (keepEditingId !== undefined) {
+    editingItem.value = items.value.find(i => i.id === keepEditingId) ?? null
+  }
+}
+
+onMounted(() => load())
 </script>
 
 <template>
@@ -244,7 +367,7 @@ onMounted(load)
               <ItemIcon :item="item.name" size="56"/>
             </div>
 
-            <h3 class="item-card__name">{{ itemTitle(item.name) }}</h3>
+            <h3 class="item-card__name">{{ itemTitle(item.name, item) }}</h3>
             <code class="item-card__key">{{ item.name }}</code>
 
             <div class="item-card__prices">
@@ -287,6 +410,27 @@ onMounted(load)
           <span v-else class="hint-text">a-z, 0-9, _</span>
         </div>
         <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · UK</label>
+          <input v-model="newNameUk" type="text" maxlength="128" class="pixel-input" placeholder="Полуниця"/>
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · EN</label>
+          <input v-model="newNameEn" type="text" maxlength="128" class="pixel-input" placeholder="Strawberry"/>
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · RU</label>
+          <input v-model="newNameRu" type="text" maxlength="128" class="pixel-input" placeholder="Клубника"/>
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_icon') }}</label>
+          <div class="icon-row">
+            <img v-if="newIconPreview" :src="newIconPreview" alt="" class="icon-preview"/>
+            <input ref="newFileInput" type="file" accept="image/png" class="file-hidden" @change="onNewIconPicked"/>
+            <ButtonText @click="newFileInput?.click()">{{ t('admin.icon_upload') }}</ButtonText>
+          </div>
+          <span class="hint-text">{{ t('admin.icon_hint') }}</span>
+        </div>
+        <div class="input-field-row">
           <label>{{ t('admin.sell_price') }}</label>
           <input v-model.number="newSellPrice" type="number" min="0" class="pixel-input"/>
         </div>
@@ -305,8 +449,32 @@ onMounted(load)
     <!-- Редагування цін предмета -->
     <PixelModal v-model="isEditOpen" :title="t('admin.item_edit_title')" width="320px" @close="isEditOpen = false">
       <div class="modal-body">
-        <div class="user-telemetry-title">{{ editingItem ? itemTitle(editingItem.name) : '' }}</div>
+        <div class="user-telemetry-title">{{ editingItem ? itemTitle(editingItem.name, editingItem) : '' }}</div>
 
+        <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · UK</label>
+          <input v-model="editNameUk" type="text" maxlength="128" class="pixel-input"/>
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · EN</label>
+          <input v-model="editNameEn" type="text" maxlength="128" class="pixel-input"/>
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_name') }} · RU</label>
+          <input v-model="editNameRu" type="text" maxlength="128" class="pixel-input"/>
+        </div>
+        <div class="input-field-row">
+          <label>{{ t('admin.field_icon') }}</label>
+          <div class="icon-row">
+            <ItemIcon v-if="editingItem" :item="editingItem.name" size="48"/>
+            <input ref="editFileInput" type="file" accept="image/png" class="file-hidden" @change="onEditIconPicked"/>
+            <ButtonText :loading="isIconBusy" @click="editFileInput?.click()">{{ t('admin.icon_upload') }}</ButtonText>
+            <ButtonText v-if="editingItem?.iconVersion" :loading="isIconBusy" @click="removeIcon">
+              {{ t('admin.icon_remove') }}
+            </ButtonText>
+          </div>
+          <span class="hint-text">{{ t('admin.icon_hint') }}</span>
+        </div>
         <div class="input-field-row">
           <label>{{ t('admin.sell_price') }}</label>
           <input v-model.number="editSellPrice" type="number" min="0" class="pixel-input"/>
@@ -694,5 +862,23 @@ onMounted(load)
 
 .error-text {
   color: #d33;
+}
+
+.icon-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.file-hidden {
+  display: none;
+}
+
+.icon-preview {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  image-rendering: pixelated;
 }
 </style>

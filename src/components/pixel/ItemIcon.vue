@@ -2,6 +2,7 @@
 import { ref, computed, watchEffect } from 'vue'
 import Image from './Image.vue'
 import { getOutlinedTexture, isGlobalItemOutlineEnabled } from '@/services/itemOutline'
+import { useItemCatalogStore } from '@/stores/itemCatalog'
 
 const props = withDefaults(defineProps<{
   item?: string | number | null
@@ -27,6 +28,9 @@ const props = withDefaults(defineProps<{
   outline: undefined
 })
 
+const catalog = useItemCatalogStore()
+catalog.ensureLoaded()
+
 const itemId = computed<string>(() => {
   const val = props.item || props.name || props.id || ''
   return String(val).trim()
@@ -41,7 +45,8 @@ const baseTextureSrc = computed<string>(() => {
   }
 
   const clean = raw.toLowerCase().trim().replace(/[\s-]+/g, '_')
-  return `/items/${clean}.png`
+  // Текстура, завантажена через адмінку, має пріоритет; інакше — файл зі збірки.
+  return catalog.iconUrl(clean) ?? `/items/${clean}.png`
 })
 
 const shouldOutline = computed(() => {

@@ -6,8 +6,9 @@ import type {Item} from '@/types/Item'
 import {CardPrimary, Card, ItemIcon, ButtonText, SlideFade} from '@/components/pixel'
 import {playClickSound} from '@/services/sound'
 import {useAuthStore} from '@/stores/auth'
+import {useItemMeta} from '@/composables/useItemMeta'
 
-const {t, te} = useI18n()
+const {t} = useI18n()
 const authStore = useAuthStore()
 
 const emit = defineEmits<{
@@ -17,13 +18,11 @@ const emit = defineEmits<{
 const items = ref<Item[]>([])
 const isLoading = ref(true)
 
+const {itemTitle} = useItemMeta()
+
 function getItemTitle(itemName?: string): string {
   if (!itemName) return 'Предмет'
-  const key = `inventory.items.${itemName.toLowerCase().trim()}`
-  if (te(key)) {
-    return t(key)
-  }
-  return itemName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return itemTitle(itemName)
 }
 
 function getItemDescription(itemName?: string): string {

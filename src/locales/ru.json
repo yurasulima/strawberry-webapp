@@ -15,10 +15,14 @@
       "strawberry": "Клубника",
       "candy": "Конфета",
       "money": "Монеты",
-      "demo_item": "Демо Предмет",
       "water": "Вода",
       "blueberry": "Черника",
-      "strawberry_juice": "Клубничный Сок"
+      "strawberry_juice": "Клубничный Сок",
+      "cherries": "Вишни",
+      "jam_cherry": "Вишнёвое Варенье",
+      "blueberry_jam": "Черничное Варенье",
+      "blueberry_pie": "Черничный Пирог",
+      "strawberry_pie": "Клубничный Пирог"
     }
   },
   "clicker": {
@@ -120,7 +124,13 @@
     "buy_price": "Цена покупки",
     "item_given": "Предмет игроку обновлён",
     "amount": "Количество",
-    "amount_hint": "Отрицательное значение забирает предмет"
+    "amount_hint": "Отрицательное значение забирает предмет",
+    "field_name": "Название",
+    "field_icon": "Текстура",
+    "icon_upload": "Загрузить PNG",
+    "icon_remove": "Убрать",
+    "icon_invalid": "Нужен PNG до 64 КБ",
+    "icon_hint": "PNG, до 128×128 px, до 64 КБ"
   },
   "business": {
     "title": "Мои бизнесы",
@@ -156,7 +166,14 @@
       "strawberry_farm": "Клубничная ферма",
       "bakery": "Пекарня",
       "factory": "Фабрика",
-      "strawberry_juice_factory": "Фабрика клубничного сока"
+      "strawberry_juice_factory": "Фабрика клубничного сока",
+      "water_tower": "Водонапорная башня",
+      "blueberry_grove": "Черничная роща",
+      "cherry_orchard": "Вишнёвый сад",
+      "cherry_jam_factory": "Вишнёвая варочная",
+      "blueberry_jam_factory": "Черничная варочная",
+      "blueberry_pie_bakery": "Кондитерская черничных пирогов",
+      "strawberry_pie_bakery": "Кондитерская клубничных пирогов"
     }
   },
   "profile": {
@@ -173,7 +190,6 @@
   "items": {
     "strawberry": "Клубничка",
     "money": "Монета",
-    "demo_item": "Демо предмет",
     "water": "Вода",
     "blueberry": "Черника",
     "strawberry_juice": "Клубничный сок"

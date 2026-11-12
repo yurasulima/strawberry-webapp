@@ -15,7 +15,6 @@
       "strawberry": "Strawberry",
       "candy": "Candy",
       "money": "Coins",
-      "demo_item": "Demo Item",
       "water": "Water",
       "blueberry": "Blueberry",
       "strawberry_juice": "Strawberry Juice",
@@ -125,7 +124,13 @@
     "buy_price": "Buy Price",
     "item_given": "Item updated for player",
     "amount": "Amount",
-    "amount_hint": "Negative value takes the item away"
+    "amount_hint": "Negative value takes the item away",
+    "field_name": "Name",
+    "field_icon": "Texture",
+    "icon_upload": "Upload PNG",
+    "icon_remove": "Remove",
+    "icon_invalid": "PNG up to 64 KB required",
+    "icon_hint": "PNG, up to 128×128 px, up to 64 KB"
   },
   "business": {
     "title": "My Businesses",
@@ -185,7 +190,6 @@
   "items": {
     "strawberry": "Strawberry",
     "money": "Coin",
-    "demo_item": "Demo Item",
     "water": "Water",
     "blueberry": "Blueberry",
     "strawberry_juice": "Strawberry Juice"
