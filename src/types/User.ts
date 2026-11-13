@@ -29,6 +29,8 @@ export interface User {
   dailyStreak?: number
   lastClaimedDailyAt?: string | null
   canClaimDaily?: boolean
+  dailyIncome?: number
+  totalBusinesses?: number
   cat?: UserCat | null
   cats?: UserCat[]
   slots: Slot[]

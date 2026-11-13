@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from "@/services/api.ts"
 import { Icon } from '@iconify/vue'
-import { CardPrimary, Card, ButtonText, PremiumBadge, LevelBadge, PixelText, ItemIcon, SlideFade } from '@/components/pixel'
+import { CardPrimary, ButtonText, PremiumBadge, LevelBadge, PixelText, ItemIcon, SlideFade } from '@/components/pixel'
 import type { User } from "@/types/User.ts"
 import { useUserStore } from "@/stores/user.ts"
 import { useToastStore } from "@/stores/toast.ts"
@@ -27,8 +27,9 @@ function formatPlayerName(player: User): string {
   return t('players.default_name')
 }
 
-function getMoneyCount(player: User): number {
-  return player.slots?.find(s => s.item?.name === 'money')?.count ?? 0
+function formatNumber(num?: number): string {
+  if (num === undefined || num === null) return '0'
+  return num.toLocaleString('uk-UA')
 }
 
 const fetchPlayers = async () => {
@@ -55,9 +56,8 @@ onMounted(() => {
       <div class="players-header">
         <h2 class="title">{{ t('players.title') }}</h2>
         <ButtonText
-
-            :loading="loading"
-            @click="fetchPlayers"
+          :loading="loading"
+          @click="fetchPlayers"
         >
           {{ t('players.refresh') }}
         </ButtonText>
@@ -69,31 +69,28 @@ onMounted(() => {
 
       <template v-else>
         <SlideFade>
-          <ul v-if="players.length"class="players-list">
-
-
+          <ul v-if="players.length" class="players-list">
             <li
-                v-for="(player, index) in players"
-                :key="player.userId || index"
-                class="player-row"
-
+              v-for="(player, index) in players"
+              :key="player.userId || index"
+              class="player-row"
             >
-                <span class="player-rank" :class="{ 'gold': index === 0, 'silver': index === 1, 'bronze': index === 2 }">
-                  #{{ index + 1 }}
-                </span>
+              <span class="player-rank" :class="{ 'gold': index === 0, 'silver': index === 1, 'bronze': index === 2 }">
+                #{{ index + 1 }}
+              </span>
 
               <img
-                  :src="player.photoUrl || '/default-avatar.png'"
-                  alt=""
-                  class="player-avatar"
-                  draggable="false"
+                :src="player.photoUrl || '/default-avatar.png'"
+                alt=""
+                class="player-avatar"
+                draggable="false"
               >
-
 
               <div class="player-info">
                 <div class="player-name-wrapper">
-                  <span class="player-name" :class="{ 'player-name-me': isMe(player) }"    ><PixelText :text="formatPlayerName(player)" /></span>
-
+                  <span class="player-name" :class="{ 'player-name-me': isMe(player) }">
+                    <PixelText :text="formatPlayerName(player)" />
+                  </span>
                 </div>
 
                 <div class="player-name-wrapper">
@@ -103,12 +100,10 @@ onMounted(() => {
               </div>
 
               <div class="player-score">
-                <ItemIcon item="money" size="22" class="score-icon" />
-                <strong class="score-val">{{ getMoneyCount(player) }}</strong>
+                <ItemIcon item="money" size="20" class="score-icon" />
+                <strong class="score-val">+{{ formatNumber(player.dailyIncome) }}/24г</strong>
               </div>
             </li>
-
-
           </ul>
 
           <div v-else class="empty-state">
@@ -174,10 +169,6 @@ onMounted(() => {
   border-top: 2px solid rgba(63, 46, 33, 0.18);
 }
 
-
-
-
-
 .player-rank {
   font-size: 16px;
   font-weight: bold;
@@ -233,12 +224,11 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* score-icon: розмір задає ItemIcon */
-
 .score-val {
-  font-size: 18px;
+  font-size: 16px;
   color: #2e7d32;
-  font-weight: normal;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .empty-state { text-align: center; padding: 16px 8px; }
