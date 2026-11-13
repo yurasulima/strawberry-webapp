@@ -389,7 +389,7 @@ onMounted(() => load())
       <div class="section-header">
         <h2 class="title">{{ t('admin.nav.items') }}</h2>
         <div style="display: flex; gap: 6px;">
-          <ButtonText :loading="isRebuildingEmojis" @click="rebuildAllEmojis">✨ Емодзі</ButtonText>
+          <ButtonText :loading="isRebuildingEmojis" @click="rebuildAllEmojis">Емодзі</ButtonText>
           <ButtonText @click="openCreate">+ {{ t('admin.create') }}</ButtonText>
         </div>
       </div>
@@ -518,7 +518,7 @@ onMounted(() => load())
             <ItemIcon v-if="editingItem" :item="editingItem.name" size="48"/>
             <input ref="editFileInput" type="file" accept="image/png" class="file-hidden" @change="onEditIconPicked"/>
             <ButtonText :loading="isIconBusy" @click="editFileInput?.click()">{{ t('admin.icon_upload') }}</ButtonText>
-            <ButtonText v-if="editingItem" :loading="isIconBusy" @click="rebuildSingleEmoji(editingItem)">✨ Емодзі</ButtonText>
+            <ButtonText v-if="editingItem" :loading="isIconBusy" @click="rebuildSingleEmoji(editingItem)">Емодзі</ButtonText>
             <ButtonText v-if="editingItem?.iconVersion" :loading="isIconBusy" @click="removeIcon">
               {{ t('admin.icon_remove') }}
             </ButtonText>
